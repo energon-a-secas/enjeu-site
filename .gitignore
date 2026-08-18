@@ -4,3 +4,12 @@ __pycache__/
 .forge/
 print/*.pdf
 print/*.png
+
+# ── Neorgon base (enforced by smoke check 20) ─────────────────────────────────
+.env
+.env.*
+!.env.example
+node_modules/
+*.py[cod]
+skills-archived/
+*.log
