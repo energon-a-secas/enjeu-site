@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Stake - balance simulator.
+Enjeu - balance simulator.
 
 Plays the solo boss fight many times and reports the numbers the rulebook
 claims: how many rounds a fight lasts, how often the player wins, and how
@@ -300,7 +300,7 @@ def run(trials: int, seed: int, bonus: int = 0) -> None:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Stake balance simulator")
+    ap = argparse.ArgumentParser(description="Enjeu balance simulator")
     ap.add_argument("--trials", type=int, default=20000)
     ap.add_argument("--seed", type=int, default=7)
     ap.add_argument("--bonus", type=int, default=0,
@@ -320,7 +320,7 @@ def main() -> None:
             print()
         return
 
-    print(f"\nStake balance - {args.trials} fights per cell, "
+    print(f"\nEnjeu balance - {args.trials} fights per cell, "
           f"affinity bonus +{args.bonus}\n")
     run(args.trials, args.seed, args.bonus)
 

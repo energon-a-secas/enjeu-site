@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Stake - attribution page generator.
+Enjeu - attribution page generator.
 
 Reads data/art-manifest.json and writes CREDITS.md.
 
 It REFUSES to write while any slot that has art is missing its creator or
-licence. That refusal is the point of the script. Stake's art comes from
+licence. That refusal is the point of the script. Enjeu's art comes from
 The Noun Project, where the free tier is CC BY and attribution is a
 condition of use, not a courtesy - so a printable pack that ships with a
 half-filled credits page is the one failure here with a legal edge on it.
@@ -54,7 +54,7 @@ def render(manifest: dict, ready: list[dict]) -> str:
     lines = [
         "# Credits",
         "",
-        "Stake's card art comes from The Noun Project. Every icon below is used",
+        "Enjeu's card art comes from The Noun Project. Every icon below is used",
         "under the licence named against it. This page is generated from",
         "`data/art-manifest.json` by `tools/credits.py` - edit the manifest,",
         "not this file.",

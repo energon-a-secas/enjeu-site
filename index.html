@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enjeu | Boss-rush card game</title>
+  <meta name="description" content="Print 90 cards, grab one die and the bricks and figures you already own, then play a solo boss rush where your life is both your ammunition and your armour">
+  <meta property="og:title" content="Enjeu: Boss-rush card game">
+  <meta property="og:description" content="Print the cards, grab one die and your own bricks. Your life is your ammunition and your armour.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://enjeu.neorgon.com/">
+  <meta property="og:site_name" content="Neorgon">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Enjeu: Boss-rush card game">
+  <meta name="twitter:description" content="Print the cards, grab one die and your own bricks. Your life is your ammunition and your armour.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://enjeu.neorgon.com/">
+  <meta property="og:locale" content="en_US">
+  <meta name="theme-color" content="#eab308">
+  <!-- og:image: uncomment when the og-studio image is deployed (1200x630 JPG)
+  <meta property="og:image" content="https://enjeu.neorgon.com/og-preview.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Enjeu">
+  <meta name="twitter:image" content="https://enjeu.neorgon.com/og-preview.jpg"> -->
+  <link rel="icon" type="image/x-icon" href="https://cdn.neorgon.org/v1.0.0/favicon.ico" />
+  <!-- Print-and-play light dialect: the page carries its own tokens (see DESIGN.md),
+       so the CDN base.css is deliberately not linked. -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/cards.css">
+  <link rel="stylesheet" href="css/print.css">
+  <!-- Neorgon Header Kit (vendored). Keep after the site styles; the kit owns the header. -->
+  <script>(function(){var m=location.search.match(/[?&]theme=([\w-]+)/)||document.cookie.match(/(?:^|;\s*)neo_theme=([\w-]+)/);if(m&&m[1]!=='default')document.documentElement.dataset.theme=decodeURIComponent(m[1]);})();</script>
+  <link rel="stylesheet" href="css/neorgon-header.css">
+  <link rel="stylesheet" href="css/neorgon-themes.css">
+  <link rel="stylesheet" href="https://cdn.neorgon.org/v1.0.0/header/season.css">
+  <script defer src="js/neorgon-header.js"></script>
+  <!-- Neorgon Footer Kit (vendored). -->
+  <link rel="stylesheet" href="css/neorgon-footer.css">
+  <script defer src="js/neorgon-footer.js"></script>
+  <meta name="neo-version" content="v0.1.0">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Enjeu",
+    "description": "A print-and-play boss-rush card game for one player, one die, and the construction-toy bricks and figures you already own. Rules, printable cards, and an in-browser simulator.",
+    "url": "https://enjeu.neorgon.com/",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "author": { "@type": "Organization", "name": "Neorgon", "url": "https://neorgon.com/" }
+  }
+  </script>
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="header-bar" data-header-mode="content" data-header-skin="custom">
+    <div class="header-logo">
+      <a href="https://neorgon.com/" target="_blank" rel="noopener noreferrer">
+        <img src="https://cdn.neorgon.org/v1.0.0/energon-classic-logo.png" class="header-logo-img" alt="Neorgon logo">
+      </a>
+      <a href="#/learn" class="header-title-link">
+        <h1>Enjeu</h1>
+        <div class="header-subtitle">Your life is your ammunition and your armour</div>
+      </a>
+    </div>
+
+    <div class="header-right">
+      <!-- The nav is a CHILD of .header-actions (pieza learned this the hard way: the kit
+           builds its overflow container inside .header-actions, and a nav that IS
+           .header-actions deletes it on first render). data-keep-mobile keeps the four
+           tabs on the bar; the row scrolls sideways when the bar is narrow. -->
+      <div class="header-actions">
+        <nav class="sk-nav" id="skNav" role="tablist" aria-label="Sections" data-keep-mobile></nav>
+      </div>
+      <a class="header-home" href="https://neorgon.com/" title="neorgon.com" aria-label="Neorgon home">
+        <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>
+      </a>
+    </div>
+  </header>
+
+  <main id="main">
+    <div id="viewRoot" class="view-root"><!-- rendered by js/render.js --></div>
+  </main>
+
+  <!-- Card detail sheet (Cards view): filled by views/cards.js, one landmark. -->
+  <div class="modal" id="cardModal" hidden>
+    <div class="modal__backdrop" data-modal-close tabindex="-1" aria-hidden="true"></div>
+    <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="cardModalTitle" tabindex="-1">
+      <header class="modal__header">
+        <h2 id="cardModalTitle">Card</h2>
+        <button type="button" class="btn btn--ghost btn--icon" data-modal-close aria-label="Close dialog">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+      <div class="modal__body" id="cardModalBody"></div>
+    </div>
+  </div>
+
+  <!-- Print root: filled on demand by js/cards/sheet.js, visible only in @media print. -->
+  <div class="print-sheet" id="printSheet" aria-hidden="true"></div>
+
+  <footer class="neo-footer" data-footer-mode="minimal">
+    Rules and cards are MIT. Card art is placeholder, drawn in-house, until the credited set lands. Runs save on this device only.
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 # Balance
 
 Every number in the rulebook comes out of `tools/sim.py`. This file records what was
-measured, what it means, and — the part that matters most at this stage — what has **not**
+measured, what it means, and (the part that matters most at this stage) what has **not**
 been measured and could still be wrong.
 
 Reproduce with:
@@ -12,7 +12,7 @@ python3 tools/sim.py --trials 20000
 
 ## The measured table
 
-20,000 simulated fights per cell, seed 7, no affinity bonus (the pessimistic case — a
+20,000 simulated fights per cell, seed 7, no affinity bonus (the pessimistic case: a
 player who never gets a favourable matchup). `rounds` and `broken` are averages;
 `broken` counts life cards permanently lost, out of a pool of 4 at level 1 rising to 8 at
 level 5.
@@ -27,11 +27,11 @@ level 5.
 
 The four styles are stand-ins for how a person plays:
 
-- **turtle** — never bets. Strike ×3, every round, forever.
-- **safe** — bets only down to the cards needed to guard a nominal boss hit.
-- **adaptive** — plays safe, but takes a kill shot when it is likely, or when Rage is about
+- **turtle**: never bets. Strike ×3, every round, forever.
+- **safe**: bets only down to the cards needed to guard a nominal boss hit.
+- **adaptive**: plays safe, but takes a kill shot when it is likely, or when Rage is about
   to make the fight unsurvivable anyway.
-- **gamble** — bets everything, every round.
+- **gamble**: bets everything, every round.
 
 ### What the table says
 
@@ -40,14 +40,14 @@ important property here and it was not true in the first pass.
 
 **Playing safe stops working.** The safe line holds up through level 2 (79%) and then falls
 off a cliff at level 3 (53%) and level 4 (43%). From the midpoint of the campaign the game
-stops letting you win by hoarding — you have to bet. That is the arc the design is for.
+stops letting you win by hoarding: you have to bet. That is the arc the design is for.
 
 **Turtling is fatal.** 53% at level 1, 4% at level 2, zero after that. The Rage rule does
 its job: a player who never bets runs out of clock long before the boss runs out of life.
 
 **Gambling is not a strategy, it is a tool.** Pure gambling underperforms adaptive
 everywhere. At level 4 it comes within a point (60.7% vs 61.4%), which is the one place
-the game genuinely rewards recklessness — worth watching in playtest rather than
+the game genuinely rewards recklessness: worth watching in playtest rather than
 "fixing" preemptively.
 
 **Fights are 3–4 rounds**, and the final fight is the longest (3.9). About 9–12 decisions
@@ -85,12 +85,12 @@ happens the run-completion figure should not be quoted as the real one.
 | Tier 4 | 3 | 400 | Even | 200 | 67 |
 
 Tier 1 was the most card-efficient attack in the game. Because life cards, not actions, are
-the binding constraint under careful play, that made every level-up a *downgrade* — the
+the binding constraint under careful play, that made every level-up a *downgrade*. The
 shiny new meteor was worse per card than the thing you already had. The tuned ladder:
 
 | | bet | damage | check | expected | per card |
 |---|---|---|---|---|---|
-| Strike | 0 | 25 | — | 25 | — |
+| Strike | 0 | 25 | none | 25 | none |
 | Focus | 1 | 75 | Sure | 56 | 56 |
 | Tier 1 | 1 | 100 | Sure | 75 | 75 |
 | Tier 2 | 2 | 225 | Sure | 169 | 84 |
@@ -107,7 +107,7 @@ the cards needed to guard one nominal hit. Boss Damage is chosen so that budget 
 cosmetic, because the extra life card went straight into guarding the bigger hit.
 
 **The ladder is spaced 75/50/25, not evenly.** At the 50% step, rolling twice and keeping
-the better result gives exactly 75%, and keeping the worse gives exactly 25% — advantage
+the better result gives exactly 75%, and keeping the worse gives exactly 25%: advantage
 and disadvantage move you exactly one rung with no second table and no rounding. See
 [DICE-BRIDGE.md](DICE-BRIDGE.md).
 
@@ -116,13 +116,13 @@ and disadvantage move you exactly one rung with no second table and no rounding.
 Recorded because both were invisible until the numbers were run, and both would have
 shipped.
 
-**The special attack was worse than the free one.** As specified — 50 damage on d20 ≥ 15 —
+**The special attack was worse than the free one.** As specified, 50 damage on d20 ≥ 15,
 it returns 30% × 50 = 15 expected damage, against a basic attack dealing 25 guaranteed for
 no life at all. Nobody would ever have used it. Retuned to 75 damage at the Sure step.
 
 **Turtling was immortal.** Under full regeneration, a player who never bets always has a
 full pool to guard with, and guarding costs nothing permanent. The first model had no way
-to kill such a player at all. Rage — double damage that ignores guards — is the answer, and
+to kill such a player at all. Rage (double damage that ignores guards) is the answer, and
 the sim confirms it works.
 
 ## What this simulator does not model
@@ -136,7 +136,7 @@ Read this before trusting any number above.
 - **Element and biome affinity.** The simulator accepts a `--bonus` flag but the table
   above runs at zero. A +25 or +50 run has not been characterised.
 - **Aiming at minions.** The sim always hits the boss body, which understates the player
-  slightly — clearing a minion stops its chip damage.
+  slightly: clearing a minion stops its chip damage.
 - **Hide, Move, and Brace interactions** beyond the simple halving.
 - **A human being.** The adaptive strategy is a heuristic with perfect arithmetic and no
   nerve. Real players misjudge the guard line, and that is where the drama lives.

@@ -1,12 +1,45 @@
-# Stake
+<div align="center">
 
-A printable, open-source boss-rush card game for **one player**, a **single die**, and
-whatever construction-toy figures and bricks you already own.
+# Enjeu
 
-You build the boss out of bricks. The cards handle the damage. You handle the story.
+Print-and-play boss-rush card game for one player, one die, and the bricks you already own
 
-> Not affiliated with, endorsed by, or connected to the LEGO Group. Stake works with any
-> construction toy — it ships no figures and never names a brand on a card.
+[![Live][badge-site]][url-site]
+[![HTML5][badge-html]][url-html]
+[![CSS3][badge-css]][url-css]
+[![JavaScript][badge-js]][url-js]
+[![Claude Code][badge-claude]][url-claude]
+[![License][badge-license]](LICENSE)
+
+[badge-site]:    https://img.shields.io/badge/live_site-0063e5?style=for-the-badge&logo=googlechrome&logoColor=white
+[badge-html]:    https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white
+[badge-css]:     https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white
+[badge-js]:      https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black
+[badge-claude]:  https://img.shields.io/badge/Claude_Code-CC785C?style=for-the-badge&logo=anthropic&logoColor=white
+[badge-license]: https://img.shields.io/badge/license-MIT-404040?style=for-the-badge
+
+[url-site]:   https://enjeu.neorgon.com/
+[url-html]:   #
+[url-css]:    #
+[url-js]:     #
+[url-claude]: https://claude.ai/code
+
+</div>
+
+---
+
+## Overview
+
+Enjeu is a solo boss rush played with ninety printed cards, one die, and whatever
+construction-toy figures and bricks are already on the table. You build the boss out of
+bricks; the cards handle the damage; you handle the story. The site teaches the game with a
+visual walkthrough, prints every card at true size, and runs it on screen with stand-in
+figures so the first real fight needs no rulebook open.
+
+> Not affiliated with, endorsed by, or connected to the LEGO Group. Enjeu works with any
+> construction toy. It ships no figures and never names a brand on a card.
+
+**Live:** enjeu.neorgon.com
 
 ---
 
@@ -15,30 +48,41 @@ You build the boss out of bricks. The cards handle the damage. You handle the st
 **Your life is your ammunition and your armour.**
 
 You bet life cards to attack, and they come back at the start of your next turn. So betting
-costs you nothing — right up until the boss swings and you have nothing Ready left to guard
-with. Then those cards break for good.
+costs you nothing, right up until the boss swings and you have nothing Ready left to guard
+with. Then those cards break for good. That single asymmetry is the entire game: every turn
+asks how much you dare spend, knowing you have to survive what comes next.
 
-That single asymmetry is the entire game. Every turn asks the same question: *how much do I
-dare spend, knowing I have to survive what comes next?*
+There is no way to win by playing it safe. From the boss's Rage round onward its damage
+doubles and ignores your guard, so hoarding just changes how you lose.
 
-There is no way to win by playing it safe. From the boss's **Rage** round onward its damage
-doubles and ignores your guard, so hoarding just changes how you lose. The simulator puts
-a pure defensive line at **53% at level 1 and 0% from level 3 onward**.
+---
+
+## Features
+
+- **Learn** -- a seven-step walkthrough (the First Game ladder: one rule, three cards, a turn, the check, the boss, then what unlocks) with the complete rulebook rendered underneath it
+- **Cards** -- all 90 faces, browsable by deck; tap one for its name and what it does, because the face never says
+- **Print** -- 63 x 88 mm poker cards, 9 per A4 sheet, exactly 10 sheets, crop ticks, optional Letter paging and card backs
+- **Play** -- a First Game (level 1, Strike, Focus and All In) or a five-level run: classes, skill drafts, Advantage cards, any die from d4 to 3d6, Story / Standard / Nightmare dial, stand-in heroes and bosses built from bricks
+- **Balance** -- the same engine run thousands of times by four play styles, in a Worker, beside the published table
+- **Any die you own** -- the four-step ladder has a target for d20, d12, d10, d8, d6, d4, 2d6 and 3d6; three d6 track a d20 within 1.2 points
+- **No words on any card** -- numerals, pips and glyphs; the picture is the name and the player says it out loud
+- **Checkable, not remembered** -- `data/cards.json` feeds the site, the print sheets, the Python linter and the JS tests alike
+
+---
 
 ## Start here
 
 | | |
 |---|---|
-| **[RULES.md](RULES.md)** | The rulebook. Complete, ~10 minutes to read. |
-| **[docs/DICE-BRIDGE.md](docs/DICE-BRIDGE.md)** | *"I don't have a d20 — what do I throw?"* Three d6. Here is why, and every other die. |
+| **[RULES.md](RULES.md)** | The rulebook. Complete, about ten minutes to read. |
+| **[docs/DICE-BRIDGE.md](docs/DICE-BRIDGE.md)** | *"I don't have a d20, what do I throw?"* Three d6. Here is why, and every other die. |
 | **[docs/BALANCE.md](docs/BALANCE.md)** | What was measured, and what has not been. |
 | **[docs/CARD-LAYOUT.md](docs/CARD-LAYOUT.md)** | The four-corner grammar. No body text on any card. |
 | **[data/cards.json](data/cards.json)** | All 90 cards as data. |
 
 ## Any die you own
 
-The four difficulty steps were chosen so every common die lands close to them. Pick your
-row, roll, meet or beat:
+Pick your row, roll, meet or beat:
 
 | Step | Odds | d20 | d12 | d10 | d8 | d6 | d4 | 2d6 | 3d6 |
 |---|---|---|---|---|---|---|---|---|---|
@@ -47,48 +91,88 @@ row, roll, meet or beat:
 | ●●● Hard | 25% | 16+ | 10+ | 8+ | 7+ | 5+ | 4+ | 9+ | 13+ |
 | ●●●● Wild | 15% | 18+ | 11+ | 9+ | 8+ | 6+ | 4+ | 10+ | 14+ |
 
-**Three d6 tracks a d20 within 1.2 percentage points at every step.** One lone d6 works
-too, and errs in your favour. Own more dice? They are not the difficulty lever — rolling
-*twice* is. At the Even step, keeping the better roll lands exactly on Sure and the worse
-exactly on Hard, which is why the ladder is spaced 75/50/25 rather than evenly.
+This table is generated by `tools/dice_bridge.py` and re-derived by `js/game/rules.js`;
+`tests/dice.test.mjs` asserts the two agree in all 32 cells.
 
-## Tools
+## Art
 
-Everything is standard-library Python 3. No install, no dependencies.
-
-```bash
-python3 tools/sim.py              # balance simulator - the source of every number
-python3 tools/dice_bridge.py      # regenerate the dice table
-python3 tools/lint_cards.py       # check card data against the balance ladder
-python3 tools/credits.py          # build the art attribution page
-```
-
-Each of the three checkers has a `--selftest` that breaks its own rules on purpose and
-confirms it notices. A check nobody has watched fail is not a check.
+Every face on the site today is **placeholder art**: 59 original glyphs drawn in-house on a
+24 x 24 stroked grid, keyed by the slot ids in `data/art-manifest.json`. The manifest stays
+the source of record for the credited Noun Project set: drop an attributed SVG into
+`art/<slot-id>.svg`, fill that slot's `creator` and `licence`, and the face picks it up.
+`tools/credits.py` refuses to write the credits page while any slot is half-attributed, so
+an incomplete one cannot ship.
 
 ## Status
 
-**Baseline. Never played by a human.**
+**Baseline. Never played by a human.** The numbers in [docs/BALANCE.md](docs/BALANCE.md)
+come from `tools/sim.py`; the JS engine reproduces that table within two points in its
+parity mode, and is markedly harsher when it plays the rulebook as written (see the Balance
+tab). [docs/PLAYTEST.md](docs/PLAYTEST.md) is where the first real session goes.
 
-The numbers come from 20,000 simulated fights per level, which is enough to say the
-*shape* is right — skilled play beats safe play beats turtling, fights land at 3–4 rounds,
-the difficulty curve descends — and not nearly enough to say the game is fun. The
-simulator does not model the Advantage deck, the class passives, or a person's nerve.
+---
 
-[docs/BALANCE.md](docs/BALANCE.md) lists what is untested.
-[docs/PLAYTEST.md](docs/PLAYTEST.md) is where the first real session goes.
+## Running locally
+
+ES modules require an HTTP server (not `file://`):
+
+```bash
+make serve          # http://localhost:8871
+make test           # node tests, no dependencies
+```
+
+The Python tools are standard library only:
+
+```bash
+python3 tools/sim.py              # balance simulator, the source of every published number
+python3 tools/dice_bridge.py      # regenerate the dice table
+python3 tools/lint_cards.py       # check card data against the balance ladder
+python3 tools/credits.py          # build the art attribution page, or refuse
+```
+
+---
+
+## Architecture
+
+![Architecture](docs/architecture.svg)
+
+```
+enjeu-site/
+├── index.html              # app shell: header kit, view root, print root, footer kit
+├── RULES.md                # the rulebook, rendered in place on the Learn tab
+├── css/
+│   ├── style.css           # print-and-play light dialect (own tokens)
+│   ├── cards.css           # face sizing only; all colour is inline in the SVG
+│   └── print.css           # 3 x 3 cells per A4, crop ticks, page breaks
+├── js/
+│   ├── app.js              # entry: load data, route, render, bind
+│   ├── state.js            # state + localStorage['enjeu-state']
+│   ├── navigate.js         # hash router
+│   ├── render.js · events.js · strings.js · utils.js
+│   ├── cards/              # glyphs.js · face.js (four-corner renderer) · sheet.js
+│   ├── game/               # rules.js · engine.js · strategies.js · sim.js · sim-worker.js · run.js · figures.js
+│   ├── data/               # cards.js (loader) · placeholders.js · walkthrough.js · published.js
+│   └── views/              # learn.js · cards.js · play.js · balance.js
+├── data/
+│   ├── cards.json          # all 90 cards, the one source
+│   └── art-manifest.json   # 51 art slots with creator + licence per slot
+├── tools/                  # sim.py · lint_cards.py · dice_bridge.py · credits.py
+├── tests/                  # cards · content · dice · engine (BALANCE.md parity)
+└── docs/                   # BALANCE · CARD-LAYOUT · DICE-BRIDGE · ART · PLAYTEST · architecture
+```
+
+---
 
 ## Licence
 
-Two halves, because they cannot be one:
-
 | What | Licence |
 |---|---|
-| Rules, card data, tools, all text | **MIT** — see [LICENSE](LICENSE) |
-| Card art in `art/` | per **[CREDITS.md](CREDITS.md)** — CC BY unless a slot says otherwise |
+| Rules, card data, tools, site code, all text | **MIT**, see [LICENSE](LICENSE) |
+| Card art in `art/` (when present) | per **CREDITS.md**, CC BY unless a slot says otherwise |
+| The placeholder glyphs in `js/cards/glyphs.js` | MIT, original |
 
-The art is sourced from The Noun Project, where the free tier requires attribution as a
-condition of use. **If you fork or redistribute this, the credits page goes with it.**
-`tools/credits.py` refuses to generate that page while any icon is missing its creator, so
-an incomplete one cannot ship by accident. Details and the alternative that was considered:
-[docs/ART.md](docs/ART.md).
+---
+
+<div align="center">
+<sub>Part of <a href="https://neorgon.com/">Neorgon</a></sub>
+</div>

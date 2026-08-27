@@ -1,0 +1,6 @@
+{
+  "name": "enjeu-site",
+  "private": true,
+  "type": "module",
+  "description": "Tests run with node, no dependencies. The site itself has no build step."
+}

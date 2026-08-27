@@ -1,0 +1,74 @@
+---
+config:
+  theme: base
+  themeVariables:
+    primaryColor: "#0f172a"
+    primaryTextColor: "#e2e8f0"
+    primaryBorderColor: "#0063e5"
+    lineColor: "#38bdf8"
+    secondaryColor: "#1e293b"
+    tertiaryColor: "#1e293b"
+    clusterBkg: "#f0f7ff"
+    clusterBorder: "#bfdbfe"
+    edgeLabelBackground: "#e8f0ff"
+    mainBkg: "#0f172a"
+    nodeBorder: "#0063e5"
+    titleColor: "#1e1b4b"
+    fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif"
+    fontSize: "13px"
+---
+flowchart TB
+    User([Player]) --> HTML["index.html\nApp shell, header kit, print root"]
+
+    subgraph App["ES Modules (no build step)"]
+        HTML --> app["app.js\nLoad data, route, render, bind"]
+        app --> state["state.js\nRun, die, mode, filters"]
+        app --> nav["navigate.js\n#/learn · #/cards · #/play · #/balance"]
+        app --> render["render.js\nNav + view switch"]
+        app --> events["events.js\nDelegated data-action clicks"]
+        render --> learn["views/learn.js\nWalkthrough + rulebook"]
+        render --> cards["views/cards.js\nBrowse, tap, print"]
+        render --> play["views/play.js\nRunner: setup, fight, level end"]
+        render --> balance["views/balance.js\nBatch table"]
+    end
+
+    subgraph Cards["Cards"]
+        face["cards/face.js\nFour-corner SVG face"]
+        glyphs["cards/glyphs.js\n59 glyphs by slot id"]
+        sheet["cards/sheet.js\n9 per A4, 10 sheets"]
+        face --> glyphs
+        sheet --> face
+    end
+
+    subgraph Game["Game"]
+        rules["game/rules.js\nLadder, dice bridge, cycle"]
+        engine["game/engine.js\nOne fight, every rule"]
+        strategies["game/strategies.js\nturtle · safe · adaptive · gamble"]
+        sim["game/sim.js + sim-worker.js\n20-cell table off-thread"]
+        run["game/run.js\nThe campaign"]
+        figures["game/figures.js\nBrick silhouettes"]
+        engine --> rules
+        strategies --> engine
+        sim --> strategies
+        run --> engine
+    end
+
+    subgraph Data["Data (shared with tools/*.py)"]
+        json[("data/cards.json\n90 cards")]
+        manifest[("data/art-manifest.json\n51 art slots")]
+        rulesmd[("RULES.md")]
+        ph["data/placeholders.js\n4 heroes, 5 bosses, 1 minion"]
+    end
+
+    cards --> face
+    cards --> sheet
+    play --> run
+    play --> figures
+    play --> face
+    balance -->|"Worker"| sim
+    learn --> rules
+    learn -->|"fetch"| rulesmd
+    app -->|"fetch"| json
+    app -->|"fetch"| manifest
+    run --> ph
+    state <-->|"enjeu-state"| Storage[("localStorage")]

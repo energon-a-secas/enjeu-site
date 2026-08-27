@@ -1,0 +1,20 @@
+/*
+ * ── Card faces ─────────────────────────────────────────────────
+ * The renderer (js/cards/face.js) emits one inline SVG per card with a
+ * 630 x 880 viewBox: ten units per millimetre of the 63 x 88 mm poker
+ * card, so the same markup prints true-size (print.css sets 63mm x 88mm)
+ * and scales crisply on screen.
+ *
+ * Every colour lives INSIDE the SVG as presentation attributes, on purpose:
+ * a CSS rule here would beat those attributes (fill/stroke in a stylesheet
+ * outranks fill="…" on the element), which is exactly how the first pass
+ * printed every life card white. This file sizes faces; it never paints them.
+ */
+.sk-card { display: block; aspect-ratio: 63 / 88; }
+.sk-card text { font-variant-numeric: tabular-nums; }
+
+/* Size presets used by views; the SVG is intrinsic 63:88 at any width. */
+.sk-card--sheet { width: 63mm; height: 88mm; }
+.sk-card--browse { width: 100%; }
+.sk-card--hand { width: 110px; }
+.sk-card--mini { width: 38px; }

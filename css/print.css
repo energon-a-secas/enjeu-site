@@ -1,0 +1,51 @@
+/*
+ * ── Print sheet ───────────────────────────────────────────────
+ * #printSheet is filled by js/cards/sheet.js and shown only on paper.
+ *
+ * Page budget, A4 portrait (210 x 297 mm) with 6 mm margins:
+ *   usable width  = 210 - 12            = 198 mm
+ *   3 cards + 2 gutters = 3 x 63 + 2 x 2 = 193 mm  -> 3 per row
+ *   3 rows  + 2 gutters = 3 x 88 + 2 x 2 = 268 mm  -> 3 rows (297 - 12 = 285 mm)
+ * So one page holds a 3 x 3 sheet of 9 cards, and 90 cards are exactly
+ * 10 pages. US Letter (216 x 279 mm) also fits 3 x 3: 198 wide, 267 tall.
+ *
+ * The cell is NOT overflow:hidden on purpose: a face that overflows must
+ * print visibly wrong, not silently wrong. The face is an SVG sized in
+ * millimetres, so no zoom/transform tricks are needed (pieza needed `zoom`
+ * because its cards were px-sized HTML).
+ */
+.print-sheet { display: none; }
+
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  @page { size: A4 portrait; margin: 6mm; }
+
+  /* The header kit pins html/body to the viewport; on paper the viewport is
+     the page, and a floor taller than the print box paginates as an empty
+     extra side. Release it. */
+  html, body { height: auto !important; min-height: 0 !important; background: #fff !important; }
+  body > *:not(.print-sheet) { display: none !important; }
+
+  .print-sheet {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 2mm;
+    align-content: flex-start;
+    width: 193mm;
+  }
+  .print-cell {
+    width: 63mm; height: 88mm;
+    break-inside: avoid;
+    position: relative;
+  }
+  .print-cell .sk-card { width: 63mm; height: 88mm; display: block; }
+  /* Crop ticks: 2mm hairlines at each corner, outside the face, for the cut. */
+  .print-cell::before, .print-cell::after {
+    content: ""; position: absolute; pointer-events: none;
+    width: 2mm; height: 2mm;
+  }
+  .print-cell::before { top: -2mm; left: -2mm; border-right: 0.2mm solid #999; border-bottom: 0.2mm solid #999; }
+  .print-cell::after  { bottom: -2mm; right: -2mm; border-left: 0.2mm solid #999; border-top: 0.2mm solid #999; }
+  /* Every 9th cell ends a page. */
+  .print-cell:nth-child(9n) { break-after: page; }
+}

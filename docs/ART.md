@@ -1,6 +1,6 @@
 # Art
 
-Stake's card art comes from **The Noun Project**. That was a deliberate choice; this file
+Enjeu's card art comes from **The Noun Project**. That was a deliberate choice; this file
 records what it costs and how to stay on the right side of it.
 
 ## The licensing shape
@@ -13,11 +13,11 @@ creator and licence **per slot**, filled in from each icon's own page at downloa
 For a game meant to be printed and shared, the CC BY route has three consequences worth
 being deliberate about:
 
-1. **Every distributed copy carries the credits page.** Printable pack, PDF, repo — the
+1. **Every distributed copy carries the credits page.** Printable pack, PDF, repo. The
    attribution travels with the art.
-2. **Forks inherit the obligation.** Someone who remixes Stake takes on the same
+2. **Forks inherit the obligation.** Someone who remixes Enjeu takes on the same
    attribution duty, and they will only know that if the repo tells them plainly.
-3. **The art cannot be MIT or CC0**, so this repo licenses in two halves — see below.
+3. **The art cannot be MIT or CC0**, so this repo licenses in two halves, see below.
 
 None of that blocks anything. It just has to be done properly, which is what
 `tools/credits.py` enforces.
@@ -55,7 +55,7 @@ https://thenounproject.com/icon/item-treasure-chest-2360145/60138/
 ```
 
 The `60138/` tail belongs to the rune stone. Reconstructed as `item-rune-stone-2360138`,
-flagged in the manifest — **verify that id before downloading**, it is a guess from the
+flagged in the manifest: **verify that id before downloading**, it is a guess from the
 fragments.
 
 **Three duplicates.** `skill-magic-earthquake-2360193` appears under both Special 50 and
@@ -63,7 +63,7 @@ Special 100; `classes-necromancer-2360015` and `classes-hunter-2360018` appear u
 Classes and Special 100. 42 unique icons from 45 lines.
 
 **Nine slots have no art.** All In, Meteor, the five boss sizes, the life marker and the
-boss-life marker. Meteor is the notable one — it is the signature tier-4 card, the thing
+boss-life marker. Meteor is the notable one. It is the signature tier-4 card, the thing
 the whole "stay grounded until level 5" arc builds toward, and nothing in the list depicts
 one.
 
@@ -74,7 +74,7 @@ Two halves, because they cannot be one:
 | What | Licence |
 |---|---|
 | Rules, card data, tools, and all text | MIT |
-| Card art in `art/` | per `CREDITS.md` — CC BY unless a slot says otherwise |
+| Card art in `art/` | per `CREDITS.md`: CC BY unless a slot says otherwise |
 
 Say this in the README too. Someone forking the repo needs to hit it before they
 redistribute, not after.
@@ -82,7 +82,7 @@ redistribute, not after.
 ## The alternative, recorded not argued
 
 [`boardwright-site/js/icons.js`](../../boardwright-site/js/icons.js) holds 33 original
-glyphs — drawn in-house on a 24×24 stroked grid specifically so exports carry no
+glyphs, drawn in-house on a 24×24 stroked grid specifically so exports carry no
 attribution burden. Cross-referenced against this manifest it covers roughly 28 of the 42
 slots outright: all four elements, both hats, the item set, the magic set, the weapon set,
 wolf, plus, dice, heart, crown.

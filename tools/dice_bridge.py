@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Stake - dice bridge.
+Enjeu - dice bridge.
 
 Answers the question the rulebook has to answer honestly: "I don't own a
 d20. What do I throw instead?"

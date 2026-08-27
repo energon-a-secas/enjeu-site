@@ -1,10 +1,10 @@
 # Playtest log
 
-**No human has played Stake yet.** Everything in [BALANCE.md](BALANCE.md) comes from a
+**No human has played Enjeu yet.** Everything in [BALANCE.md](BALANCE.md) comes from a
 simulator, which can tell you a line is mathematically dominant and cannot tell you whether
 anyone enjoyed the twenty minutes.
 
-Log every session here, newest at the top. One entry per run, even the abandoned ones —
+Log every session here, newest at the top. One entry per run, even the abandoned ones,
 especially the abandoned ones, since *where* somebody stopped is the most useful signal
 this document ever collects.
 
@@ -19,7 +19,7 @@ this document ever collects.
 | Minutes per level | The simulator says 3–4 rounds; it cannot say how long a round takes |
 | Broken cards at each boss's death | Compare against 1.1 → 3.8 from the sim |
 | Rules looked up mid-game, and which | Every lookup is a rulebook defect |
-| Icons asked about | Every question is an icon defect — see [CARD-LAYOUT.md](CARD-LAYOUT.md) |
+| Icons asked about | Every question is an icon defect: see [CARD-LAYOUT.md](CARD-LAYOUT.md) |
 | Where they hesitated longest | Where the real decision is |
 | What they said out loud | The whole point of a text-free deck |
 
@@ -36,7 +36,7 @@ Carried from [BALANCE.md](BALANCE.md). These are what the first sessions exist t
 3. **Is a 19% run completion too brutal?** Play six full runs. If nobody clears one, raise
    the Advantage draw or soften levels 4–5.
 4. **Do the cards read without the rulebook?** Show the corners to somebody who has never
-   played. Three seconds. If they cannot *guess* — not work out — what a glyph means, it is
+   played. Three seconds. If they cannot *guess* (not work out) what a glyph means, it is
    the wrong glyph.
 5. **Does anyone actually cast All In?** It is the signature move and the game's name. If
    players find it too frightening to ever use, its odds or its multiplier need work.
@@ -47,7 +47,7 @@ Carried from [BALANCE.md](BALANCE.md). These are what the first sessions exist t
 From the board-game-design reference, and the reason friendly tests mislead: friends adapt
 to broken mechanics without noticing, and they already heard you explain the game. Hand
 somebody the rulebook and the cards. Leave. Answer nothing. Watch where they stop and
-reread — that spot is a rulebook defect, not a player defect.
+reread: that spot is a rulebook defect, not a player defect.
 
 Weight blind sessions at roughly half of all feedback, guided sessions at a fifth.
 

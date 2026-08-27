@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Stake - card data linter.
+Enjeu - card data linter.
 
 Checks data/cards.json against the balance rules in docs/BALANCE.md, so that
 "a new card must fit the ladder" is a thing the repo enforces rather than a
@@ -129,7 +129,7 @@ CHECKS = [
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Lint Stake card data")
+    ap = argparse.ArgumentParser(description="Lint Enjeu card data")
     ap.add_argument("--selftest", action="store_true")
     args = ap.parse_args()
     if args.selftest:

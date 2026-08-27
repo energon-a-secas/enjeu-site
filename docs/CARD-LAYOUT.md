@@ -1,7 +1,7 @@
 # Card layout
 
 The brief was "simple to see and play as Uno." That means a card carries **no body text
-at all** — the picture is the name, and the player says the name out loud. Everything a
+at all**: the picture is the name, and the player says the name out loud. Everything a
 player needs mid-turn lives in the four corners, and three of the four are pip counts, so
 you read them without reading.
 
@@ -25,9 +25,9 @@ Card size is poker, **63 × 88 mm**. The drafts are already at that proportion.
 
 | Corner | Carries | Read it |
 |---|---|---|
-| **top-left** | **Bet** — life cards you must stake | pips |
-| **top-right** | **Check** — which rung of the ladder | pips |
-| **bottom-left** | **Tier** — 0–4, when the card enters the game | numeral |
+| **top-left** | **Bet**: life cards you must stake | pips |
+| **top-right** | **Check**: which rung of the ladder | pips |
+| **bottom-left** | **Tier**: 0–4, when the card enters the game | numeral |
 | **bottom-right** | **Damage** | numeral |
 
 Your drafts already put tier and damage in the bottom corners (`0 | 25`, `3 | 50`), which
@@ -45,17 +45,17 @@ decks, which is why it is the one number that sits out of the way.
 | Oval frame, black on white | Skill / attack card |
 | Coloured face, big central numeral | Life card |
 | **Doubled** outer frame | Costs **2 actions**. A single frame means 1. |
-| Small class glyph beside the tier | Class-locked — only that class may take it |
+| Small class glyph beside the tier | Class-locked: only that class may take it |
 | Element sigil, top-left | Which element the card belongs to |
 
 Absence is the default everywhere: one action unless the frame is doubled, no class lock
 unless a glyph says so, no check unless there are pips. That keeps a Strike card almost
-empty, which is correct — it is the simplest thing in the game.
+empty, which is correct: it is the simplest thing in the game.
 
 ## Life cards
 
 Life cards carry a coloured face, the value **25** centred and large, and the element sigil
-in the top-left. Both colour **and** sigil, always — the deck has to stay readable for
+in the top-left. Both colour **and** sigil, always. The deck has to stay readable for
 colour-blind players, and a red card with no fire glyph fails that.
 
 | Element | Face | Sigil |
@@ -84,7 +84,7 @@ and the story is told out loud instead of read silently.
 From the board-game-design reference, and it is not negotiable:
 
 > Show an icon to somebody who has never played. Three seconds. If they cannot **guess**
-> the meaning — not work it out, guess — redesign it. If any blind playtester asks about
+> the meaning (not work it out, guess), redesign it. If any blind playtester asks about
 > an icon, that icon is wrong.
 
 Run this before committing to a single printed sheet. Iconography is the failure mode this

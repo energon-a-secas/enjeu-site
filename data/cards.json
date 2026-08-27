@@ -1,6 +1,6 @@
 {
   "$schema-note": [
-    "Every card in Stake. 89 cards, poker size 63x88mm.",
+    "Every card in Enjeu. 89 cards, poker size 63x88mm.",
     "",
     "check:   null (always lands) | sure 75% | even 50% | hard 25% | wild 15%",
     "bet:     life cards staked, each worth 25",
@@ -44,33 +44,33 @@
 
   "skill": [
     { "id": "slash",       "name": "Slash",       "icon": "skill-slash",       "tier": 0, "actions": 1, "bet": 1, "damage": 75,  "check": "sure", "element": null,    "class": null },
-    { "id": "ember",       "name": "Ember",       "icon": "skill-nova",        "tier": 0, "actions": 1, "bet": 1, "damage": 75,  "check": "sure", "element": "fire",  "class": null },
+    { "id": "ember",       "name": "Ember",       "icon": "skill-ember",        "tier": 0, "actions": 1, "bet": 1, "damage": 75,  "check": "sure", "element": "fire",  "class": null },
     { "id": "torrent",     "name": "Torrent",     "icon": "skill-torrent",     "tier": 0, "actions": 1, "bet": 1, "damage": 75,  "check": "sure", "element": "water", "class": null },
-    { "id": "tremor",      "name": "Tremor",      "icon": "skill-earthquake",  "tier": 0, "actions": 1, "bet": 1, "damage": 75,  "check": "sure", "element": "earth", "class": null },
-    { "id": "gale",        "name": "Gale",        "icon": "skill-evade",       "tier": 0, "actions": 1, "bet": 1, "damage": 75,  "check": "sure", "element": "wind",  "class": null },
+    { "id": "tremor",      "name": "Tremor",      "icon": "skill-tremor",  "tier": 0, "actions": 1, "bet": 1, "damage": 75,  "check": "sure", "element": "earth", "class": null },
+    { "id": "gale",        "name": "Gale",        "icon": "skill-gale",       "tier": 0, "actions": 1, "bet": 1, "damage": 75,  "check": "sure", "element": "wind",  "class": null },
 
     { "id": "piercer",     "name": "Piercer",     "icon": "skill-piercer",     "tier": 1, "actions": 1, "bet": 1, "damage": 100, "check": "sure", "element": null,    "class": null },
-    { "id": "firebolt",    "name": "Firebolt",    "icon": "skill-circle",      "tier": 1, "actions": 1, "bet": 1, "damage": 100, "check": "sure", "element": "fire",  "class": null },
+    { "id": "firebolt",    "name": "Firebolt",    "icon": "skill-firebolt",      "tier": 1, "actions": 1, "bet": 1, "damage": 100, "check": "sure", "element": "fire",  "class": null },
     { "id": "ice-spear",   "name": "Ice Spear",   "icon": "skill-ice-spear",   "tier": 1, "actions": 1, "bet": 1, "damage": 100, "check": "sure", "element": "water", "class": "mage" },
-    { "id": "boulder",     "name": "Boulder",     "icon": "skill-slow",        "tier": 1, "actions": 1, "bet": 1, "damage": 100, "check": "sure", "element": "earth", "class": null },
-    { "id": "cyclone",     "name": "Cyclone",     "icon": "skill-wave",        "tier": 1, "actions": 1, "bet": 1, "damage": 100, "check": "sure", "element": "wind",  "class": null },
+    { "id": "boulder",     "name": "Boulder",     "icon": "skill-boulder",        "tier": 1, "actions": 1, "bet": 1, "damage": 100, "check": "sure", "element": "earth", "class": null },
+    { "id": "cyclone",     "name": "Cyclone",     "icon": "skill-cyclone",        "tier": 1, "actions": 1, "bet": 1, "damage": 100, "check": "sure", "element": "wind",  "class": null },
 
-    { "id": "slash-wave",  "name": "Slash Wave",  "icon": "skill-wave",        "tier": 2, "actions": 1, "bet": 2, "damage": 225, "check": "sure", "element": null,    "class": "knight" },
+    { "id": "slash-wave",  "name": "Slash Wave",  "icon": "skill-slash-wave",        "tier": 2, "actions": 1, "bet": 2, "damage": 225, "check": "sure", "element": null,    "class": "knight" },
     { "id": "nova",        "name": "Nova",        "icon": "skill-nova",        "tier": 2, "actions": 1, "bet": 2, "damage": 225, "check": "sure", "element": "fire",  "class": null },
-    { "id": "cold-curse",  "name": "Cold Curse",  "icon": "skill-curse",       "tier": 2, "actions": 1, "bet": 2, "damage": 225, "check": "sure", "element": "water", "class": null },
+    { "id": "cold-curse",  "name": "Cold Curse",  "icon": "skill-cold-curse",       "tier": 2, "actions": 1, "bet": 2, "damage": 225, "check": "sure", "element": "water", "class": null },
     { "id": "earthquake",  "name": "Earthquake",  "icon": "skill-earthquake",  "tier": 2, "actions": 1, "bet": 2, "damage": 225, "check": "sure", "element": "earth", "class": null },
-    { "id": "tempest",     "name": "Tempest",     "icon": "skill-control",     "tier": 2, "actions": 1, "bet": 2, "damage": 225, "check": "sure", "element": "wind",  "class": null },
+    { "id": "tempest",     "name": "Tempest",     "icon": "skill-tempest",     "tier": 2, "actions": 1, "bet": 2, "damage": 225, "check": "sure", "element": "wind",  "class": null },
 
     { "id": "soul-strike", "name": "Soul Strike", "icon": "skill-soul-strike", "tier": 3, "actions": 1, "bet": 2, "damage": 400, "check": "even", "element": null,    "class": "hunter" },
-    { "id": "pyre",        "name": "Pyre",        "icon": "skill-circle",      "tier": 3, "actions": 1, "bet": 2, "damage": 400, "check": "even", "element": "fire",  "class": null },
-    { "id": "maelstrom",   "name": "Maelstrom",   "icon": "skill-torrent",     "tier": 3, "actions": 1, "bet": 2, "damage": 400, "check": "even", "element": "water", "class": null },
-    { "id": "landslide",   "name": "Landslide",   "icon": "skill-quest",       "tier": 3, "actions": 1, "bet": 2, "damage": 400, "check": "even", "element": "earth", "class": null },
-    { "id": "thunderhead", "name": "Thunderhead", "icon": "skill-grimoire",    "tier": 3, "actions": 1, "bet": 2, "damage": 400, "check": "even", "element": "wind",  "class": null },
+    { "id": "pyre",        "name": "Pyre",        "icon": "skill-pyre",      "tier": 3, "actions": 1, "bet": 2, "damage": 400, "check": "even", "element": "fire",  "class": null },
+    { "id": "maelstrom",   "name": "Maelstrom",   "icon": "skill-maelstrom",     "tier": 3, "actions": 1, "bet": 2, "damage": 400, "check": "even", "element": "water", "class": null },
+    { "id": "landslide",   "name": "Landslide",   "icon": "skill-landslide",       "tier": 3, "actions": 1, "bet": 2, "damage": 400, "check": "even", "element": "earth", "class": null },
+    { "id": "thunderhead", "name": "Thunderhead", "icon": "skill-thunderhead",    "tier": 3, "actions": 1, "bet": 2, "damage": 400, "check": "even", "element": "wind",  "class": null },
 
     { "id": "meteor",      "name": "Meteor",      "icon": "skill-meteor",      "tier": 4, "actions": 1, "bet": 3, "damage": 750, "check": "even", "element": "fire",  "class": null },
-    { "id": "deluge",      "name": "Deluge",      "icon": "skill-torrent",     "tier": 4, "actions": 1, "bet": 3, "damage": 750, "check": "even", "element": "water", "class": null },
-    { "id": "cataclysm",   "name": "Cataclysm",   "icon": "skill-earthquake",  "tier": 4, "actions": 1, "bet": 3, "damage": 750, "check": "even", "element": "earth", "class": null },
-    { "id": "hurricane",   "name": "Hurricane",   "icon": "skill-ascend",      "tier": 4, "actions": 1, "bet": 3, "damage": 750, "check": "even", "element": "wind",  "class": null },
+    { "id": "deluge",      "name": "Deluge",      "icon": "skill-deluge",     "tier": 4, "actions": 1, "bet": 3, "damage": 750, "check": "even", "element": "water", "class": null },
+    { "id": "cataclysm",   "name": "Cataclysm",   "icon": "skill-cataclysm",  "tier": 4, "actions": 1, "bet": 3, "damage": 750, "check": "even", "element": "earth", "class": null },
+    { "id": "hurricane",   "name": "Hurricane",   "icon": "skill-hurricane",      "tier": 4, "actions": 1, "bet": 3, "damage": 750, "check": "even", "element": "wind",  "class": null },
     { "id": "reaper",      "name": "Reaper",      "icon": "skill-reaper",      "tier": 4, "actions": 1, "bet": 3, "damage": 750, "check": "even", "element": null,    "class": "necromancer" }
   ],
 
