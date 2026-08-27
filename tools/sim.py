@@ -65,7 +65,7 @@ TIER = {
 
 def all_in(cards: int) -> Attack:
     """All In - two actions, bet what you like, triple it or lose it."""
-    return Attack(f"All In x{cards}", 2, cards, 3 * cards * LIFE, EVEN)
+    return Attack(f"All In x{cards}", 2, cards, 4 * cards * LIFE, EVEN)
 
 
 @dataclass

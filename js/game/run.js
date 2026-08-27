@@ -9,7 +9,8 @@ import { BOSSES, MINION, heroFor } from '../data/placeholders.js';
 import { shuffle } from '../utils.js';
 
 export const RUN_KINDS = ['first', 'full'];
-const ATTACKS = ['strike', 'focus', 'all-in'];
+// Derived, never listed: a hardcoded trio silently left Bubble out of every
+// hand when it was added, and the card existed everywhere except the game.
 const ELEMENT_BIOMES = ['volcano', 'river', 'mountain', 'desert'];
 
 /** Set up a run. Nothing is fought yet. */
@@ -31,7 +32,9 @@ export function newRun(data, { kind = 'full', element = 'fire', die = 'd20', mod
 
 /** The hero's attack cards for a fight: the three Attack cards plus drafted skills. */
 export function attacksFor(run, data) {
-  return [...ATTACKS, ...run.skills].map((id) => data.byId[id]);
+  const attacks = data.attack.map((c) => c.id);
+  const first = run.kind === 'first' ? attacks : [...attacks, ...run.skills];
+  return first.map((id) => data.byId[id]);
 }
 
 /** The hero's life pool at the start of a level: 4 element cards + earned extras (+ Necromancer keeps nothing). */

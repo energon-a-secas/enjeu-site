@@ -81,6 +81,17 @@ function oval(colour, doubled) {
   return out;
 }
 
+/**
+ * Damage prevented, not dealt: the same numeral drawn hollow. Bubble is the only
+ * card that stops damage rather than causing it, and printing a solid "25" in the
+ * damage corner would read as an attack that deals 25. Outlined is the one grammar
+ * addition CARD-LAYOUT.md gained for it: solid means dealt, hollow means absorbed.
+ */
+function hollowNumeral(text, x, y, size, anchor = 'end') {
+  return `<text x="${x}" y="${y}" font-size="${size}" font-weight="900" text-anchor="${anchor}" `
+    + `fill="none" stroke="#111" stroke-width="4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">${esc(text)}</text>`;
+}
+
 function numeral(text, x, y, size, anchor = 'start', fill = '#111', weight = 900) {
   return `<text x="${x}" y="${y}" font-size="${size}" font-weight="${weight}" text-anchor="${anchor}" fill="${fill}" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">${esc(text)}</text>`;
 }
@@ -111,9 +122,13 @@ function attackOrSkill(c) {
   // bottom-left: tier, plus class lock
   out += numeral(String(c.tier ?? 0), 62, H - 58, 72);
   if (c.class) out += glyphAt(c.class, 118, H - 118, 70, { stroke: FACE.violet, width: 2.6 });
-  // bottom-right: damage
-  const dmg = typeof c.damage === 'number' ? String(c.damage) : c.damage === '3x bet' ? '×3' : String(c.damage ?? '');
-  out += numeral(dmg, W - 58, H - 58, dmg.length > 3 ? 72 : 92, 'end');
+  // bottom-right: damage dealt, or (hollow) damage absorbed
+  if (c.shield) {
+    out += hollowNumeral(String(c.shield), W - 58, H - 58, 92);
+  } else {
+    const dmg = typeof c.damage === 'number' ? String(c.damage) : c.damage === '4x bet' ? '×4' : String(c.damage ?? '');
+    out += numeral(dmg, W - 58, H - 58, dmg.length > 3 ? 72 : 92, 'end');
+  }
   return out;
 }
 
@@ -226,6 +241,25 @@ function aidCard(c, opts) {
  * @param {{size?: 'sheet'|'browse'|'hand'|'mini', cls?: string, aid?: object, title?: string}} opts
  * @returns {string} inline SVG
  */
+/**
+ * The gentle-mode card. It has to say four things with no words: what it is (the
+ * hand), that the first comeback is free (an empty circle), and that every one
+ * after costs a harder roll (the pip ladder, the same vocabulary every check in
+ * this game uses). A card carrying only its picture would teach none of that.
+ */
+function modeCard(c) {
+  let out = frame(FACE.extra, FACE.gold, true);
+  out += glyphAt(c.icon, 315 - 150, 380 - 150, 300, { stroke: FACE.gold, width: 2.6 });
+  // the comeback ladder: free, then one, two, three, four pips
+  const y = 690, gap = 108, x0 = 315 - gap * 2;
+  out += `<circle cx="${x0}" cy="${y}" r="20" fill="none" stroke="${FACE.gold}" stroke-width="7"/>`;
+  for (let i = 1; i <= 4; i++) {
+    out += pipRow(i, x0 + gap * i - (i * 26 - 8) / 2, y, { r: 9, gap: 26 });
+  }
+  out += `<line x1="${x0 - 34}" y1="${y + 48}" x2="${x0 + gap * 4 + 44}" y2="${y + 48}" stroke="${FACE.gold}" stroke-width="4" opacity="0.5"/>`;
+  return out;
+}
+
 export function cardFace(card, opts = {}) {
   const size = opts.size || 'browse';
   let body;
@@ -236,6 +270,7 @@ export function cardFace(card, opts = {}) {
     case 'biome': body = biomeCard(card); break;
     case 'boss': body = bossCard(card); break;
     case 'life': body = lifeCard(card); break;
+    case 'mode': body = modeCard(card); break;
     case 'aid': body = aidCard(card, opts); break;
     default: body = frame('#fff', '#111', false);
   }
@@ -244,13 +279,67 @@ export function cardFace(card, opts = {}) {
 }
 
 /** A card back: the deck's face colour, a gold ring, nothing else. */
-export function cardBack(deck = 'skill') {
-  const fill = deck === 'life' ? '#1c1917' : '#1c1917';
-  return `<svg class="sk-card sk-card--sheet" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="card back">`
-    + `<rect x="15" y="15" width="${W - 30}" height="${H - 30}" rx="36" fill="${fill}" stroke="#111" stroke-width="10"/>`
-    + `<ellipse cx="315" cy="440" rx="170" ry="210" fill="none" stroke="${FACE.gold}" stroke-width="14"/>`
-    + `<ellipse cx="315" cy="440" rx="120" ry="150" fill="none" stroke="${FACE.gold}" stroke-width="6" opacity="0.6"/>`
-    + `</svg>`;
+const BACK_DARK = { fire: '#7f1d1d', water: '#1e3a8a', earth: '#14532d', wind: '#334155', extra: '#713f12', boss: '#000000', skill: '#713f12' };
+
+/** A field of studs: the construction-toy language the whole game is played in. */
+function studField(ink) {
+  let out = '';
+  for (let r = 0; r < 6; r++) {
+    for (let c = 0; c < 4; c++) {
+      out += `<circle cx="${110 + c * 137}" cy="${120 + r * 132}" r="15" fill="${ink}" opacity="0.16"/>`;
+    }
+  }
+  return out;
+}
+
+/** A jagged line across the card, deterministic so every printed back matches. */
+function breakLine(y, amp = 26, step = 42) {
+  const pts = [];
+  let seed = 1337;
+  const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff) * 2 - 1;
+  for (let x = 15; x < W - 15; x += step) pts.push([x, y + rnd() * amp]);
+  pts.push([W - 15, y + rnd() * amp]);
+  return pts;
+}
+const asPath = (pts, dy = 0) => 'M' + pts.map(([x, y]) => `${x.toFixed(0)} ${(y + dy).toFixed(0)}`).join(' L');
+
+/**
+ * The back of a card. Two different backs, because they mean different things:
+ *
+ * A LIFE card is Broken face down, so its back is what a player stares at after
+ * losing something. It is the element's own colour, snapped across the middle,
+ * so the card itself reads as broken rather than carrying a picture of something
+ * broken. That was the player's idea and it is better than the icon it replaced.
+ *
+ * A SKILL card sits face down in the draft pool, where it is not broken at all,
+ * so it gets the same studded field with an emblem and NO break. Printing the
+ * broken back on a draft pile would say the wrong thing entirely.
+ *
+ * Both are a solid field, which is deliberate but not free: 92 of these is real
+ * ink on a home printer. `light` swaps to a paper field with a coloured border
+ * for anyone who would rather keep their cartridge.
+ */
+export function cardBack(kind = 'skill', { light = false } = {}) {
+  // The Extra life card is white-faced, and a white back on white paper is a
+  // blank card: it gets the brown instead.
+  const colour = kind === 'extra' ? FACE.brown : FACE[kind] || FACE.gold;
+  const dark = BACK_DARK[kind] || '#713f12';
+  const field = light ? FACE.extra : colour;
+  const ink = light ? colour : FACE.extra;
+  const broken = kind in FACE && kind !== 'skill' && kind !== 'gold';
+
+  let out = `<rect x="15" y="15" width="${W - 30}" height="${H - 30}" rx="36" fill="${field}" stroke="#111" stroke-width="10"/>`;
+  out += studField(ink);
+  if (broken) {
+    const pts = breakLine(440);
+    out += `<path d="${asPath(pts)}" fill="none" stroke="${light ? '#fffdf8' : FACE.extra}" stroke-width="24" stroke-linejoin="round"/>`;
+    out += `<path d="${asPath(pts, -12)}" fill="none" stroke="${dark}" stroke-width="6" stroke-linejoin="round"/>`;
+    out += `<path d="${asPath(pts, 12)}" fill="none" stroke="${dark}" stroke-width="6" stroke-linejoin="round"/>`;
+  } else {
+    out += `<circle cx="315" cy="440" r="120" fill="none" stroke="${ink}" stroke-width="16" opacity="0.85"/>`;
+    out += `<circle cx="315" cy="440" r="66" fill="none" stroke="${ink}" stroke-width="10" opacity="0.6"/>`;
+  }
+  return `<svg class="sk-card sk-card--sheet" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="card back">${out}</svg>`;
 }
 
 /** Life-card face for the runner's piles: a tiny coloured card with the sigil. */

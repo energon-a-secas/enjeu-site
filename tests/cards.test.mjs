@@ -1,6 +1,6 @@
 // Contracts C1 and C2 plus the component count, run with `node tests/cards.test.mjs`.
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { useCards, DECKS } from '../js/data/cards.js';
@@ -18,10 +18,11 @@ function test(name, fn) {
   catch (e) { failed++; console.log(`  FAIL ${name}\n       ${e.message}`); }
 }
 
-test('90 physical cards, matching the component table in RULES.md section 10', () => {
-  assert.equal(data.physical.length, 90);
+test('92 physical cards, matching the component table in RULES.md section 10', () => {
+  // 90, then Bubble, then Second Wind: both added 2026-08-27 after the first playtest.
+  assert.equal(data.physical.length, 92);
   const per = Object.fromEntries(DECKS.map((d) => [d, (data[d] || []).reduce((a, c) => a + (c.copies || 1), 0)]));
-  assert.deepEqual(per, { attack: 3, skill: 25, class: 4, advantage: 12, boss: 6, biome: 7, life: 31, aid: 2 });
+  assert.deepEqual(per, { attack: 4, skill: 25, class: 4, advantage: 12, boss: 6, biome: 7, life: 31, mode: 1, aid: 2 });
 });
 
 test('C2: every card icon resolves to a glyph', () => {
@@ -30,7 +31,9 @@ test('C2: every card icon resolves to a glyph', () => {
 });
 
 test('C2: every art-manifest slot has a glyph of the same id (the swap contract)', () => {
-  const missing = manifest.slots.filter((s) => !hasGlyph(s.id)).map((s) => s.id);
+  // Card backs are the exception: no card asks for them by icon, and cardBack()
+  // draws its own fallback ring when the art is absent.
+  const missing = manifest.slots.filter((s) => !s.id.startsWith('back-') && !hasGlyph(s.id)).map((s) => s.id);
   assert.deepEqual(missing, []);
 });
 
@@ -43,8 +46,36 @@ test('C2: an art slot counts only when creator AND licence are filled', () => {
   assert.equal(artSrc('fire'), 'art/fire.svg');
   assert.equal(artSrc('water'), null);
   assert.equal(artSrc('earth'), null);
-  setArtManifest(manifest); // the shipped manifest: nothing attributed yet
-  assert.equal(manifest.slots.filter((s) => s.creator && s.licence).length, 0, 'shipped manifest should still be unattributed');
+  setArtManifest(manifest);
+});
+
+test('every attributed slot has its file on disk (a licence without a file renders a broken image)', () => {
+  // artSrc() serves art/<id>.svg the moment a slot carries creator AND licence,
+  // so filling a licence ahead of its download breaks every card asking for it.
+  const attributed = manifest.slots.filter((s) => s.creator && s.licence).map((s) => s.id);
+  assert.ok(attributed.length > 0, 'expected the downloaded set to be attributed');
+  const missing = attributed.filter((id) => !existsSync(join(root, 'art', `${id}.svg`)));
+  assert.deepEqual(missing, [], 'attributed but no file');
+  // And the reverse: a file nobody declared would never be served.
+  const declared = new Set(manifest.slots.map((s) => s.id));
+  const orphans = readdirSync(join(root, 'art'))
+    .filter((f) => f.endsWith('.svg'))
+    .map((f) => f.replace(/\.svg$/, ''))
+    .filter((id) => !declared.has(id));
+  assert.deepEqual(orphans, [], 'file present but no manifest slot');
+});
+
+test('card art carries no baked-in credit line and is cropped square', () => {
+  // The download bakes "Created by Maxicons" into a 512x640 box. On a card that
+  // would print the credit across the face, so it is stripped and CREDITS.md
+  // carries it instead. art/original/ keeps the untouched download.
+  const files = readdirSync(join(root, 'art')).filter((f) => f.endsWith('.svg'));
+  const bad = files.filter((f) => {
+    const svg = readFileSync(join(root, 'art', f), 'utf8');
+    return svg.includes('<text') || svg.includes('512 640');
+  });
+  assert.deepEqual(bad, []);
+  assert.ok(existsSync(join(root, 'art', 'original', files[0])), 'originals are preserved');
 });
 
 test('every glyph path parses as SVG path data (only path commands and numbers)', () => {
@@ -70,16 +101,20 @@ test('C1: every card renders, and the only text on a face is a numeral, a pip co
 });
 
 test('C1: the four corners carry what the layout doc says they carry (spot checks)', () => {
+  setArtManifest({ slots: [] });   // grammar test: draw glyphs, not the art files
   const focus = cardFace(data.byId.focus, { size: 'sheet' });
   assert.equal((focus.match(/class="pip"/g) || []).length, 2, 'Focus: one bet pip + one Sure pip');
   assert.ok(/>75<\/text>/.test(focus), 'Focus: damage 75 bottom-right');
   const allIn = cardFace(data.byId['all-in'], { size: 'sheet' });
   assert.equal((allIn.match(/pip--ghost/g) || []).length, 4, 'All In: ghost pips mean any number');
   assert.equal((allIn.match(/<rect class="frame"/g) || []).length, 1, 'All In: doubled frame = 2 actions');
-  assert.ok(/>×3<\/text>/.test(allIn), 'All In: ×3');
+  assert.ok(/>×4<\/text>/.test(allIn), 'All In: ×4 (doubled 2026-08-27 after the first playtest)');
   const ice = cardFace(data.byId['ice-spear'], { size: 'sheet' });
   assert.ok(ice.includes('#2563eb'), 'Ice Spear: water colour');
   assert.ok(/translate\(118 /.test(ice), 'Ice Spear: class lock glyph beside the tier');
+  const bubble = cardFace(data.byId.bubble, { size: 'sheet' });
+  assert.ok(/fill="none" stroke="#111"[^>]*>25<\/text>/.test(bubble), 'Bubble: 25 hollow, absorbed not dealt');
+  assert.equal((bubble.match(/class="pip"/g) || []).length, 0, 'Bubble: no bet, no check');
   const strike = cardFace(data.byId.strike, { size: 'sheet' });
   assert.equal((strike.match(/class="pip"/g) || []).length, 0, 'Strike: no pips at all, the simplest card');
   const lifeFire = cardFace(data.byId['life-fire'], { size: 'sheet' });
@@ -88,6 +123,7 @@ test('C1: the four corners carry what the layout doc says they carry (spot check
   assert.ok(bossLife.includes('fill="#111111"') && !/<text/.test(bossLife), 'Boss life: black, crown, no numeral');
   const boss5 = cardFace(data.byId['boss-um'], { size: 'sheet' });
   assert.ok(/>10×200<\/text>/.test(boss5) && />100<\/text>/.test(boss5) && />5<\/text>/.test(boss5), 'Level 5 boss: 10x200, dmg 100, rage 5');
+  setArtManifest(manifest);
 });
 
 test('every glyph id the UI asks for exists (glyphSvg returns "" for a typo, so a rename blanks an icon silently)', () => {
@@ -130,6 +166,14 @@ test('attributed art keeps the card\'s colour: a tinted <image>, not black on bl
   const plain = cardFace(data.byId.strike, { size: 'sheet' });
   assert.ok(plain.includes('<image') && !plain.includes('<filter'), 'black-ink art needs no tint');
   setArtManifest(manifest);
+});
+
+test('the runner deals every Attack card in the deck (a hardcoded list once dropped Bubble)', async () => {
+  const { newRun, attacksFor } = await import('../js/game/run.js');
+  const run = newRun(data, { kind: 'full', element: 'fire' });
+  const dealt = attacksFor(run, data).map((c) => c.id).sort();
+  assert.deepEqual(dealt, data.attack.map((c) => c.id).sort());
+  assert.ok(dealt.includes('bubble'));
 });
 
 test('backs and minis render', () => {

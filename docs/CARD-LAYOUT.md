@@ -28,7 +28,7 @@ Card size is poker, **63 × 88 mm**. The drafts are already at that proportion.
 | **top-left** | **Bet**: life cards you must stake | pips |
 | **top-right** | **Check**: which rung of the ladder | pips |
 | **bottom-left** | **Tier**: 0–4, when the card enters the game | numeral |
-| **bottom-right** | **Damage** | numeral |
+| **bottom-right** | **Damage** | numeral (solid = dealt, **hollow = absorbed**) |
 
 Your drafts already put tier and damage in the bottom corners (`0 | 25`, `3 | 50`), which
 is why those two stayed where they were. The top corners were empty and now carry the two
@@ -47,6 +47,7 @@ decks, which is why it is the one number that sits out of the way.
 | **Doubled** outer frame | Costs **2 actions**. A single frame means 1. |
 | Small class glyph beside the tier | Class-locked: only that class may take it |
 | Element sigil, top-left | Which element the card belongs to |
+| **Hollow** bottom-right numeral | Damage this card **absorbs**, not damage it deals. Only Bubble does this. |
 
 Absence is the default everywhere: one action unless the frame is doubled, no class lock
 unless a glyph says so, no check unless there are pips. That keeps a Strike card almost

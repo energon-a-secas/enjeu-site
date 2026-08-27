@@ -66,7 +66,9 @@ export function renderCards(s) {
           <button data-action="paper" data-paper="a4" aria-pressed="${s.paper === 'a4'}">${t('cards.a4')}</button>
           <button data-action="paper" data-paper="letter" aria-pressed="${s.paper === 'letter'}">${t('cards.letter')}</button>
         </span>
-        <button class="chip" data-action="toggle-backs" aria-pressed="${s.withBacks}"><span class="dot" style="--chip:#1c1917"></span>${escHtml(t('cards.backs'))}</button>
+        <span class="seg" role="group" aria-label="${escHtml(t('cards.backs._'))}">
+          ${['none', 'few', 'all'].map((b) => `<button data-action="backs" data-backs="${b}" aria-pressed="${(s.withBacks || 'none') === b}">${escHtml(t(`cards.backs.${b}`))}</button>`).join('')}
+        </span>
       </div>
     </div>
     ${groups}
@@ -96,7 +98,7 @@ export function showCardDetail(s, id) {
     add('actions', c.actions);
     add('bet', c.bet === 'any' ? 'any number of Ready cards' : c.bet === 0 ? 'none' : `${c.bet} life card${c.bet > 1 ? 's' : ''}`);
     add('check', escHtml(CHECK_LABEL(c.check)));
-    add('damage', c.damage === '3x bet' ? '3 × what you bet' : c.damage);
+    add('damage', c.damage === '4x bet' ? '4 × what you bet' : c.damage);
     add('tier', c.tier);
     if (c.element) add('element', escHtml(cap(c.element)));
     if (c.class) add('class', `${escHtml(cap(c.class))} only`);

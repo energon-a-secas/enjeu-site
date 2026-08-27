@@ -24,6 +24,20 @@
 import { UNIT, stepOdds, shiftStep, MODE_SHIFT, targetFor, beats, reactionFor } from './rules.js';
 
 export const ATTACK_IDS = ['strike', 'focus', 'all-in'];
+
+/**
+ * Second Wind: the gentle-mode card. The first revive of a level is free and
+ * each one after that climbs the same four-step ladder every check in this game
+ * uses, so a child meets no new vocabulary: Sure, then Even, then Hard, then
+ * Wild, and Wild from then on. Returns null for the free one.
+ */
+export const REVIVE_LADDER = ['sure', 'even', 'hard', 'wild'];
+export function reviveStep(f) {
+  if (!f.hero.secondWind) return undefined;          // the card is not in play
+  if (f.hero.revives === 0) return null;             // the free one
+  return REVIVE_LADDER[Math.min(f.hero.revives - 1, REVIVE_LADDER.length - 1)];
+}
+export const canRevive = (f) => !!f.hero.secondWind;
 export const MAX_ROUNDS = 20;
 
 /** A life card in the hero's pool. kind colours the mini face; st is the state. */
@@ -58,9 +72,10 @@ export function newFight(data, init) {
       element: init.hero.element, klass: init.hero.klass || null,
       pool, attacks: init.hero.attacks.map((a) => ({ ...a })),
       advantage: [...(init.advantage || [])],
-      relic: false, ally: false, rune: 0, flatBonus: init.bonus || 0,
+      relic: false, ally: false, rune: 0, flatBonus: init.bonus || 0, shield: 0,
       penalty: false, hidden: false, hideAvailable: false,
       knightUsed: false, hunterUsed: false, lastMiss: null,
+      secondWind: !!init.secondWind, revives: 0,
     },
     actionsLeft: 0,
     phase: 'act',      // act | boss | won | lost | stall
@@ -93,6 +108,7 @@ export function startRound(f) {
   f.actionsLeft = 3;
   f.hero.penaltyArmed = f.hero.penalty; // a Roar from the last boss turn applies this turn
   f.hero.hidden = false; f.hero.hideAvailable = f.biome?.id === 'forest';
+  f.hero.shield = 0;   // an unused Bubble pops; it guards the round it was cast in
   f.hero.knightUsed = false; f.hero.hunterUsed = false; f.hero.lastMiss = null;
   // legacy: the sim clears Brace at the top of every round after the first,
   // so the halving never applies. Rulebook: it lasts through this turn.
@@ -138,7 +154,7 @@ export function attackBonus(f, a) {
 
 /** Damage a landed attack deals, before Brace. */
 export function attackDamage(f, a, bet) {
-  const base = a.damage === '3x bet' ? 3 * bet * UNIT : a.damage;
+  const base = a.damage === '4x bet' ? 4 * bet * UNIT : a.damage;
   return base + attackBonus(f, a);
 }
 
@@ -153,6 +169,17 @@ const halve = (d) => Math.floor(d / 2 / UNIT) * UNIT;
  */
 export function attack(f, a, o = {}) {
   if (f.phase !== 'act' || a.actions > f.actionsLeft) throw new Error('not legal now');
+  // Bubble costs an ACTION, never a card. Betting a card to absorb 25 would be
+  // strictly worse than guarding with it, since a Ready card guards for free and
+  // comes back. Spending an action makes it the mirror of Strike: deal 25, or
+  // stop 25. It is also the only attack card worth anything under Rage, where
+  // nothing can be guarded at all.
+  if (a.shield) {
+    f.actionsLeft -= a.actions;
+    f.hero.shield += a.shield;
+    say(f, `Bubble: the next ${a.shield} damage is absorbed.`, 'hero');
+    return { hit: true, auto: true, shield: a.shield, dealt: 0, bet: 0, step: null, need: null, roll: null };
+  }
   const bet = a.bet === 'any' ? Math.max(1, Math.min(o.bet || 1, ready(f))) : (a.bet || 0);
   if (bet > ready(f)) throw new Error('cannot afford the bet');
   // Betting turns cards sideways whether the attack lands or not.
@@ -222,6 +249,28 @@ function dealToBoss(f, target, amount, who) {
     f.boss.body = Math.max(0, f.boss.body - amount);
   }
   if (bossDown(f)) { f.phase = 'won'; say(f, 'The boss falls!', 'good'); }
+}
+
+/**
+ * Attempt the comeback. Pass a die `roll` (a human) or a uniform `u` (the sim).
+ * Success voids the damage that felled you and stands `returns` Broken cards
+ * back up; failure ends the level exactly as before the card existed.
+ */
+export function attemptRevive(f, o = {}) {
+  if (f.phase !== 'down') throw new Error('not Down');
+  const step = reviveStep(f);
+  let ok = true, need = null;
+  if (step) {
+    if (o.u !== undefined) ok = o.u < stepOdds(step);
+    else { need = targetFor(f.die, step); ok = (o.roll ?? 0) >= need; }
+  }
+  f.hero.revives += 1;
+  if (!ok) { f.phase = 'lost'; say(f, 'The comeback fails. You are Down.', 'bad'); return { ok: false, step, need }; }
+  let back = o.returns ?? 2;
+  for (const c of f.hero.pool) { if (back > 0 && c.st === 'broken') { c.st = 'ready'; back--; } }
+  f.phase = f.pending ? 'boss' : 'act';
+  say(f, step ? `Second Wind holds! Back up with 2 cards.` : 'Second Wind: you come back free.', 'good');
+  return { ok: true, step, need };
 }
 
 /** Hide: free after a Strike (or anytime in the Forest). Next hit this round halved. */
@@ -328,6 +377,11 @@ export function resolveBoss(f, { barrier = false } = {}) {
  */
 export function take(f, damage, unguardable) {
   if (f.hero.hidden) { damage = halve(damage); f.hero.hidden = false; say(f, `Hidden: halved to ${damage}.`, 'hero'); }
+  if (f.hero.shield > 0 && damage > 0) {
+    const popped = Math.min(f.hero.shield, damage);
+    f.hero.shield -= popped; damage -= popped;
+    say(f, `Bubble absorbs ${popped}.`, 'hero');
+  }
   if (f.hero.klass === 'knight' && !f.hero.knightUsed && !unguardable && damage > 0) { damage -= UNIT; f.hero.knightUsed = true; say(f, 'Knight guards 25 for free.', 'hero'); }
   let owed = Math.floor(damage / UNIT);
   if (owed <= 0) return true;
@@ -341,7 +395,12 @@ export function take(f, damage, unguardable) {
   for (const st of ['ready', 'spent']) {
     for (const c of f.hero.pool) if (owed > 0 && c.st === st) { c.st = 'broken'; owed--; }
   }
-  if (owed > 0) { f.phase = 'lost'; say(f, 'You are Down.', 'bad'); return false; }
+  if (owed > 0) {
+    // With Second Wind in play, Down is not the end yet: the runner (or a
+    // strategy) gets to attempt the comeback before the level is lost.
+    if (canRevive(f)) { f.phase = 'down'; say(f, 'You are Down. Second Wind?', 'bad'); return false; }
+    f.phase = 'lost'; say(f, 'You are Down.', 'bad'); return false;
+  }
   if (broken(f)) say(f, `${broken(f)} Broken.`, 'bad');
   return true;
 }

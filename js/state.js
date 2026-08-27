@@ -13,7 +13,7 @@ export const state = {
   // Cards view
   deckFilter: 'all',
   paper: 'a4',
-  withBacks: false,
+  withBacks: 'none',   // none | few (4) | all
   // Play view preferences (persisted) and the run itself (persisted)
   die: 'd20',
   mode: 'standard',

@@ -113,7 +113,7 @@ def count(data: dict) -> tuple[int, list[str]]:
     """Physical card count, matching the component table in RULES.md."""
     lines, total = [], 0
     for deck in ("attack", "skill", "class", "advantage", "boss", "biome",
-                 "life", "aid"):
+                 "life", "mode", "aid"):
         n = sum(c.get("copies", 1) for c in data.get(deck, []))
         lines.append(f"  {deck:<12}{n:>4}")
         total += n

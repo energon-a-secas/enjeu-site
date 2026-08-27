@@ -6,6 +6,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { STRINGS } from '../js/strings.js';
+import { DECKS } from '../js/data/cards.js';
 import { STEPS } from '../js/data/walkthrough.js';
 import { HEROES, BOSSES, MINION } from '../js/data/placeholders.js';
 
@@ -48,6 +49,43 @@ test('placeholders are marked and named in two concrete words, no brand', () => 
     assert.ok(/^[A-Z][a-z]+( [A-Z][a-z]+)?$/.test(p.name), `${p.id}: "${p.name}" is not one or two capitalised words`);
     assert.equal(/lego|playmobil|duplo|mega ?bloks/i.test(p.name), false);
   }
+});
+
+test('every t() key the views ask for resolves (a miss renders the raw [key] on screen)', () => {
+  const files = walk(join(root, 'js'));
+  const asked = new Map();
+  for (const f of files) {
+    for (const m of readFileSync(f, 'utf8').matchAll(/\bt\(\s*'([\w.]+)'/g)) asked.set(m[1], f.replace(root + '/', ''));
+  }
+  assert.ok(asked.size > 20, `only ${asked.size} keys scanned`);
+  const miss = [...asked].filter(([k]) => {
+    let cur = STRINGS.en;
+    for (const part of k.split('.')) { if (cur == null || typeof cur !== 'object') return true; cur = cur[part]; }
+    return typeof cur !== 'string';
+  }).map(([k, where]) => `${k} (${where})`);
+  assert.deepEqual(miss, []);
+});
+
+test('every enumerated label table is complete (a gap renders the raw [key] on screen)', () => {
+  // Views build these keys with template literals, t(`cards.deck.${d}`), which a
+  // plain regex never sees. That is exactly how a missing label shipped and drew
+  // "[cards.backs.few]" on a button, so each table is checked against the real
+  // list it is indexed by rather than by scanning.
+  const en = STRINGS.en;
+  const table = (k) => k.split('.').reduce((o, p) => (o == null ? o : o[p]), en) || {};
+  const missing = [];
+  const need = (key, keys) => {
+    const t = table(key);
+    for (const k of keys) if (typeof t[k] !== 'string') missing.push(`${key}.${k}`);
+  };
+  need('cards.deck', DECKS);
+  need('cards.check', ['none', 'sure', 'even', 'hard', 'wild']);
+  need('cards.backs', ['_', 'none', 'few', 'all']);
+  need('nav', ['learn', 'cards', 'play', 'balance']);
+  need('play', ['story', 'standard', 'nightmare']);
+  need('play.modeHint', ['story', 'standard', 'nightmare']);
+  need('balance.style', ['turtle', 'safe', 'adaptive', 'gamble']);
+  assert.deepEqual(missing, []);
 });
 
 console.log(`\n${passed} passed, ${failed} failed`);

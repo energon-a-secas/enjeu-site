@@ -74,7 +74,7 @@ function onClick(e) {
     case 'print-all': { const n = printCards(s); showToast(`${n} sheets`); return; }
     case 'print-deck': { const n = printCards(s, el.dataset.deck); showToast(`${n} sheet${n === 1 ? '' : 's'}`); return; }
     case 'paper': s.paper = el.dataset.paper; save(s); render(s); return;
-    case 'toggle-backs': s.withBacks = !s.withBacks; save(s); render(s); return;
+    case 'backs': s.withBacks = el.dataset.backs; save(s); render(s); return;
     // Navigation helpers used by Learn
     case 'go': goTo(el.dataset.view, el.dataset.param || null, el.dataset.q ? Object.fromEntries(new URLSearchParams(el.dataset.q)) : null); return;
     default:

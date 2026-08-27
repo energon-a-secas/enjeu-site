@@ -6,7 +6,7 @@
 // rule the runner does not.
 
 import { UNIT, stepOdds } from './rules.js';
-import { legalAttacks, attack, reroll, ready, broken, raging, playAdvantage, effectiveStep, attackBonus, attackDamage } from './engine.js';
+import { legalAttacks, attack, reroll, ready, alive, broken, raging, playAdvantage, effectiveStep, attackBonus, attackDamage } from './engine.js';
 
 export const STYLES = ['turtle', 'safe', 'adaptive', 'gamble'];
 
@@ -30,7 +30,7 @@ export function affordable(f, budget) {
     if (combo.length === 3) return;
     for (let i = start; i < p.length; i++) {
       const a = p[i];
-      if (actions + a.actions > 3) continue;
+      if (actions + a.actions > f.actionsLeft) continue;
       if (bet + a.betN > cap) continue;
       combo.push(a); rec(i, combo, actions + a.actions, bet + a.betN); combo.pop();
     }
@@ -120,8 +120,36 @@ export function wantsBarrier(f, pending) {
  * Play one whole hero turn for a style: openers, the chosen combo with rune
  * and hunter handling, targets. `next` is the uniform stream.
  */
+/**
+ * Bubbles to cast before attacking. Three conditions, all necessary, and the
+ * first measured pass got this wrong in a way worth recording: bubbling merely
+ * because the next hit looks lethal LOSES up to 10 points of win rate, because
+ * an action spent absorbing is an action not spent shortening the fight, and
+ * under Rage the clock is what kills you. Stalling a death you cannot prevent
+ * just moves it one round later with less damage dealt.
+ *
+ * So: only under Rage (outside it a Ready card guards for free and an action is
+ * worth more), only when the bubbles available actually CLOSE the gap, and only
+ * when the boss cannot simply be killed this turn instead.
+ */
+export function bubblesNeeded(f, style) {
+  if (style !== 'safe' && style !== 'adaptive') return 0;
+  const bub = legalAttacks(f).find((a) => a.shield);
+  if (!bub || !raging(f)) return 0;
+  const incoming = f.boss.damage * 2 + f.boss.minions.length * UNIT;
+  const shortfall = Math.ceil(incoming / UNIT) - alive(f);
+  if (shortfall <= 0) return 0;                 // you survive it anyway
+  if (shortfall > f.actionsLeft) return 0;      // cannot be saved; swing instead
+  const hp = f.boss.body > 0 || f.legacy ? f.boss.body : Math.min(...f.boss.minions.map((m) => m.hp));
+  const kill = affordable(f, ready(f));
+  if (kill.some((c) => pKill(f, c, hp) >= 0.5)) return 0;   // a likely kill beats surviving
+  return shortfall;
+}
+
 export function playTurn(f, style, next, drawFn) {
   playOpeners(f, drawFn);
+  const bub = legalAttacks(f).find((a) => a.shield);
+  for (let i = bubblesNeeded(f, style); i > 0 && f.actionsLeft >= bub.actions; i--) attack(f, bub, {});
   const combo = choose(f, style);
   // Rune goes on the biggest checked attack in the combo.
   let runeOn = -1, big = 0;

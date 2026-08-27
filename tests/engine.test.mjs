@@ -59,12 +59,19 @@ test('betting turns cards sideways whether the attack lands or not; they recover
   assert.equal(f.round, 2); assert.equal(ready(f), 4, 'recovered');
 });
 
-test('All In: two actions, bet N, triple it on Even, and the d20 target is 11+', () => {
+test('All In: two actions, bet N, FOUR times it on Even, and the d20 target is 11+', () => {
+  // 3x -> 6x -> 4x on 2026-08-27. 3x was dominated (38 expected per life card
+  // against Focus's 56, for twice the actions). 6x fixed that and overshot. 4x
+  // keeps the fix and makes the arithmetic a child does in their head: 100 per
+  // card bet. See BALANCE.md.
   const f = basic();
   const allIn = legalAttacks(f).find((a) => a.id === 'all-in');
   const r = attack(f, allIn, { bet: 3, roll: 11 });
-  assert.equal(r.hit, true); assert.equal(r.need, 11); assert.equal(r.dealt, 225); assert.equal(f.actionsLeft, 1);
+  assert.equal(r.hit, true); assert.equal(r.need, 11); assert.equal(r.dealt, 300); assert.equal(f.actionsLeft, 1);
   assert.equal(spent(f), 3);
+  // and it must now beat Focus per card, which is the whole point of the change
+  const focus = legalAttacks(f).find((a) => a.id === 'focus');
+  assert.ok(300 * 0.5 + 25 > 3 * focus.damage * 0.75, 'a whole All In turn should beat three Focuses');
 });
 
 test('affinity: a Fire attack on a Wind boss adds 25, and the biome adds 25 more; Strike uses the hero element', () => {
@@ -196,6 +203,73 @@ test('reattach: a saved fight round-trips; a stale save from an older build fall
   reattach(stale, data);
   assert.equal(stale.fight, null);
   assert.equal(stale.stage, 'setup', 'stale save cannot wedge the Play view');
+});
+
+test('Bubble: costs an action and no card, absorbs 25, and pops unused at Recover', () => {
+  const BUBBLE = { id: 'bubble', name: 'Bubble', actions: 1, bet: 0, damage: 0, check: null, shield: 25 };
+  const f = basic({ hero: { element: 'fire', klass: null, pool: ['fire', 'fire', 'fire', 'fire'], attacks: [STRIKE, FOCUS, BUBBLE] } });
+  const bub = legalAttacks(f).find((a) => a.id === 'bubble');
+  const r = attack(f, bub, {});
+  assert.equal(r.dealt, 0, 'deals nothing');
+  assert.equal(ready(f), 4, 'costs no card: all four still Ready');
+  assert.equal(f.actionsLeft, 2, 'costs one action');
+  assert.equal(f.hero.shield, 25);
+
+  // 50 incoming: 25 absorbed, the other 25 guarded by a Ready card as usual
+  take(f, 50, false);
+  assert.equal(f.hero.shield, 0, 'the bubble popped');
+  assert.deepEqual([ready(f), spent(f), broken(f)], [3, 1, 0]);
+
+  // under Rage it is the only thing that stops a card breaking
+  const g = basic({ hero: { element: 'fire', klass: null, pool: ['fire', 'fire', 'fire', 'fire'], attacks: [STRIKE, FOCUS, BUBBLE] } });
+  attack(g, legalAttacks(g).find((a) => a.id === 'bubble'), {});
+  take(g, 50, true);
+  assert.equal(broken(g), 1, 'Rage broke one card, not two: the bubble ate the other 25');
+
+  // and it cannot be banked
+  const h = basic({ hero: { element: 'fire', klass: null, pool: ['fire', 'fire', 'fire', 'fire'], attacks: [STRIKE, FOCUS, BUBBLE] } });
+  attack(h, legalAttacks(h).find((a) => a.id === 'bubble'), {});
+  endTurn(h); bossRoll(h, 1); resolveBoss(h);          // Brace: no damage, round ends
+  assert.equal(h.hero.shield, 0, 'an unused bubble pops at Recover');
+});
+
+test('Second Wind: first comeback free, then the ladder climbs, and it resets each level', async () => {
+  const { reviveStep, attemptRevive, canRevive } = await import('../js/game/engine.js');
+  const f = basic({ secondWind: true });
+  assert.equal(canRevive(f), true);
+  assert.equal(reviveStep(f), null, 'the first one is free');
+
+  // fell in battle: Down is pending, not lost, while the card is in play
+  f.round = 4;
+  for (const c of f.hero.pool) c.st = 'ready';
+  assert.equal(take(f, 500, true), false);
+  assert.equal(f.phase, 'down', 'not lost yet');
+  const r1 = attemptRevive(f, {});
+  assert.equal(r1.ok, true); assert.equal(r1.step, null);
+  assert.equal(ready(f), 2, 'back up with 2 cards');
+  assert.notEqual(f.phase, 'lost');
+
+  // the ladder from here: Sure, Even, Hard, Wild, then Wild forever
+  assert.equal(reviveStep(f), 'sure');
+  f.hero.revives = 2; assert.equal(reviveStep(f), 'even');
+  f.hero.revives = 3; assert.equal(reviveStep(f), 'hard');
+  f.hero.revives = 4; assert.equal(reviveStep(f), 'wild');
+  f.hero.revives = 9; assert.equal(reviveStep(f), 'wild', 'it never gets easier again');
+
+  // and a failed roll ends the level exactly as before the card existed
+  const g = basic({ secondWind: true });
+  g.hero.revives = 1;                       // free one already spent
+  g.round = 4;
+  assert.equal(take(g, 500, true), false);
+  assert.equal(g.phase, 'down');
+  assert.equal(attemptRevive(g, { u: 0.99 }).ok, false, 'Sure is 75%, so 0.99 misses');
+  assert.equal(g.phase, 'lost');
+
+  // without the card, Down is still immediately lost
+  const h = basic();
+  h.round = 4;
+  take(h, 500, true);
+  assert.equal(h.phase, 'lost');
 });
 
 // ── 2. Strategies ────────────────────────────────────────────

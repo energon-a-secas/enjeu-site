@@ -55,7 +55,30 @@ Weight blind sessions at roughly half of all feedback, guided sessions at a fift
 
 ## Sessions
 
-*None yet. First entry goes here.*
+### 2026-08-27 - v0.1.0 - the designer, first play ever
+
+The first time a human played this. Everything above this line was simulated.
+
+- **Reached:** not recorded
+- **What was played:** enough to form a judgement on the Attack cards
+- **The finding:** **All In was not worth casting.** In the player's words, Focus
+  for 75 with no armour spent "is basically the same damage and less risk". That
+  is exactly right and the arithmetic backs it: at 3x the bet, All In returned 38
+  expected damage per life card against Focus's 56, and cost two actions instead
+  of one. Dominated at every bet size. The card the game is named after was a trap.
+- **Changed as a result:** All In pays **6x** the bet, not 3x. Re-measured at
+  20,000 fights per cell: fights shortened (adaptive 3.1 to 2.6 rounds at level 1),
+  fewer cards broken, skill ordering intact. Full write-up in
+  [BALANCE.md](BALANCE.md).
+- **Also raised:** a defensive "bubble" card, a safe mode with a shield worth 25.
+  Not yet designed; the exact effect is an open question.
+
+**What this session proves about the method:** four play styles and 20,000
+simulated fights per cell never found this, because the simulator's `choose()`
+ranks options by expected damage and simply never picked a dominated card, which
+looks identical to a card being fine. One person playing for a few minutes found
+it immediately. Question 5 on the list below ("does anyone actually cast All In?")
+was the right question and the sim could not answer it.
 
 <!--
 ### YYYY-MM-DD - v0.1.0 - <player>

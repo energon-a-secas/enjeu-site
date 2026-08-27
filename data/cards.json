@@ -39,7 +39,10 @@
   "attack": [
     { "id": "strike", "name": "Strike",  "icon": "strike", "tier": 0, "actions": 1, "bet": 0, "damage": 25, "check": null,   "element": null, "class": null },
     { "id": "focus",  "name": "Focus",   "icon": "focus",  "tier": 0, "actions": 1, "bet": 1, "damage": 75, "check": "sure", "element": null, "class": null },
-    { "id": "all-in", "name": "All In",  "icon": "all-in", "tier": 0, "actions": 2, "bet": "any", "damage": "3x bet", "check": "even", "element": null, "class": null }
+    { "id": "all-in", "name": "All In",  "icon": "all-in", "tier": 0, "actions": 2, "bet": "any", "damage": "4x bet", "check": "even", "element": null, "class": null },
+    { "id": "bubble", "name": "Bubble",  "icon": "bubble", "tier": 0, "actions": 1, "bet": 0, "damage": 0, "check": null, "element": null, "class": null,
+      "shield": 25,
+      "$note": "Costs an action, not a card. Betting a card would be a trap: guarding with a Ready card is already free, so paying one to absorb 25 is strictly worse than guarding. Spending an ACTION makes it the mirror of Strike, attack for 25 or prevent 25, and it is the only attack card that is worth anything under Rage, where nothing can be guarded." }
   ],
 
   "skill": [
@@ -124,6 +127,13 @@
     { "id": "life-wind",  "name": "Wind",  "icon": "wind",  "copies": 4,  "value": 25, "face": "grey",  "element": "wind" },
     { "id": "life-extra", "name": "Extra", "icon": "life",  "copies": 5,  "value": 25, "face": "white", "element": null },
     { "id": "life-boss",  "name": "Boss",  "icon": "crown", "copies": 10, "value": "per boss card", "face": "black", "element": null }
+  ],
+
+  "mode": [
+    { "id": "second-wind", "name": "Second Wind", "icon": "revive", "copies": 1,
+      "free_revives": 1, "returns": 2,
+      "effect": "Optional. When you would go Down, come back instead. The first time each level is free. After that, roll: the check climbs one step every time you use it, Sure then Even then Hard then Wild, and stays Wild. Come back with 2 Broken cards returned to Ready. Fail the roll and the level ends as normal.",
+      "$note": "The gentle-mode card, added 2026-08-27 so a child does not lose a 15 minute level to one bad round. It is deliberately NOT in the Advantage deck: a safety net you might never draw is not a safety net. Put it in play or leave it in the box." }
   ],
 
   "aid": [

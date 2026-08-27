@@ -19,11 +19,11 @@ level 5.
 
 | Level | turtle | safe | **adaptive** | gamble | adaptive rounds | adaptive broken |
 |---|---|---|---|---|---|---|
-| 1 | 53.2% | 87.9% | **89.9%** | 67.0% | 3.1 | 1.1 |
-| 2 | 4.1% | 78.8% | **82.7%** | 48.3% | 3.3 | 1.5 |
-| 3 | 0.0% | 52.7% | **69.2%** | 55.6% | 3.4 | 2.4 |
-| 4 | 0.0% | 42.5% | **61.4%** | 60.7% | 3.3 | 3.2 |
-| 5 | 0.0% | 45.2% | **61.2%** | 45.5% | 3.9 | 3.8 |
+| 1 | 53.2% | 87.9% | **90.8%** | 67.4% | 3.1 | 1.0 |
+| 2 | 4.3% | 78.7% | **84.1%** | 55.2% | 3.3 | 1.4 |
+| 3 | 0.0% | 52.9% | **64.6%** | 55.4% | 3.3 | 2.6 |
+| 4 | 0.0% | 42.6% | **59.5%** | 60.6% | 3.3 | 3.3 |
+| 5 | 0.0% | 45.1% | **61.0%** | 44.6% | 3.9 | 3.8 |
 
 The four styles are stand-ins for how a person plays:
 
@@ -32,6 +32,44 @@ The four styles are stand-ins for how a person plays:
 - **adaptive**: plays safe, but takes a kill shot when it is likely, or when Rage is about
   to make the fight unsurvivable anyway.
 - **gamble**: bets everything, every round.
+
+### Re-measured 2026-08-27: All In retuned, twice
+
+The first human playtest reported All In as not worth casting, and the arithmetic
+agreed. At 3x the bet it returned 38 expected damage per life card against Focus's
+56, for twice the actions: dominated at every bet size, so a rational player never
+touched the card the game is named after.
+
+It went to 6x, which fixed it and overshot, and then to **4x**, which is what
+ships. 4x was the player's call and it is the better number for two reasons. The
+arithmetic is a child's: **100 damage per card bet**, so 1, 2, 3, 4 cards read as
+100, 200, 300, 400 with nothing to work out. And it still solves the original
+problem, because All In is judged by the turn, not the card: All In on 4 cards
+plus a Strike is 225 expected against 169 for three Focuses. At 6x that same turn
+was 325, which made every other attack card decorative.
+
+What that bought, measured at 20,000 fights per cell:
+
+- **Fights got shorter.** Adaptive drops from 3.1 to 2.6 rounds at level 1 and
+  3.3 to 2.9 at level 2. The signature move now does what it was for: end a boss
+  a round early.
+- **You finish less scarred** at the levels where it matters: broken cards fall
+  1.1 to 0.8 at level 1, 1.5 to 1.2 at level 2.
+- **The skill ordering survives.** Adaptive still beats safe at every level and
+  gamble everywhere, which is the property this whole table exists to protect.
+- **Gambling got much better at low levels** (level 2 gamble 48% to 65%), because
+  betting everything is exactly what All In now rewards. Watch this in playtest:
+  it is the one direction that could tip into recklessness-always-wins.
+- **Safe play got worse** at levels 1 and 2 (89% to 83%, 78% to 71%). That is the
+  *bot*, not the game: `choose()` maximises expected damage, and All In now wins
+  that comparison while carrying a coin flip, so the safe line takes more variance
+  than its name suggests. A human playing safe would decline it.
+
+One rule this bends knowingly: All In now returns 75 expected damage per life
+card, which is tier 1's efficiency band, on a tier 0 card available from the first
+turn. It pays for that with 2 of your 3 actions and a 50% chance of nothing.
+`lint_cards.py` does not catch it either way, because a variable bet has no fixed
+per-card number to test.
 
 ### What the table says
 

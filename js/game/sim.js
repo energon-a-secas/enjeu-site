@@ -7,13 +7,14 @@
 // on, which the Python cannot do yet.
 
 import { rng, shuffle } from '../utils.js';
-import { newFight, endTurn, bossRoll, resolveBoss, broken, MAX_ROUNDS } from './engine.js';
+import { newFight, endTurn, bossRoll, resolveBoss, attemptRevive, broken, MAX_ROUNDS } from './engine.js';
 import { STYLES, playTurn, wantsBarrier } from './strategies.js';
 
 /** The tuned ladder of synthetic attacks, exactly tools/sim.py's TIER table. */
 export const STRIKE = { id: 'strike', name: 'Strike', actions: 1, bet: 0, damage: 25, check: null };
 export const FOCUS = { id: 'focus', name: 'Focus', actions: 1, bet: 1, damage: 75, check: 'sure' };
-export const ALL_IN = { id: 'all-in', name: 'All In', actions: 2, bet: 'any', damage: '3x bet', check: 'even' };
+export const ALL_IN = { id: 'all-in', name: 'All In', actions: 2, bet: 'any', damage: '4x bet', check: 'even' };
+export const BUBBLE = { id: 'bubble', name: 'Bubble', actions: 1, bet: 0, damage: 0, check: null, shield: 25 };
 export const TIER = {
   1: { id: 'tier1', name: 'Tier 1', actions: 1, bet: 1, damage: 100, check: 'sure' },
   2: { id: 'tier2', name: 'Tier 2', actions: 1, bet: 2, damage: 225, check: 'sure' },
@@ -44,7 +45,7 @@ export function advantageDeck(data, next) {
  */
 export function runFight(data, opts, next) {
   const L = levels(data)[opts.level - 1];
-  const attacks = [STRIKE, FOCUS, ALL_IN, ...L.tiers.map((t) => TIER[t])];
+  const attacks = [STRIKE, FOCUS, ALL_IN, ...(opts.legacy || opts.noBubble ? [] : [BUBBLE]), ...L.tiers.map((t) => TIER[t])];
   const el = opts.element || 'fire';
   const pool = Array.from({ length: L.cards }, (_, i) => (i < 4 ? el : 'extra'));
   let deck = null, hand = [];
@@ -53,16 +54,26 @@ export function runFight(data, opts, next) {
   const f = newFight(data, {
     level: opts.level, boss: L.boss, legacy: !!opts.legacy, bonus: opts.bonus || 0,
     hero: { element: el, klass: opts.klass && opts.klass !== 'none' ? opts.klass : null, pool, attacks },
-    advantage: hand, die: 'd20', mode: 'standard',
+    advantage: hand, die: 'd20', mode: 'standard', secondWind: !!opts.secondWind,
   });
+  const comeback = () => {
+    // A style always takes the comeback when it is offered: declining is never
+    // better than a free or cheap second life, and the ladder makes it cost more
+    // each time on its own.
+    while (f.phase === 'down') attemptRevive(f, { u: next() });
+  };
   while (f.phase === 'act') {
     playTurn(f, opts.style, next, draw);
+    comeback();
     if (f.phase !== 'act') break;
     endTurn(f);
+    comeback();
     while (f.phase === 'boss') {
       const p = bossRoll(f, 1 + Math.floor(next() * 6));
       const r = resolveBoss(f, { barrier: wantsBarrier(f, p) });
+      comeback();
       if (r === 'again') continue;
+      if (f.phase === 'down') { comeback(); break; }
     }
   }
   const outcome = f.phase === 'won' ? 'win' : f.phase === 'lost' ? 'loss' : 'stall';

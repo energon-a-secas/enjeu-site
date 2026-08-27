@@ -45,7 +45,7 @@ You are **Down** when you must Break a card and have none left. The level ends a
 
 1. Pick your **element**: Fire, Water, Earth or Wind. Take that element's 4 life cards.
    Place them Ready. This choice lasts the whole run. You **may not** change it later.
-2. Take the three **Attack** cards: Strike, Focus, All In. These are always available.
+2. Take the four **Attack** cards: Strike, Focus, All In, Bubble. These are always available.
 3. Draw 1 **Biome** card and 1 **Boss** card for level 1 (or follow the campaign in §9).
 4. Place the boss's life cards face up beside its build. The boss card states how much
    **each** of its life cards is worth.
@@ -70,7 +70,8 @@ You have 3 actions per turn. You **may** repeat any action.
 |---|---|---|---|---|
 | **Strike** | 1 | none | 25 | none, it always lands |
 | **Focus** | 1 | 1 card | 75 | ● Sure |
-| **All In** | 2 | any number of Ready cards | 3× what you bet | ●● Even |
+| **All In** | 2 | any number of Ready cards | 4× what you bet | ●● Even |
+| **Bubble** | 1 | nothing | none: it absorbs 25 | none, it always works |
 
 Betting turns those cards sideways (Spent) **whether the attack lands or not**. A missed
 attack still costs you the life.
@@ -81,7 +82,14 @@ When you **Strike**, you **may** also do one of these for free:
   fight has a place and a shape. Use it to tell the story.
 - **Hide**: the next damage you take this round is halved, rounded down to the nearest 25.
 
-**All In** is the swing. Bet 4 cards and you deal 300 on a coin flip, or nothing at all,
+**Bubble** is the brake. It costs an action and no cards, and the next 25 damage
+you take this round is absorbed instead of landing. Notice when that is worth
+doing: a Ready card already guards for free, so a Bubble buys you nothing while
+you still have Ready cards. It earns its place under **Rage**, when damage cannot
+be guarded at all and every 25 you fail to absorb breaks a card for good. An
+unused Bubble pops at the start of your next turn; you cannot save them up.
+
+**All In** is the swing. Bet 4 cards and you deal 400 on a coin flip, or nothing at all,
 and you end the turn with no guard at all. It is how you finish a boss a round early, and
 how you lose a run.
 
@@ -176,6 +184,28 @@ a replacement.
 | **Hunter** | Once per round, reroll one failed check. |
 | **Necromancer** | When a minion falls, take one of its life cards as a Ready life card of your own. |
 
+## 8b. Second Wind, the gentle game
+
+An optional card. Put it in play for a softer run, or leave it in the box.
+
+When you would go **Down**, you may come back instead:
+
+| Comeback | Roll |
+|---|---|
+| 1st this level | free, no roll |
+| 2nd | ● Sure |
+| 3rd | ●● Even |
+| 4th | ●●● Hard |
+| 5th and after | ●●●● Wild |
+
+Come back with **2** of your Broken cards returned to Ready. Fail the roll and the
+level ends exactly as it would without the card. The count resets every level.
+
+It exists so a ten-year-old does not lose fifteen minutes of play to one bad
+round. Measured over 4,000 fights per level, it lifts a careful player about 1 to
+4 points per level and a whole five-level run from 6.4% to 8.3%; it helps a
+reckless player most, which is the point of a safety net.
+
 ## 9. The campaign
 
 Five levels. These numbers come out of `tools/sim.py`; see
@@ -193,23 +223,32 @@ You win the run by clearing level 5.
 
 ## 10. Components
 
-90 cards, poker size **63 × 88 mm**, on 300gsm card stock. Home printers: 9 per A4 sheet,
-exactly 10 sheets. Every card is distinguished by **both** colour and a shape or sigil, so
+92 cards, poker size **63 × 88 mm**, on 300gsm card stock. Home printers: 9 per A4 sheet,
+so 11 sheets, the last one part empty. It was exactly 10 sheets until the first
+playtest on 2026-08-27 asked for two more cards, Bubble and Second Wind; the
+round number lost to cards a real player wanted. Every card is distinguished by **both** colour and a shape or sigil, so
 the deck stays readable without colour vision.
+
+**Backs.** A life card's back is its own element colour, snapped across the
+middle: a Broken card sits face down, so the card itself reads as broken rather
+than carrying a picture of something broken. Every other card gets the unbroken
+pool back, because a skill waiting in the draft pile is not damaged. Printing
+backs is optional (none, four, or one per card) and they are solid colour, which
+is a real amount of ink on a home printer.
 
 | Deck | Cards |
 |---|---|
 | Element life: 4 elements × 4 | 16 |
 | Extra life: white | 5 |
 | Boss life: 2 sets × 5 | 10 |
-| Attack: Strike, Focus, All In | 3 |
+| Attack: Strike, Focus, All In, Bubble | 4 |
 | Class | 4 |
 | Skill: 5 base + 4 tiers × 5 | 25 |
 | Advantage: 6 kinds × 2 | 12 |
 | Boss: S, M, L, L, XL, UM | 6 |
 | Biome | 7 |
 | Player aid: checks, turn order | 2 |
-| **Total** | **90** |
+| **Total** | **92** |
 
 The two L cards are not a duplicate: levels 2 and 3 are both size L with different life
 and Damage, and the S card exists only as a summon. `tools/lint_cards.py` counts the deck

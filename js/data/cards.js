@@ -2,7 +2,7 @@
 // data/cards.json is the ONE source for every card, shared with the Python
 // tools. Nothing here re-declares a number; it only indexes what is there.
 
-export const DECKS = ['attack', 'skill', 'class', 'advantage', 'boss', 'biome', 'life', 'aid'];
+export const DECKS = ['attack', 'skill', 'class', 'advantage', 'boss', 'biome', 'life', 'mode', 'aid'];
 
 let _data = null;
 
