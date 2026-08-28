@@ -6,8 +6,9 @@ and runs it on screen: a visual walkthrough with the full rulebook behind it, al
 cards as true-size print sheets, and a simulator that plays a run with stand-in
 figures or batch-runs the balance table.
 
-**Who it is for:** A child of about ten and the adult beside them, at a table with
-bricks, who want rules for the fight they were already staging. Second reader: the
+**Who it is for:** A child of six or seven with an adult reading the rules aloud, or a
+child of eight and up alone, at a table with bricks, who want rules for the fight they
+were already staging. Second reader: the
 designer, who needs the numbers and the faces to be checkable rather than remembered.
 
 **Register:** product. The site is a tool you use (print, play, test), not a page you

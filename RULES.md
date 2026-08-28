@@ -18,15 +18,16 @@ carry the story.
 
 Nothing here is a component you have to buy. Use what is on the table.
 
-- **The hero is any figure you like.** A minifigure, an action figure, a rubber, a chess
-  piece. It never has a statline: your life is the cards in front of you, not the toy.
-- **Build the boss so its size matches its life.** A level 1 boss is four cards of 100 and a
-  level 5 boss is twenty, so the level 5 build should be visibly, ridiculously bigger. That
-  is the whole trick: when you can see how big it is, you can feel how long it will take,
-  and you do not have to be told.
-- **Stand something on each thing the rules ask you to remember.** A brick on the Damage
-  Track, a coin on a card you have spent, a small figure for each minion the boss summons.
-  Any object works as long as you use the same one for the same job all game.
+- **The hero is any figure you like.** A small figure, an action figure, an eraser, a chess
+  piece. It has no numbers of its own: your life is the cards in front of you, not the toy.
+- **Build the boss as big as its life.** The level 1 boss is four cards of 100. The
+  level 5 boss is twenty, so build it ridiculously bigger. That is the whole trick:
+  you can see how big it is, so you can feel how long it will take. Nobody has to
+  tell you.
+- **Put an object on anything you have to remember.** A brick on the Damage Track if
+  you print it (rule 7), a coin on a card you have spent, a small figure for each
+  minion the boss summons. Any object works, as long as you use the same one for the
+  same job all game.
 - **Everything else is yours.** What your hero looks like, who the boss is, what the terrain
   in the room is, what happened when you Ran. The rules deliberately stop at the numbers.
 
@@ -70,8 +71,8 @@ You are **Down** when you must Break a card and have none left. The level ends a
 2. Take the five **Attack** cards: Strike, Focus, All In, Bubble, Run. These are always
    available.
 3. Draw 1 **Biome** card at random. The **Boss** card is not drawn: level 1 is always the
-   **M** card, and every later level takes the card its row names in §9. Never shuffle the
-   **S** card in with them. S is the Minion, it only ever arrives as a Summon (§7), and it
+   **M** card, and every later level uses the card named in its row of the table in rule 9. Never shuffle the
+   **S** card in with them. S is the Minion, it only ever arrives as a Summon (rule 7), and it
    is never fought on its own.
 4. Place the boss's life cards face up beside its build. The boss card states how much
    **each** of its life cards is worth.
@@ -82,9 +83,9 @@ You are **Down** when you must Break a card and have none left. The level ends a
 Each round runs in this order:
 
 1. **Recover.** Turn all your Spent cards upright. They are Ready again.
-2. **Act.** Take up to **3 actions** (§5).
+2. **Act.** Take up to **3 actions** (rule 5).
 3. **Minions strike.** Each minion in play deals 25 damage to you. Guard it.
-4. **The boss acts.** Roll one die on the boss's reaction table (§7). Guard what it deals.
+4. **The boss acts.** Roll one die on the boss's reaction table (rule 7). Guard what it deals.
 
 **Bubble and Run are declared in step 2, never in step 4.** They are actions like any other,
 so you spend them before the boss rolls, while you still do not know what is coming. You may
@@ -108,16 +109,21 @@ You have 3 actions per turn. You **may** repeat any action.
 Betting turns those cards sideways (Spent) **whether the attack lands or not**. A missed
 attack still costs you the life.
 
-**Move** is free, any time, as often as you like: reposition your minifigure. It has no
+**Move** is free, any time, as often as you like: reposition your figure. It has no
 mechanical effect. It is there so the fight has a place and a shape, and so you can say what
 happened. Use it to tell the story.
 
-**Bubble** is the brake. It costs an action and no cards, and the next 25 damage
-you take this round is absorbed instead of landing. Notice when that is worth
-doing: a Ready card already guards for free, so a Bubble buys you nothing while
-you still have Ready cards. It earns its place under **Rage**, when damage cannot
-be guarded at all and every 25 you fail to absorb breaks a card for good. An
-unused Bubble pops at the start of your next turn; you cannot save them up.
+**Bubble** is the brake. It costs an action and no cards, and it soaks up the next
+25 the boss deals you this round.
+
+Most of the time you do not need it. A Ready card already guards for free, so a
+Bubble saves you nothing while you still have cards standing.
+
+Bubble is for the Rage rounds at the end of a fight (rule 7). In Rage your cards
+cannot guard at all, and a Bubble is the only thing that stops a 25 from breaking
+one.
+
+A Bubble you do not use pops at the start of your next turn. You cannot save them up.
 
 **Run** is the other brake, and the gamble. It costs an action and no cards, and it puts you
 **Hidden** until the boss has acted. Then:
@@ -127,9 +133,9 @@ unused Bubble pops at the start of your next turn; you cannot save them up.
   nearest 25.
 - A **minion** never spends your hiding. Minions are already next to you.
 
-So Bubble stops a certain 25 and Run gambles for the whole hit. Two of the boss's six faces
-are a Strike, so a third of the time Run is the best card in the game, and the rest of the
-time it is half a Bubble. Under **Rage**, when nothing can be guarded, it is the only card
+So Bubble stops one sure 25, and Run gambles for the whole hit. Two of the six rows
+on the boss's table are a Strike, so a third of the time Run is the best card in the
+game. The rest of the time it is half a Bubble. Under **Rage**, when nothing can be guarded, it is the only card
 that can take a whole hit off the table.
 
 **Where did you go?** That is yours to say. Under the table, behind a book, inside the
@@ -140,7 +146,7 @@ into: the game keeps the number, you keep the story.
 Covering the **Ally** means breaking cover. You cannot be hidden and in front of your friend
 at the same time.
 
-**All In** is the swing. Bet 4 cards and you deal 400 on a coin flip, or nothing at all,
+**All In** swings the whole fight. Bet 4 cards and you deal 400 on a coin flip, or nothing at all,
 and you end the turn with no guard at all. It is how you finish a boss a round early, and
 how you lose a run.
 
@@ -175,7 +181,7 @@ attacks as Fire, and gets Fire's matchups, not Water's.
 
 These stack. A Fire hero in a Volcano fighting a Wind boss adds +50 to every landed attack,
 as long as the card is a Fire card or a colourless one. There is no penalty for a bad matchup:
-you simply do not get the bonus. So your element choice in §3 is really a choice about the
+you simply do not get the bonus. So your element choice in rule 3 is really a choice about the
 colourless cards, which are the ones that ask you what you are.
 
 | Biome | Element | Also |
@@ -205,8 +211,8 @@ The default table, which a boss card **may** override row by row:
 | Roll (d6) | The boss… |
 |---|---|
 | 1 | **Brace**: deals no damage. Until the end of your next turn, halve all damage it takes, rounded down to the nearest 25. |
-| 2–3 | **Strike**: deals its Damage. |
-| 4 | **Summon**: moves 2 of its life cards under a new minifigure. If it has 2 or fewer cards left, or 3 minions already, it Strikes instead. |
+| 2-3 | **Strike**: deals its Damage. |
+| 4 | **Summon**: moves 2 of its life cards under a new figure. If it has 2 or fewer cards left, or 3 minions already, it Strikes instead. |
 | 5 | **Roar**: deals its Damage. Your next check is one step harder. |
 | 6 | **Ruin**: deals double its Damage. |
 
@@ -243,15 +249,16 @@ table, and the boss can see it.
   The Ally is a wall, not a filter: it either holds the hit or it goes, and either way you
   take nothing.
 - **Brace, Roar and Ruin always come for you**, and so does a Summon that actually summons.
-  But a Summon the boss **cannot** make is a Strike instead (§7), and that Strike goes to the
+  But a Summon the boss **cannot** make is a Strike instead (rule 7), and that Strike goes to the
   Ally like any other. What the Ally draws is the plain attack, whichever roll produced it.
 - Before the damage is applied you **may cover** the Ally: say so, take the hit yourself at
-  its full value, and guard it as normal (§2). The Ally stays.
+  its full value, and guard it as normal (rule 2). The Ally stays.
 - From the **Rage** round on, the boss ignores the Ally and comes for you, for the same reason
   your guard stops working. Rage goes through everything, and it is not a hit you can hand to
   somebody else.
 
-The Ally's own free 25 Strike at the start of each of your turns is unchanged.
+**The Ally attacks too.** At the start of each of your turns it deals the boss 25, for
+free. It costs no action and no card, and Rage does not change it.
 
 That defense is why the card is worth keeping alive. Against a level 1 or 2 boss (Damage 50)
 the Ally absorbs a Strike completely and stays for the rest of the level. From level 3 up
@@ -263,7 +270,9 @@ you take the whole hit to keep the figure, or you let the figure go.
 From the **Rage** round onward, the boss deals **double** Damage, and you **cannot** guard
 it with Ready cards. Every point goes straight to Broken.
 
-**Break your Ready cards first, then your Spent ones.** Rage takes the cards that were
+**Break your Ready cards first, then your Spent ones.** Rage takes the standing cards
+before the ones already lying sideways. That is the worst order for you: it breaks the
+card that was about to guard for free next round. Rage takes the cards that were
 standing before it takes the ones already lying sideways, which is the worst order there is
 for you: it breaks the card that was about to guard for free next round.
 
@@ -328,7 +337,7 @@ up and goes back for the rest of the run. A card locked to yours is a card only 
 
 | Class | Passive |
 |---|---|
-| **Knight** | Once per round, guard 25 damage with no card at all: nothing turns sideways and nothing breaks. It is a guard, so Rage goes straight through it (§7). |
+| **Knight** | Once per round, guard 25 damage with no card at all: nothing turns sideways and nothing breaks. It is a guard, so Rage goes straight through it (rule 7). |
 | **Mage** | Your Focus deals +25. |
 | **Hunter** | Once per round, reroll one failed check. |
 | **Necromancer** | When a minion falls, take one of its life cards as a Ready life card of your own. It guards **25**, like every card in front of you, not the 100 printed on its face. That 100 is what it was worth as the boss's life; in your hands it is a life card, and every life card guards 25. |

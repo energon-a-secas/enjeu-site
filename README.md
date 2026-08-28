@@ -59,10 +59,10 @@ doubles and ignores your guard, so hoarding just changes how you lose.
 
 ## Features
 
-- **Learn**: a twelve-slide deck in two chapters: Basics is everything a first fight needs (one rule, three cards, a turn, the check, the boss, keeping count, what you need to own) and Advanced is the depth after it (elements and biomes, the five-level run, every die, and the complete rulebook as the last slide). Arrow keys, swipe, or the numbered rail
+- **Learn**: a twelve-slide deck in two chapters: Basics is everything a first fight needs (one rule, five cards, a turn, the check, the boss, keeping count, what you need to own) and Advanced is the depth after it (elements and biomes, the five-level run, every die, and the complete rulebook as the last slide). Arrow keys, swipe, or the numbered rail
 - **Cards**: all 105 faces, browsable by deck; tap one for its name and what it does, because the face never says
 - **Print**: 63 x 88 mm poker cards, 9 per A4 sheet, 12 sheets, crop ticks, optional Letter paging and card backs
-- **Play**: a First Game (level 1, Strike, Focus and All In) or a five-level run: classes, skill drafts, Advantage cards, any die from d4 to 3d6, Story / Standard / Nightmare dial, stand-in heroes and bosses built from bricks
+- **Play**: a First Game (level 1, with Strike, Focus, All In, Bubble and Run) or a five-level run: classes, skill drafts, Advantage cards, any die from d4 to 3d6, Story / Standard / Nightmare dial, stand-in heroes and bosses built from bricks
 - **Balance**: the same engine run thousands of times by four play styles, in a Worker, beside the published table
 - **Any die you own**: the four-step ladder has a target for d20, d12, d10, d8, d6, d4, 2d6 and 3d6; three d6 track a d20 within 1.2 points
 - **No words on any card**: numerals, pips and glyphs; the picture is the name and the player says it out loud
@@ -103,8 +103,6 @@ monsters would not. `data/art-manifest.json` is the source of record; drop an at
 SVG into `art/<slot-id>.svg`, fill that slot's `creator` and `licence`, and the face picks
 it up. `CREDITS.md` is generated from the same file by `tools/credits.py`, which refuses to
 write while any sourced slot is missing a creator or a licence.
-`tools/credits.py` refuses to write the credits page while any slot is half-attributed, so
-an incomplete one cannot ship.
 
 ## Status
 

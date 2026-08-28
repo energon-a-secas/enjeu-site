@@ -194,7 +194,7 @@ export const STEPS = bilingual([
       ],
       es: [
         'La vida del jefe es la pila de cartas al lado de su construcción, así que saca una carta cuando salga su valor. Ese es el contador, y a casi ninguna mesa le hace falta nada más.',
-        'Si prefieres leer un solo número corriendo, imprime la Pista de Daño. Para un bloque sobre el total que llevas hecho y muévelo. Pasando 100 el bloque vuelve a empezar y un dado en la casilla ×100 se acuerda de las centenas.',
+        'Si prefieres leer un solo número corriendo, imprime la Pista de Daño. Pon un bloque de pie sobre el total que llevas hecho y muévelo. Pasando 100 el bloque vuelve a empezar y un dado en la casilla ×100 se acuerda de las centenas.',
       ],
     },
     visual: 'track',
@@ -231,7 +231,7 @@ export const STEPS = bilingual([
       ],
       es: [
         'Casi todas las cartas tienen un elemento, y cada elemento le gana a otro. Una carta sin elemento usa el tuyo. Un buen cruce suma 25 al golpe.',
-        'El bioma es dónde pasa la pelea. Suma otros 25 cuando calza con tu ataque.',
+        'El bioma es el lugar donde pasa la pelea. Suma otros 25 cuando calza con tu ataque.',
       ],
     },
     visual: 'elements',

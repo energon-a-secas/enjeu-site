@@ -3,8 +3,8 @@
 **Jugadores:** 1 · **Duración:** ~15 minutos por nivel, ~75 minutos para una partida de cinco niveles · **Edad:** 6+ con un adulto leyendo al lado, 8+ solo
 
 **Tú pones:** un dado, cualquiera de d20, d12, d10, d8, d6, d4, 2d6 o 3d6, más tus
-propios bloques y figuras. **Enjeu** no está afiliado a ningún fabricante de juguetes
-de construcción ni cuenta con su respaldo; funciona con cualquier juguete de construcción
+propios bloques y figuras. **Enjeu** no está afiliado a ningún fabricante de juguetes de construcción, no cuenta
+con su respaldo y no tiene ninguna relación con ellos. Está hecho para funcionar con lo
 que ya tengas.
 
 ---
@@ -17,20 +17,20 @@ llevan la historia.
 
 ### Con qué jugar
 
-Acá no hay ninguna pieza que tengas que comprar. Usa lo que haya en la mesa.
+Acá no tienes que comprar nada. Usa lo que haya en la mesa.
 
 - **El héroe es la figura que tú quieras.** Una minifigura, un muñeco, una goma, una pieza
   de ajedrez. Nunca tiene estadísticas: tu vida son las cartas que tienes adelante, no el
   juguete.
-- **Arma al jefe del porte de su vida.** El jefe del nivel 1 son cuatro cartas de 100 y el
-  del nivel 5 son veinte, así que el del nivel 5 tiene que verse ridículamente más grande.
-  Ese es todo el truco: cuando ves lo grande que es, sientes lo que va a costar, y nadie
-  tiene que explicártelo.
-- **Pon algo encima de cada cosa que las reglas te piden recordar.** Un bloque en la Pista
-  de Daño, una moneda sobre una carta que gastaste, una figurita por cada esbirro que el
-  jefe invoque. Cualquier objeto sirve mientras uses el mismo para lo mismo toda la partida.
-- **Todo lo demás es tuyo.** Cómo se ve tu héroe, quién es el jefe, qué es el terreno de la
-  pieza, qué pasó cuando Escapaste. Las reglas se detienen en los números a propósito.
+- **Arma al jefe del tamaño de su vida.** El jefe del nivel 1 son cuatro cartas de 100.
+  El del nivel 5 son veinte, así que ármalo ridículamente más grande. Ese es todo el
+  truco: ves lo grande que es, así que sientes lo que va a costar. Nadie tiene que
+  explicártelo.
+- **Pon un objeto sobre todo lo que tengas que recordar.** Un bloque en la Pista de Daño
+  si la imprimes (regla 7), una moneda sobre una carta que gastaste, una figurita por
+  cada esbirro que el jefe invoque. Cualquier objeto sirve, mientras uses el mismo para
+  lo mismo toda la partida.
+- **Todo lo demás es tuyo.** Cómo se ve tu héroe, quién es el jefe, cómo es el terreno de la sala, qué pasó cuando Escapaste. Las reglas se detienen en los números a propósito.
 
 Las cartas casi no tienen texto, a propósito. El dibujo de una carta *es* su nombre; di el
 nombre en voz alta cuando la juegues. "Lanza de Hielo." "Terremoto." "Meteoro." Las reglas
@@ -47,7 +47,7 @@ Las cartas de vida están frente a ti en uno de tres estados:
 
 | Estado | Cómo queda | Qué hace |
 |---|---|---|
-| **En Pie** | derecha | La puedes apostar. Te defiende. |
+| **En Pie** | parada, de pie | La puedes apostar. Te defiende. |
 | **De Lado** | girada de costado | La apostaste este turno. Vuelve a estar En Pie al empezar tu próximo turno. |
 | **Rota** | boca abajo en una pila | Se fue por el resto del nivel. |
 
@@ -72,8 +72,8 @@ Estás **Caído** cuando tienes que Romper una carta y no te queda ninguna. El n
 2. Toma las cinco cartas de **Ataque**: Golpe, Puntería, Todo o Nada, Burbuja, Escape. Estas
    siempre están disponibles.
 3. Roba 1 carta de **Bioma** al azar. La carta de **Jefe** no se roba: el nivel 1 siempre es la
-   carta **M**, y cada nivel siguiente toma la carta que dice su fila en la §9. Nunca mezcles la
-   carta **S** con las demás. La S es el Esbirro, solo llega como una Invocación (§7), y nunca
+   carta **M**, y cada nivel siguiente toma la carta que dice su fila en la regla 9. Nunca mezcles la
+   carta **S** con las demás. La S es el Esbirro, solo llega como una Invocación (regla 7), y nunca
    se pelea sola.
 4. Pon las cartas de vida del jefe boca arriba al lado de su construcción. La carta del jefe dice
    cuánto vale **cada** una de sus cartas de vida.
@@ -84,9 +84,9 @@ Estás **Caído** cuando tienes que Romper una carta y no te queda ninguna. El n
 Cada ronda va en este orden:
 
 1. **Recuperar.** Pon derechas todas tus cartas De Lado. Vuelven a estar En Pie.
-2. **Actuar.** Toma hasta **3 acciones** (§5).
+2. **Actuar.** Toma hasta **3 acciones** (regla 5).
 3. **Golpean los esbirros.** Cada esbirro en juego te hace 25 de daño. Defiéndelo.
-4. **El jefe actúa.** Tira un dado en la tabla de reacciones del jefe (§7). Defiende lo que haga.
+4. **El jefe actúa.** Tira un dado en la tabla de reacciones del jefe (regla 7). Defiende lo que haga.
 
 **Burbuja y Escape se declaran en el paso 2, nunca en el paso 4.** Son acciones como cualquier
 otra, así que las gastas antes de que el jefe tire, cuando todavía no sabes qué viene. No puedes
@@ -110,16 +110,20 @@ Tienes 3 acciones por turno. **Puedes** repetir cualquier acción.
 Apostar gira esas cartas de costado (De Lado) **acierte o no el ataque**. Un ataque que falla
 igual te cuesta la vida.
 
-**Mover** es gratis, en cualquier momento, todas las veces que quieras: cambia de lugar tu
-minifigura. No tiene ningún efecto mecánico. Está ahí para que la pelea tenga un lugar y una
+**Mover** es gratis, en cualquier momento, todas las veces que quieras: cambia de lugar tu figura. No tiene ningún efecto mecánico. Está ahí para que la pelea tenga un lugar y una
 forma, y para que puedas contar lo que pasó. Úsalo para contar la historia.
 
-**Burbuja** es el freno. Cuesta una acción y ninguna carta, y los próximos 25 de daño que
-recibas esta ronda se absorben en vez de llegar. Fíjate cuándo vale la pena: una carta
-En Pie ya defiende gratis, así que una Burbuja no te compra nada mientras todavía
-tengas cartas En Pie. Se gana su lugar bajo la **Furia**, cuando el daño no se puede
-defender y cada 25 que no absorbes rompe una carta para siempre. Una Burbuja sin usar
-revienta al empezar tu próximo turno; no las puedes guardar.
+**Burbuja** es el freno. Cuesta una acción y ninguna carta, y absorbe los próximos
+25 que te haga el jefe esta ronda.
+
+Casi siempre no la necesitas. Una carta En Pie ya defiende gratis, así que una
+Burbuja no te sirve de nada mientras todavía tengas cartas de pie.
+
+La Burbuja es para las rondas de Furia, al final de la pelea (regla 7). En Furia
+tus cartas no pueden defender, y una Burbuja es lo único que evita que un 25 rompa
+una carta.
+
+Una Burbuja que no usas revienta al empezar tu próximo turno. No las puedes guardar.
 
 **Escape** es el otro freno, y la apuesta. Cuesta una acción y ninguna carta, y te deja
 **Escondido** hasta que el jefe haya actuado. Entonces:
@@ -142,7 +146,7 @@ la primera versión: el juego se queda con el número, tú te quedas con la hist
 Cubrir al **Aliado** significa salir del escondite. No puedes estar escondido y delante de tu
 amigo al mismo tiempo.
 
-**Todo o Nada** es el volantín. Apuesta 4 cartas y haces 400 con una moneda al aire, o nada de
+**Todo o Nada** da vuelta la pelea entera. Apuesta 4 cartas y haces 400 con una moneda al aire, o nada de
 nada, y terminas el turno sin ninguna defensa. Así se termina un jefe una ronda antes, y así se
 pierde una partida.
 
@@ -157,7 +161,7 @@ Cuatro pasos. Tira tu dado, iguala o supera el número del dado que tengas:
 | ●●● **Difícil** | 25% | 16+ | 10+ | 8+ | 7+ | 5+ | 4+ | 9+ | 13+ |
 | ●●●● **Loca** | 15% | 18+ | 11+ | 9+ | 8+ | 6+ | 4+ | 10+ | 14+ |
 
-**¿No tienes d20? Tira tres d6.** Sigue la escalera con menos de 1.2 puntos porcentuales de
+**¿No tienes d20? Tira tres d6.** Sigue la escalera con no más de 1,2 puntos porcentuales de
 diferencia en cada paso, más cerca que cualquier otro reemplazo. Un solo d6 también sirve y
 corre un poco a tu favor. La derivación completa y el ranking de fidelidad están en
 [docs/DICE-BRIDGE.md](docs/DICE-BRIDGE.md).
@@ -179,7 +183,7 @@ del Agua.
 
 Estos se suman. Un héroe de Fuego en un Volcán peleando contra un jefe de Viento suma +50 a cada
 ataque que acierte, mientras la carta sea de Fuego o sin color. No hay castigo por un mal cruce:
-simplemente no recibes el bono. Así que tu elección de elemento en la §3 es en realidad una
+simplemente no recibes el bono. Así que tu elección de elemento en la regla 3 es en realidad una
 elección sobre las cartas sin color, que son las que te preguntan qué eres.
 
 | Bioma | Elemento | Además |
@@ -210,7 +214,7 @@ La tabla por defecto, que una carta de jefe **puede** reemplazar fila por fila:
 |---|---|
 | 1 | **Aguante**: no hace daño. Hasta el final de tu próximo turno, todo el daño que recibe se parte a la mitad, redondeando hacia abajo al múltiplo de 25 más cercano. |
 | 2-3 | **Golpe**: hace su Daño. |
-| 4 | **Invocación**: mueve 2 de sus cartas de vida bajo una minifigura nueva. Si le quedan 2 cartas o menos, o ya tiene 3 esbirros, Golpea en vez de eso. |
+| 4 | **Invocación**: mueve 2 de sus cartas de vida bajo una figura nueva. Si le quedan 2 cartas o menos, o ya tiene 3 esbirros, Golpea en vez de eso. |
 | 5 | **Rugido**: hace su Daño. Tu próxima tirada sube un paso de dificultad. |
 | 6 | **Ruina**: hace el doble de su Daño. |
 
@@ -220,7 +224,7 @@ vuelta a la fila 1, una fila por punto, hasta que se acabe la tirada. La fila do
 es la reacción del jefe. Saca un 14 en un d20 y cuentas 1-2-3-4-5-6-1-2-3-4-5-6-1-2, y te
 detienes en la fila 2, un Golpe. Esto funciona con cualquier dado que tengas y no necesita
 cuentas, que es de lo que se trata. La tabla de reacciones es el único lugar del juego que
-quiere un seis parejo.
+necesita seis resultados igual de probables.
 
 ### Los esbirros
 
@@ -230,7 +234,7 @@ desperdicias una acción en un esbirro; solo eliges si limpias la pila chica y f
 daño, o si sigues machacando la grande.
 
 **El daño que pasa de la última carta de un esbirro se pierde.** Un esbirro tiene 2 cartas del
-jefe, o sea 200. Pégale por 400 y 200 de eso caen en nada: **no** se traspasa al cuerpo del jefe,
+jefe, o sea 200. Pégale con 400 y 200 de eso caen en nada: **no** se traspasa al cuerpo del jefe,
 y no se traspasa a otro esbirro. Ese es el único lugar de este juego donde el daño se va a
 ninguna parte, así que apunta los ataques grandes al cuerpo y termina un esbirro con los chicos.
 
@@ -240,26 +244,27 @@ Si jugaste la carta de Ventaja **Aliado**, hay una segunda figura de tu lado de 
 jefe la ve.
 
 - Mientras el Aliado esté en juego, el **Golpe** del jefe le pega al **Aliado** en vez de a ti.
-- El Aliado tiene **50 de defensa**. Resta 50 a ese daño. Lo que sobre manda al Aliado lejos:
+- El Aliado tiene **50 de defensa**. Resta 50 a ese daño. Lo que sobre hace que el Aliado se vaya:
   saca la figura de la mesa.
 - **Lo que sobra se pierde con la figura. Nada de eso te llega a ti.** Un Golpe de 100 contra el
   Aliado son 50 absorbidos, 50 desparramados en el suelo, y ni una carta tuya girada. El Aliado
   es un muro, no un filtro: o aguanta el golpe o se va, y en los dos casos tú no recibes nada.
 - **Aguante, Rugido y Ruina siempre vienen por ti**, y una Invocación que de verdad invoca
-  también. Pero una Invocación que el jefe **no puede** hacer es un Golpe (§7), y ese Golpe va al
+  también. Pero una Invocación que el jefe **no puede** hacer es un Golpe (regla 7), y ese Golpe va al
   Aliado como cualquier otro. Lo que el Aliado atrae es el ataque simple, salga de la tirada que
   salga.
 - Antes de aplicar el daño **puedes cubrir** al Aliado: dilo, recibe el golpe tú por su valor
-  entero, y defiéndelo como siempre (§2). El Aliado se queda.
+  entero, y defiéndelo como siempre (regla 2). El Aliado se queda.
 - Desde la ronda de **Furia** en adelante, el jefe ignora al Aliado y viene por ti, por la misma
   razón por la que tu defensa deja de funcionar. La Furia atraviesa todo, y no es un golpe que le
   puedas pasar a otro.
 
-El Golpe gratis de 25 del Aliado al empezar cada uno de tus turnos no cambia.
+**El Aliado también ataca.** Al empezar cada uno de tus turnos le hace 25 al jefe,
+gratis. No cuesta acción ni carta, y la Furia no lo cambia.
 
-Esa defensa es por lo que vale la pena mantener viva la carta. Contra un jefe de nivel 1 o 2
+Por esa defensa vale la pena mantener vivo al Aliado. Contra un jefe de nivel 1 o 2
 (Daño 50) el Aliado absorbe un Golpe entero y se queda por el resto del nivel. Del nivel 3 para
-arriba (75, y después 100) un solo Golpe basta para mandarlo lejos, y cubrirlo es una decisión de
+arriba (75, y después 100) un solo Golpe basta para sacarlo de la mesa, y cubrirlo es una decisión de
 verdad: recibes el golpe entero para conservar la figura, o dejas que la figura se vaya.
 
 ### La Furia
@@ -286,8 +291,7 @@ Qué alcanza la Furia y qué no:
 En este orden, cuando aplica más de uno: esconderse parte el golpe a la mitad, después una
 Burbuja absorbe 25 de lo que quedó, y lo que sobra rompe cartas.
 
-La Furia es la razón por la que no puedes ganar jugando a la segura. Aguantar detrás de Golpe se
-sobrevive un rato y después ya no.
+La Furia es la razón por la que no puedes ganar jugando a la segura. Aguantar detrás de Golpe te deja sobrevivir un rato, y después ya no.
 
 ### Llevar la cuenta
 
@@ -296,13 +300,13 @@ mesa: saca una carta cuando salga su valor. No se necesita nada más, y este pá
 
 Si prefieres leer un solo número corriendo, usa la carta de ayuda **Pista de Daño**. Todos los
 valores de este juego son múltiplos de 25, así que la pista es 25, 50, 75, 100 y una casilla para
-un dado que cuenta las centenas. Para un bloque sobre el total que llevas hecho y muévelo. Cuando
+un dado que cuenta las centenas. Pon un bloque de pie sobre el total que llevas hecho y muévelo. Cuando
 el total pasa de 100, devuelve el bloque a lo que sobró y sube en uno el dado de la casilla ×100.
 
 > Haces 25: bloque en 25. Haces 50 más: bloque en 75. Haces 50 más, y eso son 125, así que el
 > bloque vuelve a 25 y el dado sube a 1.
 
-Un dado sin nada marcado quiere decir menos de 100. La pista es un contador, no una regla: no
+Un dado sin nada marcado es menos de 100. La pista es un contador, no una regla: no
 cambia ningún número de este reglamento.
 
 ## 8. Ganar un nivel
@@ -317,8 +321,8 @@ El jefe cae cuando se le acaban las cartas de vida. Entonces, en este orden:
 5. Roba **1** carta de Ventaja.
 
 **El mazo ya tiene las 5 cartas de Habilidad de rango 0** antes de que empiece la partida. No se
-mezclan después y no se ganan: están en el mazo desde el primer minuto, que es por lo que el
-sorteo después del nivel 1 tiene algo que sacar además del rango 1. No hay nada que preparar.
+mezclan después y no se ganan: viven ahí desde el primer minuto. Por eso la elección después del nivel 1
+tiene algo que destapar además del rango 1. No hay nada que preparar.
 Ahí es simplemente donde viven esas cartas.
 
 Si destapas una carta de Habilidad marcada con una clase que no es la tuya, **devuélvela al
@@ -331,7 +335,7 @@ una carta que solo tú puedes sacar.
 
 | Clase | Pasiva |
 |---|---|
-| **Caballero** | Una vez por ronda, defiende 25 de daño sin ninguna carta: nada se gira de costado y nada se rompe. Es una defensa, así que la Furia la atraviesa derecho (§7). |
+| **Caballero** | Una vez por ronda, defiende 25 de daño sin ninguna carta: nada se gira de costado y nada se rompe. Es una defensa, así que la Furia la atraviesa derecho (regla 7). |
 | **Mago** | Tu Puntería hace +25. |
 | **Cazador** | Una vez por ronda, vuelve a tirar una tirada fallada. |
 | **Nigromante** | Cuando cae un esbirro, toma una de sus cartas de vida como una carta de vida tuya, En Pie. Defiende **25**, como cada carta que tienes al frente, no los 100 impresos en su cara. Esos 100 eran lo que valía como vida del jefe; en tus manos es una carta de vida, y cada carta de vida defiende 25. |
@@ -372,7 +376,7 @@ Cinco niveles. Estos números salen de `tools/sim.py`; en
 | 5 | UM | 20 × 100 | 2000 | 100 | 5 |
 
 **Cada carta de vida del jefe vale 100, en todos los niveles.** Haz 100 de daño, da vuelta una.
-Esa es toda la aritmética del jefe, y es por lo que el muro de cartas frente al jefe también es
+Esa es toda la aritmética del jefe, y por eso el muro de cartas frente al jefe también es
 la barra de vida: puedes ver cuánto queda sin contar nada. Una Invocación igual mueve dos de esas
 cartas, así que un esbirro son 200 dondequiera que te lo encuentres.
 
@@ -406,7 +410,7 @@ distintos, y antes eran cuatro montones idénticos:
 | Ayudas | una marca de estudio: las dos cartas que consultas |
 
 Imprimir los reversos es opcional (ninguno, cuatro, o uno por carta) y son de color sólido, que
-es harta tinta en una impresora de casa.
+es bastante tinta en una impresora de casa.
 
 | Mazo | Cartas |
 |---|---|
@@ -426,11 +430,10 @@ es harta tinta en una impresora de casa.
 Las dos cartas L no son un duplicado: los niveles 2 y 3 son los dos de tamaño L con distinta vida
 y distinto Daño, y la carta S existe solo como invocación. `tests/cards.test.mjs` parsea esa
 tabla en RULES.md, la suma, y falla si no se cuadra consigo misma o con `data/cards.json`, así
-que es revisable en vez de recordada. Se había desviado dos veces antes de que ese chequeo
-existiera.
+que es revisable en vez de recordada. Ya se había descuadrado dos veces antes de que esa prueba existiera.
 
 Los dados y las figuras son tuyos. El juego no viene con dados ni con miniaturas, y eso es a
-propósito: es un imprimir y jugar, y cada componente que no incluye es un componente que no
+propósito: es un juego para imprimir y jugar, y cada componente que no incluye es un componente que no
 pagas.
 
 ---
