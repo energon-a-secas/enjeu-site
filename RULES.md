@@ -350,7 +350,7 @@ When you would go **Down**, you may come back instead:
 Come back with **2** of your Broken cards returned to Ready. Fail the roll and the
 level ends exactly as it would without the card. The count resets every level.
 
-It exists so a ten-year-old does not lose fifteen minutes of play to one bad
+It exists so a child does not lose fifteen minutes of play to one bad
 round. Measured over 4,000 fights per level in the site's own engine, it lifts a careful
 player between 11 and 26 points per level, and a whole five-level run from 6.1% to 28.9%; it helps a
 reckless player most, which is the point of a safety net.

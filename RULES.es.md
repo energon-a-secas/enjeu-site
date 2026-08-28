@@ -353,7 +353,7 @@ Cuando quedarías **Caído**, puedes volver en vez de eso:
 Vuelves con **2** de tus cartas Rotas devueltas a En Pie. Si fallas la tirada, el nivel termina
 igual que terminaría sin la carta. La cuenta se reinicia en cada nivel.
 
-Existe para que un niño de diez años no pierda quince minutos de juego por una sola ronda mala.
+Existe para que un niño no pierda quince minutos de juego por una sola ronda mala.
 Medido sobre 4.000 peleas por nivel en el motor del sitio, le sube a un jugador cuidadoso entre
 11 y 26 puntos por nivel, y una partida completa de cinco niveles de 6,1% a 28,9%; al que juega
 arriesgado es al que más lo ayuda, que es justo para lo que sirve una red de seguridad.

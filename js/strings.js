@@ -22,7 +22,7 @@ export const STRINGS = {
       lead: 'Where this game came from, and who drew the pictures on the cards.',
 
       originTitle: 'It was made for my niece',
-      origin1: 'She is six, she likes playing with bricks, and I am usually the one playing with her. The trouble is that made-up rules fall apart fast: they change every few minutes, nobody can lose, and the game stops being a game. So I thought I would write some down and see if that made it funnier.',
+      origin1: 'She is small, she likes playing with bricks, and I am usually the one playing with her. The trouble is that made-up rules fall apart fast: they change every few minutes, nobody can lose, and the game stops being a game. So I thought I would write some down and see if that made it funnier.',
       origin2: 'She also wanted to use the dice. All of them, not just the six-sided one. That turned out to be the useful constraint: every die from the d4 to the d20 had to work, so the game had to be built around a roll rather than around a number.',
       origin3: 'What I was after was something shaped like a small Dungeons and Dragons session, where you get to say what happened, with enough mechanics around it that it does not collapse. Rules loose enough to leave room, tight enough to hold. Everything else was built around that.',
 
@@ -302,7 +302,7 @@ export const STRINGS = {
       lead: 'De dónde salió este juego, y quién dibujó las figuras de las cartas.',
 
       originTitle: 'Lo hice para mi sobrina',
-      origin1: 'Tiene seis años, le gusta jugar con bloques, y normalmente el que juega con ella soy yo. El problema es que las reglas inventadas se caen a pedazos rápido: cambian cada dos minutos, nadie puede perder, y el juego deja de ser un juego. Así que pensé en escribir algunas y ver si así resultaba más entretenido.',
+      origin1: 'Es chica, le gusta jugar con bloques, y normalmente el que juega con ella soy yo. El problema es que las reglas inventadas se caen a pedazos rápido: cambian cada dos minutos, nadie puede perder, y el juego deja de ser un juego. Así que pensé en escribir algunas y ver si así resultaba más entretenido.',
       origin2: 'También quería usar los dados. Todos, no solo el de seis caras. Esa terminó siendo la restricción útil: cada dado, del d4 al d20, tenía que servir, así que el juego tuvo que armarse alrededor de una tirada y no de un número.',
       origin3: 'Lo que buscaba era algo con la forma de una partida chica de Dungeons and Dragons, donde uno cuenta lo que pasó, con la mecánica suficiente alrededor para que no se desarme. Reglas sueltas para dejar espacio, firmes para sostener. Todo lo demás se construyó alrededor de eso.',
       origin2: 'Lo que no podía ser era un juego de guerra completo con el juguete de construcción. Esa complicación era justo lo que estaba evitando. Tenía que empezar rápido, y tenía que dejar espacio para que ella me contara lo que acababa de hacer su figura.',
