@@ -25,13 +25,13 @@
 // prefers-reduced-motion, and that rule can only protect motion the CSS owns:
 // a JS timer or a rAF loop here would run anyway.
 
-import { t, cardName } from '../strings.js';
+import { t, cardName, bossLines } from '../strings.js';
 import { escHtml } from '../utils.js';
 import { cardFace, cardBack, lifeMini, riskDots } from '../cards/face.js';
 import { glyphSvg } from '../cards/glyphs.js';
 import { figureSvg } from '../game/figures.js';
 import { heroFor, MINION } from '../data/placeholders.js';
-import { legalAttacks, ready, spent, broken, bossHp, raging, effectiveStep, attackDamage, reviveStep, ALLY_DEF } from '../game/engine.js';
+import { legalAttacks, ready, spent, broken, alive, bossHp, raging, effectiveStep, attackDamage, reviveStep, ALLY_DEF } from '../game/engine.js';
 import { targetFor, dieMax, stepOdds } from '../game/rules.js';
 import { validatePlan, planActions, attackFor, betFor, readyAt, runeSpare, pickable, awaitingStep } from './play-plan.js';
 
@@ -165,7 +165,31 @@ function bubble(f, ui) {
   if (ui.bossSaid) return `<p class="bubble is-said" role="status">${escHtml(ui.bossSaid)}</p>`;
   if (raging(f)) return `<p class="bubble is-alarm" role="status"><b>${escHtml(t('play.rage'))}</b></p>`;
   if (f.round === f.boss.rage - 1) return `<p class="bubble is-alert" role="status">${escHtml(t('play.rageSoon'))}</p>`;
-  return `<p class="bubble" role="status">${escHtml(t('play.bossWatch'))}</p>`;
+  return `<p class="bubble" role="status">${escHtml(bossIdle(f))}</p>`;
+}
+
+/**
+ * What the boss says while nothing is resolving. This is the line most often on
+ * the screen, and it was one sentence forever.
+ *
+ * The state lines come first and the most specific wins, so the boss reacts to
+ * what is actually on the table: it cannot find you while you are Hidden, it
+ * eyes the Ally, it notices when you are nearly out of cards. What is left
+ * rotates BY ROUND rather than at random, because render() runs on every click
+ * and a random line would flicker a new sentence every time you picked a card.
+ */
+function bossIdle(f) {
+  const say = bossLines();
+  if (!say) return t('play.bossWatch');
+  if (f.hero.hidden) return say.hidden;
+  if (f.boss.braced) return say.braced;
+  if (f.boss.minions.length) return say.minions;
+  if (bossHp(f) <= f.boss.maxHp * 0.34) return say.bossHurt;
+  if (alive(f) <= 1) return say.heroHurt;
+  const idle = say.idle || [];
+  // Rounds start at 1, so without the offset the first thing a player ever
+  // sees is the second line and 'The boss watches you.' never opens a fight.
+  return idle.length ? idle[(f.round - 1) % idle.length] : t('play.bossWatch');
 }
 
 // ── The die in the empty cell ────────────────────────────────

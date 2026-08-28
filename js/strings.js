@@ -131,9 +131,11 @@ export const STRINGS = {
       // row here and no code change at all.
       rulebookFile: 'RULES.md',
       rulebookFail: 'RULES.md did not load. It ships in the repo next to this page.',
-      // A citation, as it is read: "rules §5". The section NUMBERS are the same
-      // in both rulebooks, only the word in front of them changes.
-      rulesRef: 'rules §',
+      // A citation, spelled the way a person says it out loud: "Rule 5", not
+      // "rules s5". The section symbol is a typesetting mark from legal writing
+      // and it means nothing to a child reading a card game. The section NUMBERS
+      // are the same in both rulebooks; only the word in front of them changes.
+      rulesRef: 'Rule ',
       bridgeTitle: 'Any die you own',
       bridgeLead: 'Find your row. Roll. Meet or beat the number. Three d6 track a d20 within 1.2 points at every step.',
       fidelityLead: "Worst gap between a step's stated odds and the die's real odds:",
@@ -217,6 +219,24 @@ export const STRINGS = {
       log: 'Log',
       logShow: 'Show the log', logHide: 'Hide the log',
       // The boss speaks above its own head instead of in the log
+      // What the boss says when nothing is resolving. It used to be one sentence
+      // forever, which is the line most often on the screen, so it was also the
+      // clearest chance the board had to have a personality and did not take it.
+      // The state lines are checked first and win; `idle` rotates by round.
+      say: {
+        hidden: 'It cannot see where you went.',
+        allyNear: 'It keeps glancing at the small one beside you.',
+        minions: 'The little ones circle you.',
+        bossHurt: 'It is not standing straight any more.',
+        heroHurt: 'It has noticed your hands are shaking.',
+        braced: 'It has dug in and is waiting for you.',
+        idle: [
+          'The boss watches you.',
+          'The boss has not moved. That is somehow worse.',
+          'Something in the pile shifts, and settles.',
+          'It is deciding which of you goes first.',
+        ],
+      },
       bossWatch: 'The boss watches you.',
       aimedAtYou: 'aimed at you',
       aimedAtAlly: 'aimed at your Ally',
@@ -430,7 +450,7 @@ export const STRINGS = {
       rulebookLead: 'Las reglas completas, el mismo texto que viene con las cartas. Unos diez minutos de lectura.',
       rulebookFile: 'RULES.es.md',
       rulebookFail: 'RULES.es.md no cargó. Viene en el repositorio, al lado de esta página.',
-      rulesRef: 'reglas §',
+      rulesRef: 'Regla ',
       bridgeTitle: 'Cualquier dado que tengas',
       bridgeLead: 'Busca tu fila. Tira. Iguala o supera el número. Tres d6 siguen a un d20 con menos de 1.2 puntos de diferencia en cada paso.',
       fidelityLead: 'Peor diferencia entre la probabilidad que dice un paso y la probabilidad real del dado:',
@@ -512,6 +532,20 @@ export const STRINGS = {
       log: 'Registro',
       logShow: 'Ver el registro', logHide: 'Ocultar el registro',
       // El jefe habla sobre su propia cabeza, no en el registro
+      say: {
+        hidden: 'No alcanza a ver adónde te fuiste.',
+        allyNear: 'No le quita la vista al chico que está a tu lado.',
+        minions: 'Los pequeños te dan vueltas alrededor.',
+        bossHurt: 'Ya no se para derecho.',
+        heroHurt: 'Se dio cuenta de que te tiemblan las manos.',
+        braced: 'Se afirmó y te está esperando.',
+        idle: [
+          'El jefe te mira.',
+          'El jefe no se ha movido. De alguna forma eso es peor.',
+          'Algo se mueve dentro del montón, y se acomoda.',
+          'Está decidiendo cuál de los dos parte.',
+        ],
+      },
       bossWatch: 'El jefe te mira.',
       aimedAtYou: 'apunta a ti',
       aimedAtAlly: 'apunta a tu Aliado',
@@ -609,6 +643,15 @@ export function t(path) {
  * return a STRING and tests/content.test.mjs enforces that by scanning every
  * call, which is a contract worth keeping rather than widening.
  */
+/**
+ * The boss's atmospheric lines for the current language. A table, not a string,
+ * so it does not go through t(): t() is contracted to return a STRING and
+ * tests/content.test.mjs enforces that by scanning every call.
+ */
+export function bossLines() {
+  return STRINGS[lang]?.play?.say || STRINGS.en.play.say;
+}
+
 export function reactionNames() {
   return { ...(STRINGS[lang]?.play?.reactionName || STRINGS.en.play.reactionName) };
 }

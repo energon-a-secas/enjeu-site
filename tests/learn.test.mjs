@@ -161,7 +161,7 @@ test('every step cites a rulebook section, and the citation is a jump to the rul
   }
   const html = renderLearn(S({ learnStep: 1 }));
   assert.match(html, new RegExp(`class="slide__rule" data-action="learn-step" data-step="${SLIDE_RULEBOOK}"`));
-  assert.ok(html.includes(`rules §${STEPS[1].rule}`));
+  assert.ok(html.includes(`Rule ${STEPS[1].rule}`));
 });
 
 test('every step draws its visual: a renamed visual key cannot fail quietly', () => {

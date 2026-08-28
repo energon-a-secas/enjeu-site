@@ -1,6 +1,6 @@
 # Enjeu: Rules
 
-**Players:** 1 · **Play time:** ~15 minutes per level, ~75 minutes for a five-level run · **Ages:** 10+
+**Players:** 1 · **Play time:** ~15 minutes per level, ~75 minutes for a five-level run · **Ages:** 6+ with an adult reading along, 8+ alone
 
 **You supply:** one die, any of d20, d12, d10, d8, d6, d4, 2d6 or 3d6, plus your own
 bricks and figures. **Enjeu** is not affiliated with, endorsed by, or connected to any

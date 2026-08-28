@@ -1,6 +1,6 @@
 # Enjeu: Reglas
 
-**Jugadores:** 1 · **Duración:** ~15 minutos por nivel, ~75 minutos para una partida de cinco niveles · **Edad:** 10+
+**Jugadores:** 1 · **Duración:** ~15 minutos por nivel, ~75 minutos para una partida de cinco niveles · **Edad:** 6+ con un adulto leyendo al lado, 8+ solo
 
 **Tú pones:** un dado, cualquiera de d20, d12, d10, d8, d6, d4, 2d6 o 3d6, más tus
 propios bloques y figuras. **Enjeu** no está afiliado a ningún fabricante de juguetes
