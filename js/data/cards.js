@@ -22,7 +22,7 @@ export function cards() { return _data; }
 /**
  * Add derived indexes without touching the data: every card knows its deck,
  * `byId` resolves any card, and `physical` is the deck expanded to copies
- * (90 entries), which is what the print sheet and the count test consume.
+ * (94 entries), which is what the print sheet and the count test consume.
  */
 function index(json) {
   const byId = {};

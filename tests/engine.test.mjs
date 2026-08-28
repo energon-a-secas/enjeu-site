@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { useCards } from '../js/data/cards.js';
-import { newFight, legalAttacks, attack, reroll, hide, endTurn, bossRoll, resolveBoss, take, playAdvantage, ready, spent, broken, bossHp, bossDown, effectiveStep } from '../js/game/engine.js';
+import { newFight, legalAttacks, attack, reroll, hide, endTurn, bossRoll, resolveBoss, take, playAdvantage, ready, spent, broken, bossHp, bossDown, effectiveStep, reviveStep, attemptRevive, canRevive, MAX_ROUNDS } from '../js/game/engine.js';
 import { affordable, choose, pKill, wantsBarrier, STYLES } from '../js/game/strategies.js';
 import { runCell, levels, STRIKE, FOCUS, ALL_IN, TIER } from '../js/game/sim.js';
 import { reattach } from '../js/game/run.js';
@@ -182,6 +182,106 @@ test('Advantage: Cure returns 2 Broken, Barrier cancels a pending reaction, Rune
   assert.equal(f.hero.advantage.length, 0);
 });
 
+// ── The Ally (RULES.md section 7, "The Ally") ────────────────
+// The card was a boolean until the boss could aim at it, so every one of these
+// checks an interaction that did not exist before and none of them can be
+// inferred from another. The 50 is ALLY_DEF, and the whole point of the number
+// is that it is exactly the level 1 and 2 Damage.
+const withAlly = (over = {}) => {
+  const f = basic({ advantage: ['ally'], ...over });
+  playAdvantage(f, 'ally');
+  return f;
+};
+const bossActs = (f, d6, opts) => { if (f.phase === 'act') endTurn(f); const p = bossRoll(f, d6); resolveBoss(f, opts); return p; };
+// `spent` cannot be read after resolveBoss: it starts the next round, and Recover
+// stands every Spent card back up. What the hero guarded survives only in the log.
+const guarded = (f) => f.log.reduce((n, l) => { const m = /Guarded (\d+) with/.exec(l.text); return m ? n + Number(m[1]) : n; }, 0);
+
+test('the Ally absorbs a level 1 Strike whole and stays: 50 damage against 50 defense', () => {
+  const f = withAlly();
+  const p = bossActs(f, 2);                        // Strike, 50 at level 1
+  assert.equal(p.at, 'ally', 'the die decides who it is aimed at');
+  assert.equal(p.dmg, 50);
+  assert.ok(f.hero.ally, 'still standing');
+  assert.deepEqual([ready(f), spent(f), broken(f)], [4, 0, 0], 'nothing reached the hero');
+});
+
+test('a Strike bigger than 50 sends the Ally away, and still nothing reaches the hero', () => {
+  const f = withAlly({ boss: data.byId['boss-l2'] });   // level 3: Damage 75
+  const p = bossActs(f, 2);
+  assert.equal(p.dmg, 75);
+  assert.equal(f.hero.ally, null, 'the figure comes off the table');
+  assert.equal(guarded(f), 0, 'the Ally ate the whole hit, not just its 50');
+  assert.equal(broken(f), 0);
+  // And the next Strike has nobody to hit but the hero.
+  assert.equal(bossActs(f, 2).at, 'hero');
+  assert.equal(guarded(f), 75, 'guarded with three Ready cards');
+});
+
+test('covering the Ally takes the hit whole onto the hero and keeps the figure', () => {
+  const f = withAlly();
+  const p = bossActs(f, 2, { cover: true });
+  assert.equal(p.at, 'ally');
+  assert.ok(f.hero.ally, 'the figure stays');
+  assert.equal(guarded(f), 50, 'the hero guarded all 50, not 50 minus the defense');
+  assert.ok(f.log.some((l) => /cover the Ally/.test(l.text)));
+});
+
+test('only a Strike is aimed at the Ally: Roar, Ruin, Brace and a real Summon come for you', () => {
+  for (const [d6, name] of [[1, 'Brace'], [4, 'Summon'], [5, 'Roar'], [6, 'Ruin']]) {
+    const f = withAlly();
+    if (f.phase === 'act') endTurn(f);
+    assert.equal(bossRoll(f, d6).at, 'hero', name);
+    assert.ok(f.hero.ally, `${name} left the Ally alone`);
+  }
+});
+
+test('a Summon that cannot summon is a Strike, and a Strike is aimed at the Ally', () => {
+  const f = withAlly();
+  f.boss.body = 50;                                 // too little to move 2 cards under a minion
+  if (f.phase === 'act') endTurn(f);
+  const p = bossRoll(f, 4);
+  assert.equal(p.name, 'Strike', 'the downgrade happened');
+  assert.equal(p.at, 'ally', 'and `at` was read after it, not before');
+});
+
+test('Rage goes through everything: the boss ignores the Ally and comes for you', () => {
+  const f = withAlly();
+  f.round = 4;                                      // rage round for level 1
+  f.phase = 'boss';
+  const p = bossRoll(f, 2);
+  assert.equal(p.dmg, 100, 'doubled');
+  assert.equal(p.at, 'hero', 'a raging Strike is not a hit you can hand to somebody else');
+  resolveBoss(f);
+  assert.ok(f.hero.ally, 'the Ally is untouched, not consumed');
+  assert.equal(broken(f), 4, 'and the hero took all of it, unguarded');
+});
+
+test('Barrier beats cover: a cancelled Strike deals nothing to the hero or the Ally', () => {
+  const f = withAlly({ advantage: ['ally', 'barrier'] });
+  bossActs(f, 2, { barrier: true, cover: true });
+  assert.ok(f.hero.ally);
+  assert.equal(guarded(f), 0);
+  assert.equal(broken(f), 0);
+});
+
+test('minions always strike the hero, never the Ally', () => {
+  const f = withAlly();
+  f.boss.minions.push({ hp: 100, max: 100 });
+  endTurn(f);                                       // the minion line runs inside endTurn
+  assert.ok(f.hero.ally, 'a minion has no business with the Ally');
+  assert.equal(spent(f), 1, 'the hero guarded its 25');
+});
+
+test('legacy leaves the Ally out of it entirely, so BALANCE.md parity cannot move', () => {
+  const f = withAlly({ legacy: true });
+  if (f.phase === 'act') endTurn(f);
+  assert.equal(bossRoll(f, 2).at, 'hero');
+  resolveBoss(f);
+  assert.equal(guarded(f), 50, 'the hero took it, exactly as before the rule existed');
+  assert.ok(!f.log.some((l) => /Ally/.test(l.text) && /takes it|falls/.test(l.text)));
+});
+
 test('Castle: the boss acts twice on round 1; Village: one extra Ready card', () => {
   const f = basic({ biome: { id: 'castle', element: null } });
   endTurn(f); bossRoll(f, 2);
@@ -233,8 +333,10 @@ test('Bubble: costs an action and no card, absorbs 25, and pops unused at Recove
   assert.equal(h.hero.shield, 0, 'an unused bubble pops at Recover');
 });
 
-test('Second Wind: first comeback free, then the ladder climbs, and it resets each level', async () => {
-  const { reviveStep, attemptRevive, canRevive } = await import('../js/game/engine.js');
+// Not async: `test` runs fn() inside a try and counts a pass the moment a
+// Promise comes back, so an async test's assertions were never waited on. This
+// one was async only to dynamically import what is now imported at the top.
+test('Second Wind: first comeback free, then the ladder climbs, and it resets each level', () => {
   const f = basic({ secondWind: true });
   assert.equal(canRevive(f), true);
   assert.equal(reviveStep(f), null, 'the first one is free');
@@ -270,6 +372,64 @@ test('Second Wind: first comeback free, then the ladder climbs, and it resets ea
   h.round = 4;
   take(h, 500, true);
   assert.equal(h.phase, 'lost');
+});
+
+test('a comeback resumes the step that felled you, it does not hand back a free turn', () => {
+  // The bug: attemptRevive read `f.phase = f.pending ? 'boss' : 'act'`, and
+  // resolveBoss nulls pending BEFORE applying damage, so the condition was never
+  // true. Every revived hero got a turn the boss phase never finished: no
+  // Recover, no round increment, no Castle second act, no stall cap.
+
+  // 1. Felled by the boss's reaction: the round it interrupted still ends.
+  const f = basic({ secondWind: true });
+  f.boss.damage = 500;
+  endTurn(f);
+  bossRoll(f, 6);                                  // Ruin, double damage
+  resolveBoss(f);
+  assert.equal(f.phase, 'down', 'set the fight up wrong: nothing felled the hero');
+  assert.deepEqual(f.fell, { at: 'boss' }, 'the engine records where the fall happened');
+  const r = attemptRevive(f, {});
+  assert.equal(r.ok, true);
+  assert.equal(f.round, 2, 'the round the boss phase owed the hero');
+  assert.equal(f.phase, 'act');
+  assert.equal(f.actionsLeft, 3, 'a resumed turn is a real turn, with its three actions');
+  assert.equal(f.fell, null, 'the record is consumed, not left to fire twice');
+
+  // 2. Felled by a minion mid-line: the rest of the line still strikes. Coming
+  //    back does not clear the table.
+  const g = basic({ secondWind: true });
+  g.boss.minions = [{ hp: 50, max: 50 }, { hp: 50, max: 50 }];
+  for (const c of g.hero.pool) c.st = 'broken';    // nothing left to guard with
+  endTurn(g);
+  assert.equal(g.phase, 'down', 'the first minion felled the hero');
+  assert.equal(g.fell.left, 1, 'one minion is still owed a strike');
+  assert.equal(attemptRevive(g, {}).ok, true);
+  assert.equal(g.log.filter((l) => l.text.includes('A minion strikes')).length, 2, 'both minions struck');
+  assert.equal(spent(g), 1, 'the second strike was guarded with one of the cards the comeback stood up');
+  assert.equal(g.phase, 'boss', 'the line ends where endTurn would have left it, waiting on the boss roll');
+
+  // 3. Castle round 1: the boss owes a second act, and a comeback does not cancel it.
+  const h = basic({ secondWind: true, biome: { id: 'castle' } });
+  h.boss.damage = 500;
+  endTurn(h);
+  bossRoll(h, 6);
+  resolveBoss(h);
+  assert.equal(h.phase, 'down');
+  const rh = attemptRevive(h, {});
+  assert.equal(rh.resumed, 'again', 'the caller is told Castle acts again');
+  assert.equal(h.phase, 'boss', 'still the boss phase, waiting on the second roll');
+  assert.equal(h.round, 1, 'the round does not advance while an act is owed');
+
+  // 4. The stall cap is part of that tail too, so it cannot be dodged by dying.
+  const k = basic({ secondWind: true });
+  k.boss.damage = 500;
+  k.round = MAX_ROUNDS;
+  endTurn(k);
+  bossRoll(k, 6);
+  resolveBoss(k);
+  assert.equal(k.phase, 'down');
+  assert.equal(attemptRevive(k, {}).ok, true);
+  assert.equal(k.phase, 'stall', 'a comeback on the last round is still a stall');
 });
 
 // ── 2. Strategies ────────────────────────────────────────────

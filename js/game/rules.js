@@ -79,7 +79,14 @@ export function ladderTable(ladder = DEFAULT_LADDER) {
     }),
   };
 }
-export const ladderForAid = (data) => ladderTable(data?.ladder || DEFAULT_LADDER);
+export const ladderForAid = (data) => ladderTable(data?.ladder || DEFAULT_LADDER)
+/**
+ * Everything the generated aid cards need to draw themselves: the ladder, and the
+ * boss's reaction rows exactly as cards.json states them. One function, because
+ * the browse grid, the print sheet and the detail panel each built this object by
+ * hand and a fourth site would have shipped an aid card with a blank table.
+ */
+export const aidFor = (data) => ({ ladder: ladderForAid(data), reactions: data?.boss_reaction || [] });
 
 /** Worst gap between stated and real odds, per die, for the fidelity list. */
 export function fidelity(ladder = DEFAULT_LADDER) {

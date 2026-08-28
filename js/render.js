@@ -2,7 +2,7 @@
 import { state } from './state.js';
 import { t } from './strings.js';
 import { escHtml } from './utils.js';
-import { VIEWS, reveal } from './navigate.js';
+import { VIEWS } from './navigate.js';
 import { DECKS } from './data/cards.js';
 import { glyphSvg } from './cards/glyphs.js';
 import { renderLearn } from './views/learn.js';
@@ -40,7 +40,10 @@ export function render(s) {
     default: root.innerHTML = renderLearn(s);
   }
   document.title = `${t(`nav.${s.view}`)} | Enjeu`;
-  if (s.view === 'learn' && s.param) reveal(`learn-${s.param}`);
+  // The active view on the root element, so a view's own stylesheet can claim the
+  // viewport (Learn is a slide deck and Play is a board: both are sized to fit and
+  // scroll inside their panels, while Cards and Balance are ordinary long pages).
+  document.documentElement.dataset.view = s.view;
 }
 
 export function renderError(msg) {

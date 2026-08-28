@@ -3,7 +3,7 @@
 
 import { state, loadSaved } from './state.js';
 import { loadCards } from './data/cards.js';
-import { setArtManifest } from './cards/glyphs.js';
+import { setArtManifest, loadArt } from './cards/glyphs.js';
 import { syncFromHash } from './navigate.js';
 import { render, renderError } from './render.js';
 import { bindEvents } from './events.js';
@@ -22,6 +22,10 @@ async function init() {
     ]);
     state.cards = cards;
     setArtManifest(manifest);
+    // Inlined, not linked: an <image> cannot be recoloured on paper. See the
+    // note above loadArt in cards/glyphs.js. Failure is survivable, the cards
+    // fall back to the in-house glyphs, so this does not join the try above.
+    await loadArt().catch((err) => console.warn('art did not load', err));
     if (state.run) reattach(state.run, cards);
   } catch (err) {
     renderError(t('common.loadFail'));

@@ -20,6 +20,11 @@
 //     does not spill to the body
 //   - Knight's free guard does not apply under Rage (Rage bypasses guards)
 //   - Ally lasts the level; Relic lasts the level; Rune is one check
+//   - the Ally is only ever the target of a Strike, and only when it is the
+//     boss's own reaction: a minion's 25 always comes for the hero. The
+//     rulebook (RULES.md section 7, "The Ally") names the four reactions that
+//     stay on the hero and says nothing about minions, so this is the reading
+//     that keeps a summoned line dangerous.
 
 import { UNIT, stepOdds, shiftStep, MODE_SHIFT, targetFor, beats, reactionFor } from './rules.js';
 
@@ -39,6 +44,23 @@ export function reviveStep(f) {
 }
 export const canRevive = (f) => !!f.hero.secondWind;
 export const MAX_ROUNDS = 20;
+
+/**
+ * The Ally's defense (RULES.md section 7, "The Ally"). Two units, which is what
+ * makes it a wall at levels 1 and 2 (Damage 50, nothing gets through) and a
+ * one-hit sponge from level 3 up (75, then 100). The number is the balance of
+ * the card, so it is named here rather than written into a branch.
+ */
+export const ALLY_DEF = 2 * UNIT;
+
+/**
+ * Who the boss's pending reaction is aimed at. Only a Strike, only while an Ally
+ * stands, and never under Rage: "Rage goes through everything, and it is not a
+ * hit you can hand to somebody else". Handing a raging Strike to the Ally would
+ * make the card a free 200-point shield at level 5, which is the opposite of
+ * what Rage is for.
+ */
+export const aimedAtAlly = (f, kind) => !!f.hero.ally && kind === 'strike' && !raging(f) && !f.legacy;
 
 /** A life card in the hero's pool. kind colours the mini face; st is the state. */
 const card = (kind) => ({ kind, st: 'ready' });
@@ -72,14 +94,17 @@ export function newFight(data, init) {
       element: init.hero.element, klass: init.hero.klass || null,
       pool, attacks: init.hero.attacks.map((a) => ({ ...a })),
       advantage: [...(init.advantage || [])],
-      relic: false, ally: false, rune: 0, flatBonus: init.bonus || 0, shield: 0,
+      // ally is null or a figure: { def }. It was a boolean until the boss could
+      // aim at it, and a boolean has nothing to subtract 50 from.
+      relic: false, ally: null, rune: 0, flatBonus: init.bonus || 0, shield: 0,
       penalty: false, hidden: false, hideAvailable: false,
       knightUsed: false, hunterUsed: false, lastMiss: null,
       secondWind: !!init.secondWind, revives: 0,
     },
     actionsLeft: 0,
-    phase: 'act',      // act | boss | won | lost | stall
+    phase: 'act',      // act | boss | down | won | lost | stall
     pending: null,     // a rolled boss reaction awaiting resolve (Barrier window)
+    fell: null,        // where a fall interrupted the boss phase, for attemptRevive
     log: [],
     stats: { rounds: 0, attacks: 0, hits: 0, allIns: 0 },
   };
@@ -255,6 +280,15 @@ function dealToBoss(f, target, amount, who) {
  * Attempt the comeback. Pass a die `roll` (a human) or a uniform `u` (the sim).
  * Success voids the damage that felled you and stands `returns` Broken cards
  * back up; failure ends the level exactly as before the card existed.
+ *
+ * On success the fight resumes exactly where the fall interrupted it, which is
+ * why `f.fell` exists. This used to read `f.phase = f.pending ? 'boss' : 'act'`,
+ * and the condition can never be true: both callers of `take` that can fell you
+ * run after `resolveBoss` has already nulled `pending`. So every revived hero
+ * landed in 'act' and got a turn the boss phase never finished handing over: no
+ * Recover, no round increment, no Castle second act, no stall cap. `resumeFall`
+ * finishes the interrupted step instead. Nothing outside the engine can do this,
+ * because the count of minions still owed a strike is not visible from a view.
  */
 export function attemptRevive(f, o = {}) {
   if (f.phase !== 'down') throw new Error('not Down');
@@ -268,9 +302,26 @@ export function attemptRevive(f, o = {}) {
   if (!ok) { f.phase = 'lost'; say(f, 'The comeback fails. You are Down.', 'bad'); return { ok: false, step, need }; }
   let back = o.returns ?? 2;
   for (const c of f.hero.pool) { if (back > 0 && c.st === 'broken') { c.st = 'ready'; back--; } }
-  f.phase = f.pending ? 'boss' : 'act';
   say(f, step ? `Second Wind holds! Back up with 2 cards.` : 'Second Wind: you come back free.', 'good');
-  return { ok: true, step, need };
+  return { ok: true, step, need, resumed: resumeFall(f) };
+}
+
+/**
+ * Put a revived hero back into the step that felled them. Returns what that step
+ * returned, so a caller can report Castle acting again.
+ */
+function resumeFall(f) {
+  const fell = f.fell;
+  f.fell = null;
+  f.phase = 'boss';
+  // A minion in the middle of the line felled you; the rest of the line still
+  // strikes. Coming back does not clear the table.
+  if (fell?.at === 'minions') return minionStrikes(f, fell.left);
+  if (fell?.at === 'boss') return endBossPhase(f);
+  // No record of the fall: the only way here is a caller that put the fight in
+  // 'down' itself, so hand the turn back rather than guessing at a boss phase.
+  f.phase = 'act';
+  return f.phase;
 }
 
 /** Hide: free after a Strike (or anytime in the Forest). Next hit this round halved. */
@@ -290,7 +341,7 @@ export function playAdvantage(f, id) {
       for (const c of f.hero.pool) if (n > 0 && c.st === 'broken') { c.st = 'ready'; n--; }
       say(f, 'Cure: two Broken cards return to Ready.', 'good'); break;
     }
-    case 'ally': f.hero.ally = true; say(f, 'Ally: a companion joins and Strikes for 25 each turn.', 'good'); break;
+    case 'ally': f.hero.ally = { def: ALLY_DEF }; say(f, `Ally: a companion joins, Strikes for 25 each turn and draws the boss's Strike behind ${ALLY_DEF} defense.`, 'good'); break;
     case 'rune': f.hero.rune += 1; say(f, 'Rune: one check this level succeeds automatically.', 'good'); break;
     case 'relic': f.hero.relic = true; say(f, 'Relic: every landed attack deals +25 this level.', 'good'); break;
     case 'chest': say(f, 'Chest: draw two more Advantage cards.', 'good'); f.hero.advantage.splice(i, 1); return { draw: 2 };
@@ -308,10 +359,22 @@ export function endTurn(f) {
   f.phase = 'boss';
   f.boss.braced = false; // Brace covered the hero's turn that just ended
   f.hero.hideAvailable = false;
-  for (let i = 0; i < f.boss.minions.length && f.phase === 'boss'; i++) {
+  minionStrikes(f, f.boss.minions.length);
+}
+
+/**
+ * `n` minions strike, 25 each, and the line stops the moment the hero falls.
+ * How many are still owed a strike is recorded on the fight, because a hero who
+ * comes back on Second Wind faces the rest of the line: coming back does not
+ * clear the table. Returns the phase the line left the fight in.
+ */
+function minionStrikes(f, n) {
+  for (let left = n; left > 0 && f.phase === 'boss'; left--) {
     say(f, 'A minion strikes for 25.', 'boss');
     take(f, UNIT, raging(f));
+    if (f.phase === 'down') f.fell = { at: 'minions', left: left - 1 };
   }
+  return f.phase;
 }
 
 /**
@@ -331,15 +394,36 @@ export function bossRoll(f, d6) {
     const can = f.legacy ? (f.boss.body > 100 && f.boss.minions.length < 3)
                          : (f.boss.body > 2 * f.boss.perCard && f.boss.minions.length < 3);
     if (!can) { kind = 'strike'; dmg = base; } else dmg = 0;
-    f.pending = { roll: d6, kind, dmg, chunk, rage, name: can ? 'Summon' : 'Strike' };
+    // A Summon that cannot summon IS a Strike, so it can be aimed at the Ally
+    // like any other. `at` is read after the downgrade, never before.
+    f.pending = { roll: d6, kind, dmg, chunk, rage, at: aimedAtAlly(f, kind) ? 'ally' : 'hero', name: can ? 'Summon' : 'Strike' };
     return f.pending;
   }
-  f.pending = { roll: d6, kind, dmg, rage, name: rx.name };
+  f.pending = { roll: d6, kind, dmg, rage, at: aimedAtAlly(f, kind) ? 'ally' : 'hero', name: rx.name };
   return f.pending;
 }
 
-/** Apply (or Barrier away) the pending reaction, then start the next round. */
-export function resolveBoss(f, { barrier = false } = {}) {
+/**
+ * The Ally takes a Strike. Its 50 defense comes off the top; anything left sends
+ * the figure away. Nothing reaches the hero either way, which is the whole point
+ * of the card, and nothing here can fell the hero, so there is no `fell` to
+ * record. Returns whether the Ally is still standing.
+ */
+function takeAlly(f, damage) {
+  const through = Math.max(0, damage - f.hero.ally.def);
+  if (through <= 0) { say(f, `The Ally takes it: ${f.hero.ally.def} defense absorbs all ${damage}.`, 'good'); return true; }
+  f.hero.ally = null;
+  say(f, `The Ally covers you and falls: ${through} was more than its ${ALLY_DEF} defense.`, 'bad');
+  return false;
+}
+
+/**
+ * Apply (or Barrier away) the pending reaction, then start the next round.
+ * `cover` is the hero stepping in front of an Ally the boss aimed at: the hit
+ * lands on the hero whole, guarded as normal, and the figure stays. Barrier wins
+ * over cover, because a cancelled action deals nothing to anybody.
+ */
+export function resolveBoss(f, { barrier = false, cover = false } = {}) {
   const p = f.pending;
   if (!p) throw new Error('nothing pending');
   f.pending = null;
@@ -357,16 +441,38 @@ export function resolveBoss(f, { barrier = false } = {}) {
       }
       case 'roar': say(f, `The boss Roars for ${p.dmg}. Your next check is one step harder.`, 'boss'); take(f, p.dmg, p.rage); f.hero.penalty = true; break;
       case 'ruin': say(f, `Ruin! The boss deals ${p.dmg}.`, 'boss'); take(f, p.dmg, p.rage); break;
-      default: say(f, `The boss Strikes for ${p.dmg}.`, 'boss'); take(f, p.dmg, p.rage);
+      default: {
+        // A Strike aimed at the Ally, unless the hero covers for it. `at` was
+        // decided when the die was rolled, so a cover cannot be offered for a
+        // hit that was never the Ally's.
+        const atAlly = p.at === 'ally' && f.hero.ally && !cover;
+        say(f, `The boss Strikes ${atAlly ? 'at the Ally' : ''} for ${p.dmg}.`.replace('  ', ' '), 'boss');
+        if (atAlly) takeAlly(f, p.dmg);
+        else {
+          if (p.at === 'ally' && cover) say(f, 'You cover the Ally and take it whole.', 'hero');
+          take(f, p.dmg, p.rage);
+        }
+      }
     }
   }
-  if (f.phase === 'boss') {
-    // Castle: the boss acts twice on round 1. Leave the phase open for a second roll.
-    if (f.boss.actsTwice && f.round === 1 && !f._secondAct) { f._secondAct = true; say(f, 'Castle: the boss acts again.', 'boss'); return 'again'; }
-    f._secondAct = false;
-    if (f.round >= MAX_ROUNDS) { f.phase = 'stall'; return 'stall'; }
-    startRound(f);
-  }
+  // Felled by the reaction: remember where, so a comeback finishes this step
+  // rather than being handed a turn the boss phase never completed.
+  if (f.phase === 'down') f.fell = { at: 'boss' };
+  if (f.phase === 'boss') return endBossPhase(f);
+  return f.phase;
+}
+
+/**
+ * What closes a boss phase once its damage is settled: Castle's extra act, the
+ * stall cap, or the next round. Separate from resolveBoss because attemptRevive
+ * has to run exactly this and no more when a comeback lands mid-reaction.
+ */
+function endBossPhase(f) {
+  // Castle: the boss acts twice on round 1. Leave the phase open for a second roll.
+  if (f.boss.actsTwice && f.round === 1 && !f._secondAct) { f._secondAct = true; say(f, 'Castle: the boss acts again.', 'boss'); return 'again'; }
+  f._secondAct = false;
+  if (f.round >= MAX_ROUNDS) { f.phase = 'stall'; return 'stall'; }
+  startRound(f);
   return f.phase;
 }
 

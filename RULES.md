@@ -20,7 +20,10 @@ stays clear.
 
 ## 2. The one rule that matters
 
-**Your life is your ammunition and your armour.**
+**Balance your attack and your defense.**
+
+The cards in front of you are both at once. You spend them to attack, and the ones you
+have not spent are what keeps you standing.
 
 Life cards sit in front of you in one of three states:
 
@@ -37,7 +40,8 @@ When the boss deals damage, you **must** guard: discard 25 damage per card.
   **Broken**: gone.
 
 So betting costs you nothing *as long as you leave enough Ready to guard the incoming hit*.
-Bet past that line and you start paying for it permanently. That line is the whole game.
+Bet past that line and you start paying for it permanently. Do not be greedy: that line is
+the whole game.
 
 You are **Down** when you must Break a card and have none left. The level ends and you lose.
 
@@ -153,6 +157,29 @@ you deal the boss**: those cards were the boss's life. So you never waste an act
 minion; you only choose whether to clear the small pile and stop the chip damage, or keep
 hammering the big one.
 
+### The Ally
+
+If you have played the **Ally** Advantage card, there is a second figure on your side of the
+table, and the boss can see it.
+
+- While the Ally is in play, the boss's **Strike** hits the **Ally** instead of you.
+- The Ally has **50 defense**. Subtract 50 from that damage. Anything left over sends the
+  Ally away: take the figure off the table.
+- **Brace, Summon, Roar and Ruin always come for you.** The Ally draws the plain attack and
+  nothing else.
+- Before the damage is applied you **may cover** the Ally: say so, take the hit yourself at
+  its full value, and guard it as normal (§2). The Ally stays.
+- From the **Rage** round on, the boss ignores the Ally and comes for you, for the same reason
+  your guard stops working. Rage goes through everything, and it is not a hit you can hand to
+  somebody else.
+
+The Ally's own free 25 Strike at the start of each of your turns is unchanged.
+
+That defense is why the card is worth keeping alive. Against a level 1 or 2 boss (Damage 50)
+the Ally absorbs a Strike completely and stays for the rest of the level. From level 3 up
+(75, then 100) one Strike is enough to send it away, and covering for it is a real choice:
+you take the whole hit to keep the figure, or you let the figure go.
+
 ### Rage
 
 From the **Rage** round onward, the boss deals **double** Damage, and you **cannot** guard
@@ -160,6 +187,24 @@ it with Ready cards. Every point goes straight to Broken.
 
 Rage is why you cannot win by playing it safe. Turtling behind Strike is survivable for a
 while and then it is not.
+
+### Keeping count
+
+The boss's life is the pile of cards beside its build, so the count is already on the
+table: take a card off when its value comes off. Nothing else is needed, and this
+paragraph is optional.
+
+If you would rather read one running number, use the **Damage Track** aid card. Every
+value in this game is a multiple of 25, so the track is 25, 50, 75, 100 and a box for a
+die that counts hundreds. Stand a brick on the total you have dealt and move it along.
+When the total passes 100, move the brick back to the amount over and turn the die in the
+×100 box up by one.
+
+> Deal 25: brick on 25. Deal 50 more: brick on 75. Deal 50 more, and that is 125, so the
+> brick goes back to 25 and the die turns up to 1.
+
+A die showing nothing is under 100. The track is a counter, not a rule: it changes no
+number in this rulebook.
 
 ## 8. Winning a level
 
@@ -223,10 +268,12 @@ You win the run by clearing level 5.
 
 ## 10. Components
 
-92 cards, poker size **63 × 88 mm**, on 300gsm card stock. Home printers: 9 per A4 sheet,
+94 cards, poker size **63 × 88 mm**, on 300gsm card stock. Home printers: 9 per A4 sheet,
 so 11 sheets, the last one part empty. It was exactly 10 sheets until the first
 playtest on 2026-08-27 asked for two more cards, Bubble and Second Wind; the
-round number lost to cards a real player wanted. Every card is distinguished by **both** colour and a shape or sigil, so
+round number lost to cards a real player wanted. The same playtest asked for two more
+player aids, the boss's reaction table and the Damage Track, and 11 sheets absorbed both.
+Every card is distinguished by **both** colour and a shape or sigil, so
 the deck stays readable without colour vision.
 
 **Backs.** A life card's back is its own element colour, snapped across the
@@ -247,8 +294,8 @@ is a real amount of ink on a home printer.
 | Advantage: 6 kinds × 2 | 12 |
 | Boss: S, M, L, L, XL, UM | 6 |
 | Biome | 7 |
-| Player aid: checks, turn order | 2 |
-| **Total** | **92** |
+| Player aid: checks, turn order, boss reactions, damage track | 4 |
+| **Total** | **94** |
 
 The two L cards are not a duplicate: levels 2 and 3 are both size L with different life
 and Damage, and the S card exists only as a summon. `tools/lint_cards.py` counts the deck

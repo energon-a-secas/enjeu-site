@@ -19,14 +19,17 @@ function test(name, fn) {
 function walk(dir, out = []) {
   for (const f of readdirSync(dir)) {
     const p = join(dir, f);
-    if (f === 'neorgon-header.js' || f === 'neorgon-footer.js') continue; // vendored kits are not ours to restyle
-    if (statSync(p).isDirectory()) walk(p, out); else if (/\.(js|mjs|html|md)$/.test(f)) out.push(p);
+    if (/^neorgon-/.test(f)) continue;              // vendored kits are not ours to restyle
+    if (statSync(p).isDirectory()) walk(p, out); else if (/\.(js|mjs|html|md|css)$/.test(f)) out.push(p);
   }
   return out;
 }
 
 test('no em dashes in site code, strings, docs or README (house rule; dated plans are exempt and live elsewhere)', () => {
-  const files = [...walk(join(root, 'js')), ...walk(join(root, 'tests')), join(root, 'index.html'), join(root, 'README.md'), join(root, 'RULES.md'), ...walk(join(root, 'docs')).filter((f) => f.endsWith('.md'))];
+  // css/ is in the list because the stylesheets carry as much prose as the JS:
+  // three of them were written this run, entirely in comments explaining layout
+  // decisions, and none of that was scanned before.
+  const files = [...walk(join(root, 'js')), ...walk(join(root, 'css')), ...walk(join(root, 'tests')), join(root, 'index.html'), join(root, 'README.md'), join(root, 'RULES.md'), ...walk(join(root, 'docs')).filter((f) => f.endsWith('.md'))];
   const bad = files.filter((f) => readFileSync(f, 'utf8').includes('\u2014')).map((f) => f.replace(root + '/', ''));
   assert.deepEqual(bad, []);
 });

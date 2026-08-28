@@ -154,3 +154,64 @@ export function setArtManifest(manifest) {
 }
 export function artSrc(id) { return _art[id] || null; }
 export function artCount() { return Object.keys(_art).length; }
+
+// ── Art, inlined ─────────────────────────────────────────────
+//
+// The art used to be drawn as <image href="art/x.svg"> and recoloured with an
+// SVG filter, because an <image> ignores fill and stroke. That works on screen
+// and FAILS ON PAPER: Chromium drops SVG filters when it rasterises for print
+// and for PDF, so every recoloured picture came out of the printer in the
+// source file's own black. Mostly that was merely wrong (a black flame on a
+// pink field). On the boss life card, which is a gold crown on a near-black
+// face, it printed black on black: a blank card, from a deck whose entire
+// purpose is to be printed. The bug was invisible in every browser and in
+// every test, because the markup was correct and only the rasteriser was not.
+//
+// So the art is fetched once, its colour pinning stripped, and pasted into the
+// card as ordinary paths under a <g fill="…">. Plain painting, no filter, and
+// what the screen shows is now what the printer prints.
+//
+// The downloaded files make this cheap: none of them sets fill on a path (they
+// are black by inheriting the default), one carries a `.fil0 {fill:black}`
+// rule, and none uses a gradient. Stripping <style> and class= is enough.
+let _artBody = {};
+
+/** Pull the inner markup and viewBox out of one art file, colour-neutralised. */
+export function normaliseArt(text) {
+  const vb = /viewBox="([^"]+)"/.exec(text || '');
+  if (!vb) return null;
+  const [minX, minY, w, h] = vb[1].trim().split(/[\s,]+/).map(Number);
+  if (!(w > 0 && h > 0)) return null;
+  const inner = text
+    .replace(/^[\s\S]*?<svg[^>]*>/, '')
+    .replace(/<\/svg>[\s\S]*$/, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')       // the one `.fil0 {fill:black}`
+    .replace(/<(title|desc|metadata)[\s\S]*?<\/\1>/gi, '')
+    .replace(/\sclass="[^"]*"/g, '')                // nothing to match the stripped CSS
+    .replace(/\sfill="(?!none)[^"]*"/g, '')         // keep fill="none": it cuts holes
+    .replace(/\sstyle="[^"]*"/g, '')
+    .trim();
+  return { inner, minX, minY, w, h };
+}
+
+/**
+ * Fetch every attributed art file. Call after setArtManifest and before the
+ * first render; until it resolves, cards fall back to the in-house glyphs, so
+ * a slow network shows a plain deck rather than an empty one.
+ *
+ * `read` is injectable so the tests and the print tools can load from disk
+ * instead of over HTTP, and therefore exercise the same path the browser does.
+ */
+export async function loadArt(read) {
+  const fetchText = read || (async (url) => { const r = await fetch(url); return r.ok ? r.text() : null; });
+  await Promise.all(Object.entries(_art).map(async ([id, url]) => {
+    try {
+      const body = normaliseArt(await fetchText(url));
+      if (body) _artBody[id] = body;
+    } catch { /* leave it on the glyph fallback */ }
+  }));
+  return Object.keys(_artBody).length;
+}
+
+export function artBody(id) { return _artBody[id] || null; }
+export function clearArtBodies() { _artBody = {}; }

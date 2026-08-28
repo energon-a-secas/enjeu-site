@@ -1,0 +1,299 @@
+/*
+ * ── Learn view ─────────────────────────────────────────────────
+ * The tutorial is a horizontal slide deck, not a page: the cover, one
+ * walkthrough step per slide, the dice bridge, then the whole rulebook as the
+ * last slide. The PAGE never scrolls; a slide scrolls inside itself, and only
+ * the rulebook normally needs to.
+ *
+ * The deck is styled like the printed cards on purpose: paper surfaces, a hard
+ * 3px bottom edge, gold for the current thing, no glass and no blur. Every
+ * colour, space and radius is a token from style.css.
+ *
+ * Only Learn's own blocks live here. Anything Learn shares with the runner
+ * (.action-card, .figure, .die-face, .ladder, .table-wrap, .pips) is a shared
+ * primitive and stays in style.css: a copy here would drift the moment one of
+ * the two views was touched.
+ */
+
+/* ── Claiming the viewport ─────────────────────────────────────
+ * render.js stamps the active view on <html>, so the deck can take the whole
+ * screen without any other view losing its ordinary page scroll. The flex chain
+ * (body > main#main > .view-root > .deck) is already in style.css; the one thing
+ * missing there is min-height:0 on #viewRoot, which a flex child needs before it
+ * will let a scroller inside it shrink. */
+html[data-view="learn"], html[data-view="learn"] body { height: 100dvh; overflow: hidden; }
+html[data-view="learn"] #viewRoot { min-height: 0; }
+
+.deck {
+  flex: 1; min-height: 0; width: 100%; max-width: 1100px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+}
+
+/* ── Head: kicker, the numbered rail, the counter ───────────── */
+.deck__head { flex: 0 0 auto; display: flex; align-items: center; gap: var(--space-3); }
+.deck__kicker { flex: 0 0 auto; }
+.deck__count { flex: 0 0 auto; margin-left: auto; font-variant-numeric: tabular-nums; }
+
+.deck__chapter {
+  display: inline-block; margin-right: var(--space-2); padding: 1px 8px;
+  border: 2px solid var(--border-strong); border-radius: 999px;
+  background: var(--surface-2); color: var(--text-primary);
+  font-size: var(--text-xs); font-weight: 800;
+}
+
+.rail { display: flex; gap: var(--space-4); min-width: 0; padding: 2px; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
+.rail::-webkit-scrollbar { display: none; }
+/* One group per chapter (Basics, Advanced). The label sits above its own run of
+   numbers, so the break is a thing you can see rather than a fact stated once at
+   the end of Basics. */
+.rail__group { flex: 0 0 auto; display: flex; flex-direction: column; gap: 2px; }
+.rail__label { font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+.rail__dots { display: flex; gap: 6px; }
+.rail__dot {
+  flex: 0 0 auto; width: 30px; height: 30px;
+  border: 2px solid var(--border-strong); border-radius: var(--radius-sm);
+  background: var(--surface-1); box-shadow: var(--table-edge);
+  font: inherit; font-size: var(--text-xs); font-weight: 800; color: var(--text-secondary);
+  display: grid; place-items: center; cursor: pointer;
+  transition: background-color var(--dur) var(--ease-out), color var(--dur), transform var(--dur-fast), box-shadow var(--dur-fast);
+}
+.rail__dot:hover { background: var(--surface-2); color: var(--text-primary); }
+.rail__dot:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--border-strong); }
+.rail__dot[aria-current="true"] {
+  background: var(--gold); border-color: var(--gold-deep); color: var(--text-on-accent);
+  box-shadow: 0 3px 0 var(--gold-deep);
+}
+
+/* ── Stage and slides ──────────────────────────────────────────
+ * One slide is in the DOM at a time (state.learnStep is the single source of
+ * truth for which). The entering slide slides in from the side it came from;
+ * style.css zeroes every duration under prefers-reduced-motion, so there is no
+ * JS timer anywhere in the transition. */
+.deck__stage { flex: 1; min-height: 0; display: flex; }
+.slide {
+  flex: 1; min-width: 0;
+  display: flex; overflow-y: auto; overscroll-behavior: contain;
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius-lg); box-shadow: var(--table-edge);
+  padding: var(--space-6);
+  animation: slide-in-fwd 260ms var(--ease-out);
+
+  /* A slide that fits shows nothing; one that does not gets a shadow at the edge
+     it can still be scrolled towards. That is the whole point of the four layers:
+     the two paper-coloured ones are attached `local` so they travel with the
+     content and mask the shadows off at each end, while the shadows themselves
+     are attached `scroll` and stay put. No JS, no scroll listener, and it cannot
+     lie about there being more to read. It earns its keep on a phone, where six
+     slides run past the frame; on a desktop nothing renders.
+     The limit, since a background cannot dim what is drawn over it: on a slide
+     whose last visible thing is an opaque cell (.strip__cell) the cell hides the
+     shadow, and the half-row peeking under the edge is the only signal. Prose
+     slides, which is most of them, get the shadow. */
+  background:
+    linear-gradient(var(--surface-1) 40%, rgba(255, 253, 248, 0)) top / 100% 28px no-repeat,
+    linear-gradient(rgba(255, 253, 248, 0), var(--surface-1) 60%) bottom / 100% 28px no-repeat,
+    radial-gradient(farthest-side at 50% 0, rgba(28, 25, 23, 0.3), rgba(28, 25, 23, 0)) top / 100% 16px no-repeat,
+    radial-gradient(farthest-side at 50% 100%, rgba(28, 25, 23, 0.3), rgba(28, 25, 23, 0)) bottom / 100% 16px no-repeat,
+    var(--surface-1);
+  background-attachment: local, local, scroll, scroll;
+}
+.deck[data-dir="back"] .slide { animation-name: slide-in-back; }
+@keyframes slide-in-fwd { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes slide-in-back { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+
+/* margin:auto, not justify-content:center: an auto margin collapses to 0 when
+   the content is taller than the frame, so a long slide still scrolls from its
+   own first line instead of hiding it above the scrollport. */
+.slide__in {
+  margin: auto; width: 100%;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-6); align-items: center;
+}
+/* A slide whose visual is a table: one column, copy above, table full width. */
+.slide--wide .slide__in { grid-template-columns: minmax(0, 1fr); align-content: center; gap: var(--space-4); }
+.slide--wide .slide__text p { max-width: 78ch; }
+.slide--rulebook .slide__in { display: block; margin: 0; }
+
+.slide__text { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
+.slide__title { font-size: var(--text-xl); font-weight: 800; display: flex; align-items: center; gap: var(--space-3); }
+.slide__n {
+  flex: 0 0 auto; width: 38px; height: 38px; border-radius: 50%;
+  background: var(--gold); color: var(--text-on-accent);
+  border: 2px solid var(--gold-deep); box-shadow: 0 3px 0 var(--gold-deep);
+  display: grid; place-items: center; font-size: var(--text-base); font-weight: 900;
+}
+.slide__text p { color: var(--text-secondary); max-width: 52ch; }
+.slide__rule {
+  align-self: flex-start; margin-top: var(--space-1);
+  background: none; border: 0; padding: 0; cursor: pointer;
+  font: inherit; font-size: var(--text-xs); font-weight: 700;
+  color: var(--gold-deep); text-decoration: underline; text-underline-offset: 3px;
+}
+.slide__rule:hover { color: var(--text-primary); }
+/* The end of Basics, said in place. Gold-edged so it reads as the deck talking
+   to the reader rather than as one more rule. */
+.slide__text .slide__handoff {
+  border-left: 4px solid var(--gold); padding: var(--space-1) 0 var(--space-1) var(--space-3);
+  font-weight: 700; color: var(--text-primary); max-width: 60ch;
+}
+
+/* A column, not a row: a visual is sometimes one drawing and sometimes a legend
+   above a table above a caption, and those three must stack. */
+.slide__visual { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-2); }
+.slide__visual > svg { width: 100%; max-width: 340px; height: auto; max-height: 40vh; }
+.slide__visual > .table-wrap, .slide__visual > .checks, .slide__visual > p, .slide__visual > .row { width: 100%; }
+.slide__visual--hero > svg { max-width: 380px; }
+.slide__visual--table { align-items: stretch; }
+
+/* ── The cover ─────────────────────────────────────────────── */
+.cover__title { font-size: var(--text-3xl); font-weight: 900; line-height: 1.05; letter-spacing: -0.02em; }
+.cover__title em { font-style: normal; color: var(--gold-deep); }
+.cover__lead { font-size: var(--text-lg); color: var(--text-secondary); max-width: 46ch; }
+
+/* ── Foot: Back, the hint, Next ────────────────────────────── */
+.deck__foot { flex: 0 0 auto; display: flex; align-items: center; gap: var(--space-3); }
+.deck__btn { min-width: 110px; }
+.deck__hint { margin: 0 auto; text-align: center; }
+.chev { width: 16px; height: 16px; flex: 0 0 auto; }
+
+/* ── Teaching visuals ──────────────────────────────────────── */
+/* Card art inside a slide is sized by HEIGHT: the slide has a fixed budget and
+   the cards.css widths (110px for a hand card) would ignore it. */
+.slide .sk-card--hand { width: auto; height: 100%; }
+
+.states { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); width: 100%; }
+.state { text-align: center; }
+.state__face { height: clamp(104px, 22vh, 168px); display: grid; place-items: center; }
+.state__face .sk-card { transition: transform 600ms var(--ease-out); }
+/* Spent is the card turned sideways, the physical game's own gesture. Broken is
+   NOT a mirrored face: face.js draws the real printed back for it (cardBack),
+   so it needs no transform at all. A rotateY(180deg) here would mirror that
+   back and teach a card the printer never makes. */
+.state--spent .state__face .sk-card { transform: rotate(90deg); }
+.state h4 { font-weight: 800; font-size: var(--text-base); }
+.state p { font-size: var(--text-xs); color: var(--text-secondary); }
+
+.slide .action-cards { width: 100%; }
+.slide .action-cards--three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.slide .action-cards--four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.slide .action-card .sk-card { width: auto; height: clamp(96px, 19vh, 150px); }
+
+/* A campaign or components table sits under another visual in the same half
+   slide, so its rows are tighter than a table that has a slide to itself. */
+.ladder--tight th, .ladder--tight td { padding: 4px 8px; font-size: var(--text-xs); }
+
+.strip { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--space-2); width: 100%; }
+.strip--four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.strip__cell { text-align: center; padding: var(--space-3) var(--space-2); border: 2px solid var(--border-strong); border-radius: var(--radius); background: var(--surface-1); box-shadow: var(--table-edge); }
+.strip__cell svg { width: 32px; height: 32px; }
+.strip__cell b { display: block; font-size: var(--text-sm); }
+.strip__cell span { font-size: var(--text-xs); color: var(--text-muted); }
+/* The components counts: the number is the thing, the deck name labels it. Three
+   across, because there are nine printed decks (DECKS in js/data/cards.js) and
+   four across leaves the ninth alone on its own row. */
+.strip--counts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.strip--counts .strip__cell b { font-size: var(--text-xl); font-variant-numeric: tabular-nums; }
+/* The boss table's roll, drawn as the die it is. Smaller than the runner's
+   .die-face, which is a real die being rolled and not a table row. */
+.strip__die {
+  display: grid; place-items: center; width: 30px; height: 30px; margin: 0 auto 4px;
+  border: 2px solid var(--text-primary); border-radius: 8px; background: var(--surface-1);
+  font-size: var(--text-sm); font-weight: 900; font-variant-numeric: tabular-nums;
+}
+
+/* ── The Damage Track, worked through ──────────────────────────
+   Three rows, each a caption, the four bands with the brick on one of them, and
+   the sentence that says why it moved. The drawing is a fixed-width SVG rather
+   than a stretchy one: these are three snapshots of the same track, and a track
+   that changes width between them stops reading as the same object. */
+.track { list-style: none; display: flex; flex-direction: column; gap: var(--space-3); width: 100%; margin: 0; padding: 0; }
+.track__row {
+  display: grid; grid-template-columns: 8.5rem auto minmax(0, 1fr);
+  align-items: center; gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--border); border-radius: var(--radius); background: var(--surface-2);
+}
+.track__deal { font-size: var(--text-sm); font-weight: 800; }
+.slide__visual .track__snap { width: 268px; max-width: 100%; height: auto; }
+.track__note { font-size: var(--text-xs); color: var(--text-secondary); }
+
+/* The four checks, in the card's own traffic light (the dots come from
+   face.js riskDots, so the page cannot teach a ramp the paper does not print). */
+.checks { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
+.checks__item {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border: 2px solid var(--border); border-radius: 999px;
+  background: var(--surface-2); font-size: var(--text-xs);
+}
+.checks__item b { font-weight: 800; }
+.checks__item i { font-style: normal; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+/* ── The rulebook, as the last slide ───────────────────────── */
+/* The one slide that scrolls: .slide is the scroller, so the heading can stay
+   put at the top of it while eleven sections of rules move underneath. */
+.slide--rulebook .slide__head {
+  position: sticky; top: 0; z-index: 1;
+  background: var(--surface-1); border-bottom: 2px solid var(--border);
+  padding-bottom: var(--space-2); margin-bottom: var(--space-4);
+}
+.rulebook { max-width: 72ch; }
+.rulebook h3 { font-size: var(--text-2xl); font-weight: 900; margin: var(--space-8) 0 var(--space-3); }
+.rulebook h4 { font-size: var(--text-xl); font-weight: 800; margin: var(--space-6) 0 var(--space-2); }
+.rulebook h5 { font-size: var(--text-lg); font-weight: 800; margin: var(--space-4) 0 var(--space-2); }
+.rulebook p, .rulebook li { color: var(--text-secondary); margin-bottom: var(--space-2); }
+.rulebook ul, .rulebook ol { padding-left: 1.3em; }
+.rulebook table { border-collapse: collapse; margin: var(--space-3) 0 var(--space-4); font-size: var(--text-sm); width: 100%; }
+.rulebook th, .rulebook td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top; }
+.rulebook th { background: var(--surface-2); }
+.rulebook blockquote { border-left: 4px solid var(--gold); padding-left: var(--space-4); color: var(--text-secondary); margin: var(--space-3) 0; }
+.rulebook pre { background: var(--surface-2); padding: var(--space-3); border-radius: var(--radius-sm); overflow-x: auto; font-size: var(--text-xs); }
+.rulebook hr { border: 0; border-top: 2px solid var(--border); margin: var(--space-8) 0; }
+
+/* ── Narrow ────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .slide__in { grid-template-columns: minmax(0, 1fr); }
+  .slide__visual > svg { max-height: 30vh; }
+  .cover__title { font-size: var(--text-2xl); }
+}
+@media (max-width: 600px) {
+  .deck { padding: var(--space-3) var(--space-4); gap: var(--space-2); }
+  .deck__kicker, .deck__hint { display: none; }
+  /* All twelve numbers have to fit at once: a rail that has to be scrolled to
+     find the slide you are on stops being a map, and it re-renders at scroll 0
+     every move. Twelve dots need 320px, and the counter left only 298 of a 390px
+     screen, so "12" sat behind it. Measured: they fit from 360px up, and 320px
+     clips the last one (where the header nav already overflows anyway).
+     The counter is what goes, because the rail
+     already says the same thing in the same glance (the current dot is the gold
+     one) and it is the only piece of the head that is pure duplication. It stays
+     in the accessibility tree, where it is not duplication: same declarations as
+     .sr-only in style.css. The chapter labels go for the same reason, the gap
+     between the two groups still shows the break, and every dot names its
+     chapter to a screen reader either way. */
+  .deck__count {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;
+  }
+  .rail { gap: var(--space-3); }
+  .rail__label { display: none; }
+  .rail__dots { gap: 4px; }
+  .rail__dot { width: 22px; height: 22px; border-width: 1.5px; }
+  .deck__chapter { display: none; }
+  /* The caption above, the drawing and its sentence below: at this width the
+     three-column row leaves the note about eight characters wide. */
+  .track__row { grid-template-columns: minmax(0, 1fr); justify-items: start; gap: var(--space-1); }
+  .slide { padding: var(--space-4); }
+  .slide__in { gap: var(--space-4); }
+  .slide__title { font-size: var(--text-lg); }
+  .slide__n { width: 32px; height: 32px; font-size: var(--text-sm); }
+  .deck__btn { min-width: 0; flex: 1; }
+  .strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .strip--four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* The counts are a number and one word, so they stay three across on a phone:
+     two across is five rows of scroll for something meant to be scanned. */
+  .strip--counts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .strip--counts .strip__cell { padding: var(--space-2) 4px; }
+  .strip--counts .strip__cell b { font-size: var(--text-base); }
+  .state__face { height: clamp(92px, 16vh, 130px); }
+}

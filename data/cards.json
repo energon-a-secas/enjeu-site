@@ -87,7 +87,7 @@
   "advantage": [
     { "id": "cure",    "name": "Cure",    "icon": "adv-cure",    "copies": 2, "effect": "Return 2 Broken life cards to Ready." },
     { "id": "barrier", "name": "Barrier", "icon": "adv-barrier", "copies": 2, "effect": "Cancel one boss action entirely." },
-    { "id": "ally",    "name": "Ally",    "icon": "adv-ally",    "copies": 2, "effect": "Place a companion figure. At the start of each of your turns it Strikes for 25, free." },
+    { "id": "ally",    "name": "Ally",    "icon": "adv-ally",    "copies": 2, "effect": "Place a companion figure. It Strikes for 25 free at the start of each of your turns. The boss's Strike hits it instead of you and it has 50 defense. You may cover it." },
     { "id": "rune",    "name": "Rune",    "icon": "adv-rune",    "copies": 2, "effect": "One check this level succeeds automatically. Declare it before rolling." },
     { "id": "relic",   "name": "Relic",   "icon": "adv-relic",   "copies": 2, "effect": "Every attack you land this level deals +25." },
     { "id": "chest",   "name": "Chest",   "icon": "adv-chest",   "copies": 2, "effect": "Draw 2 more Advantage cards." }
@@ -138,7 +138,11 @@
 
   "aid": [
     { "id": "aid-checks", "name": "Dice Bridge", "content": "The four-step ladder and every die's target number. See docs/DICE-BRIDGE.md." },
-    { "id": "aid-turn",   "name": "Turn Order",  "content": "Recover, Act (3), Minions strike, Boss acts." }
+    { "id": "aid-turn",   "name": "Turn Order",  "content": "Recover, Act (3), Minions strike, Boss acts." },
+    { "id": "aid-boss",   "name": "Boss Reactions", "content": "The d6 the boss rolls every round: 1 Brace, 2-3 Strike, 4 Summon, 5 Roar, 6 Ruin. A boss card may override a row.",
+      "$note": "Added 2026-08-27 with the second playtest. The rows are NOT written on this card: it draws boss_reaction below, so the printed aid cannot drift from the rule the engine reads." },
+    { "id": "aid-track",  "name": "Damage Track", "content": "A running total in four 25s, plus a box for a die that counts hundreds. Stand a brick on the total; past 100 the brick starts again and the die turns up one. See RULES.md section 7, Keeping count.",
+      "$note": "Added 2026-08-27. A counter, not a rule: it changes no number in the rulebook, and a player who prefers to take cards off the boss's pile never needs it." }
   ],
 
   "element_cycle": {

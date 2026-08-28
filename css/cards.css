@@ -17,4 +17,7 @@
 .sk-card--sheet { width: 63mm; height: 88mm; }
 .sk-card--browse { width: 100%; }
 .sk-card--hand { width: 110px; }
-.sk-card--mini { width: 38px; }
+/* The runner's piles size their own minis: a life card carries a numeral now
+ * that it renders through the real face renderer, and 38px is below the width
+ * that numeral survives. Views set --mini-w on the container. */
+.sk-card--mini { width: var(--mini-w, 38px); }

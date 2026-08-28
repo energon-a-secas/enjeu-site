@@ -14,11 +14,11 @@ export const RUN_KINDS = ['first', 'full'];
 const ELEMENT_BIOMES = ['volcano', 'river', 'mountain', 'desert'];
 
 /** Set up a run. Nothing is fought yet. */
-export function newRun(data, { kind = 'full', element = 'fire', die = 'd20', mode = 'standard' } = {}) {
+export function newRun(data, { kind = 'full', element = 'fire', die = 'd20', mode = 'standard', secondWind = false } = {}) {
   const deck = [];
   for (const a of data.advantage) for (let i = 0; i < (a.copies || 1); i++) deck.push(a.id);
   return {
-    kind, element, die, mode,
+    kind, element, die, mode, secondWind,
     level: 1, klass: null,
     skills: [],                                   // card ids taken at drafts
     skillPool: data.skill.filter((c) => c.tier === 0).map((c) => c.id),  // tier 0 sits in the pool from the start
@@ -55,6 +55,12 @@ export function startLevel(run, data) {
     hero: { element: run.element, klass: run.klass, pool: poolFor(run), attacks: attacksFor(run, data) },
     biome: { id: biome.id, element: biome.element, rule: biome.rule },
     die: run.die, mode: run.mode,
+    // The Second Wind card is put in play for the whole run or left in the box,
+    // and the engine resets its ladder per fight (RULES: the first comeback is
+    // free EACH level). Without this hop the engine's whole revive path was
+    // unreachable from the runner, which is what "I cannot use the card to
+    // resurrect" was: the rule worked and nothing ever switched it on.
+    secondWind: !!run.secondWind,
     advantage: run.kind === 'full' ? run.hand.splice(0) : [],
   });
   fight.roster = roster; fight.biomeCard = biome.id; fight.minionRoster = MINION;

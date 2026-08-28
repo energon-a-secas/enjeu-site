@@ -110,6 +110,11 @@ export function playOpeners(f, drawFn) {
 export function wantsBarrier(f, pending) {
   if (!f.hero.advantage.includes('barrier')) return false;
   if (pending.dmg <= 0) return false;
+  // A hit the Ally is standing in front of costs the hero nothing at all, so a
+  // Barrier spent on it buys one figure and loses the answer to the next Ruin.
+  // Measured before this line existed: at level 3 every Ally that "survived" a
+  // 75-damage Strike survived because a Barrier had been spent on it.
+  if (pending.at === 'ally' && f.hero.ally) return false;
   const cards = pending.dmg / UNIT;
   if (pending.kind === 'ruin') return true;
   if (pending.rage) return cards >= 2;

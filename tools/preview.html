@@ -1,0 +1,64 @@
+<!doctype html>
+<!--
+  Card-face bench. Not part of the site: it is the rig used to judge a face
+  change side by side, without scrolling the whole 90-card browser.
+  Open http://localhost:8871/tools/preview.html (make serve).
+
+  <base href="/"> is load-bearing. glyphs.js resolves art as the relative
+  "art/<id>.svg", which from /tools/ would 404 and silently fall back to the
+  in-house glyph: the bench would then show a picture the printed sheet does
+  not, which is the one thing a bench must never do.
+-->
+<meta charset="utf-8">
+<base href="/">
+<title>Enjeu card bench</title>
+<link rel="stylesheet" href="css/cards.css">
+<style>
+  /* ?w=190 widens every cell, for judging one card closely. */
+  body { margin: 0; padding: 24px; background: #f6f3ec; font: 14px/1.4 -apple-system, system-ui, sans-serif; }
+  h2 { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: #6b6355; margin: 28px 0 10px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, var(--w, 118px)); gap: 14px; align-items: start; }
+  .grid.small { grid-template-columns: repeat(auto-fill, 76px); }
+  .cell { width: var(--w, 118px); }
+  .cell .sk-card { width: 100%; height: auto; }
+  .cap { font-size: 11px; color: #6b6355; text-align: center; padding-top: 4px; }
+  .small .cell { width: 76px; }
+</style>
+<div id="out">loading…</div>
+<script type="module">
+  import { cardFace, cardBack } from '/js/cards/face.js';
+  import { loadCards } from '/js/data/cards.js';
+  import { setArtManifest, loadArt } from '/js/cards/glyphs.js';
+  import { ladderForAid } from '/js/game/rules.js';
+
+  const w = new URLSearchParams(location.search).get('w');
+  if (w) document.body.style.setProperty('--w', `${w}px`);
+
+  setArtManifest(await (await fetch('/data/art-manifest.json')).json());
+  await loadArt();
+  const data = await loadCards('/data/cards.json');
+
+  const pick = (ids) => ids.map((id) => data.byId[id]).filter(Boolean);
+  const groups = [
+    ['Attack + skills (the working deck)', pick(['strike', 'focus', 'all-in', 'bubble', 'slash', 'firebolt', 'ice-spear', 'boulder', 'gale', 'meteor', 'cataclysm', 'soul-strike', 'reaper', 'nova'])],
+    ['Life', pick(['life-fire', 'life-water', 'life-earth', 'life-wind', 'life-extra', 'life-boss'])],
+    ['Class / advantage / mode', pick(['knight', 'mage', 'cure', 'chest', 'barrier', 'relic', 'second-wind'])],
+    ['Biome / boss', pick(['volcano', 'forest', 'castle', 'boss-s', 'boss-m', 'boss-xl'])],
+    ['Player aids (where the risk ramp is taught)', pick(['aid-checks', 'aid-turn'])],
+  ];
+  const opts = { size: 'browse', aid: { ladder: ladderForAid(data) } };
+  let html = '';
+  for (const [title, cards] of groups) {
+    html += `<h2>${title}</h2><div class="grid">`;
+    for (const c of cards) html += `<div class="cell">${cardFace(c, opts)}<div class="cap">${c.name}</div></div>`;
+    html += '</div>';
+  }
+  html += '<h2>At hand size</h2><div class="grid small">';
+  for (const c of pick(['strike', 'firebolt', 'ice-spear', 'boulder', 'gale', 'meteor', 'life-fire', 'life-extra'])) {
+    html += `<div class="cell">${cardFace(c, { size: 'browse' })}</div>`;
+  }
+  html += '</div><h2>Backs</h2><div class="grid">';
+  for (const k of ['fire', 'water', 'earth', 'wind', 'extra', 'skill']) html += `<div class="cell">${cardBack(k)}<div class="cap">${k}</div></div>`;
+  html += '</div>';
+  document.getElementById('out').innerHTML = html;
+</script>

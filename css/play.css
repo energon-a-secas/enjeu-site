@@ -1,0 +1,410 @@
+/*
+ * ── Play view (the runner) ─────────────────────────────────────
+ * The board has one hard requirement: IT FITS. A player on a 1280x720 or
+ * 1440x900 desktop must never scroll the page to reach the button that
+ * resolves their turn. Panels scroll inside themselves; the page does not.
+ *
+ * How that is achieved, because it is not obvious from any one rule:
+ *   1. render.js sets html[data-view="play"], which is the only seam this file
+ *      has into the document element. Everything below is scoped to it, so no
+ *      other view inherits a locked viewport.
+ *   2. The flex chain from style.css (body > main#main > .view-root) is carried
+ *      down through .board-fit > .fight-grid > .fight-main, and every link in
+ *      it gets min-height:0. Without that a flex child refuses to shrink below
+ *      its content and the page grows instead of the panel scrolling.
+ *   3. Card sizes are vh-based clamp() tokens, not a table of breakpoints. The
+ *      cards shrink with the window, so the layout does not have to change
+ *      shape at 800px tall to keep the resolve button on screen.
+ * Below 900px wide it goes back to being an ordinary scrolling column: a phone
+ * has no height to claim and pinning the board there just hides things.
+ *
+ * Only the runner's own blocks live here. Anything the runner shares with
+ * Learn (.action-card, .figure, .die-face, .ladder, .table-wrap, .pips) is a
+ * shared primitive in style.css.
+ */
+
+/* ── The viewport claim ────────────────────────────────────── */
+@media (min-width: 901px) {
+  /* :has() so ONLY the fight locks the page. Setup, the draft and the endings
+     are ordinary documents and must still scroll. */
+  html[data-view="play"] body:has(.board-fit) { height: 100dvh; overflow: hidden; }
+  html[data-view="play"] .view-root { min-height: 0; }
+  html[data-view="play"] .view-root > .board-fit { min-height: 0; }
+
+  .board-fit {
+    max-width: 1520px; flex: 1; min-height: 0;
+    display: flex; flex-direction: column; gap: 6px;
+    padding: 8px var(--space-4) 6px;
+    /* Everything card-shaped, sized from the window's height. */
+    --hand-w: clamp(58px, 9.6vh, 96px);
+    --plan-w: clamp(24px, 3.8vh, 34px);
+    --tbl-w: clamp(22px, 3.4vh, 32px);
+    --fig: clamp(42px, 8.2vh, 92px);
+  }
+  .board-fit .fight-grid { flex: 1; min-height: 0; }
+}
+
+/* ── The grid: rail, fight, log ─────────────────────────────── */
+/* The first column is a 74px rail, down from 158px: the labels that used to sit
+   beside each pile clipped themselves to "ge" and "es" at that width, so they
+   moved into the title and the 84px went to the arena. The third column is the
+   log, and closing it hands its 262px over too. */
+.fight-grid {
+  display: grid; grid-template-columns: 74px minmax(0, 1fr) 262px;
+  gap: var(--space-3); align-items: stretch;
+}
+/* Two columns, because the closed log is not rendered at all: hiding sixty
+   log lines with CSS would still build them on every single render. */
+.fight-grid[data-log="closed"] { grid-template-columns: 74px minmax(0, 1fr); }
+.fight-main { display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+.fight-side { min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 4px; }
+/* The rail must NOT scroll: a hovered slot grows 4x out of its own box, and any
+   overflow on this axis clips the enlargement that is the point of the hover.
+   Six slots at ~64px fit the height budget without scrolling anyway. */
+.fight-table { overflow: visible; display: flex; flex-direction: column; gap: 4px; align-items: center; }
+@media (max-width: 1180px) {
+  .fight-grid { grid-template-columns: 68px minmax(0, 1fr) 210px; }
+  .fight-grid[data-log="closed"] { grid-template-columns: 68px minmax(0, 1fr); }
+}
+@media (max-width: 900px) {
+  .fight-grid, .fight-grid[data-log="closed"] { grid-template-columns: minmax(0, 1fr); }
+  .fight-side { overflow: visible; }
+  .fight-table { flex-direction: row; flex-wrap: wrap; justify-content: flex-start; }
+  .board-fit { --hand-w: 84px; --plan-w: 32px; --tbl-w: 30px; --fig: 72px; }
+}
+
+.fight-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
+.fight-bar__who { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.fight-bar__who b { font-size: var(--text-lg); }
+
+/* ── The rest of the table (the left rail) ─────────────────── */
+/* Hover, or focus, and the card grows out of the rail over the arena. Pure CSS
+   and pure transform: nothing reflows, so the rail cannot shift under the
+   pointer that is enlarging it. transform-origin sits on the left edge so the
+   card grows rightwards into the board and never off the window. */
+.tbl-slot {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 1px;
+  font: inherit; padding: 0; border: 0; background: none; color: inherit;
+  /* Content width, never 100%: under 900px the rail turns into a row, and six
+     full-width slots there widened the grid track past the viewport. */
+  width: max-content; max-width: 100%;
+}
+button.tbl-slot { cursor: zoom-in; }
+.tbl-slot__art { display: block; --mini-w: var(--tbl-w); transition: transform 180ms var(--ease-out); }
+.tbl-slot:hover, .tbl-slot:focus-visible { z-index: 30; }
+.tbl-slot:hover .tbl-slot__art, .tbl-slot:focus-visible .tbl-slot__art {
+  transform: scale(4.2); transform-origin: left center;
+  filter: drop-shadow(0 6px 18px rgb(0 0 0 / 0.32));
+}
+/* An empty slot has nothing to enlarge: scaling its dashed outline 4x put a grey
+   rectangle over the arena and read as a rendering fault. */
+.tbl-slot:hover .tbl-slot__art:has(.stack-of.is-empty),
+.tbl-slot:focus-visible .tbl-slot__art:has(.stack-of.is-empty) { transform: none; filter: none; }
+.tbl-slot__n { font-size: 9px; font-weight: 800; color: var(--text-muted); line-height: 1.1; text-align: center; }
+/* A pile is a stack, not a spread: three cards of offset says "there are more"
+   in 8px of width, which is all the board can spare for a deck nobody touches. */
+.stack-of { position: relative; display: inline-block; width: var(--tbl-w); height: calc(var(--tbl-w) * 88 / 63); }
+.stack-of__c { position: absolute; top: 0; left: 0; transform: translate(calc(var(--i) * 3px), calc(var(--i) * -2px)); }
+/* A deck that is in the box reads as an empty slot, not as nothing: invisible,
+   the Skills rail slot looked like a rendering bug rather than a pile you do
+   not have yet. */
+.stack-of.is-empty {
+  border: 2px dashed var(--border-strong); border-radius: 3px; opacity: 0.28;
+  box-sizing: border-box;
+}
+
+/* ── The arena ─────────────────────────────────────────────── */
+/* A duel on a diagonal. The boss is top-right and the hero bottom-left, which
+   is the arrangement the request asked for and the one that reads as two sides
+   facing each other rather than as two rows of a table. The two cells that
+   diagonal leaves over are not padding: the die goes opposite the boss, where
+   the eye already is while waiting for a roll, and the gear shelf goes under
+   the boss, next to the hero it belongs to. DOM order is boss, die, hero,
+   shelf, so the single-column stack under 700px still reads top to bottom. */
+.arena {
+  display: grid; min-height: 0; flex: 1 1 auto; align-content: space-between;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto auto; gap: 8px var(--space-4);
+  background: var(--surface-2); border-radius: var(--radius); padding: 8px 10px;
+  border: 2px solid var(--border);
+}
+.arena__boss { grid-area: 1 / 2; align-items: flex-end; text-align: right; }
+.arena__die { grid-area: 1 / 1; align-items: center; justify-content: center; gap: 4px; }
+.arena__hero { grid-area: 2 / 1; align-items: flex-start; }
+.arena__shelf { grid-area: 2 / 2; align-items: flex-end; justify-content: flex-end; gap: 3px; }
+.arena > * { display: flex; flex-direction: column; min-width: 0; gap: 4px; }
+
+.arena__side { display: flex; align-items: center; gap: var(--space-3); width: 100%; }
+/* Row-reverse, not a reordered figure: the boss's figure belongs on the outer
+   edge of its own half, so the two figures face across the empty middle. */
+.arena__boss .arena__side { flex-direction: row-reverse; }
+.arena__stat { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.arena__boss .arena__stat { align-items: flex-end; }
+.arena .figure { gap: 0; font-size: 10px; position: relative; flex: none; }
+.arena .figure svg { width: var(--fig); height: var(--fig); }
+.arena .figure.is-missed svg { animation: shudder 400ms var(--ease-out); }
+/* The selected target is ringed here AND on its chip in the strip below, so the
+   link between "the chip I pressed" and "the figure I am about to hit" is drawn
+   rather than left to be inferred. */
+.arena__boss.is-target > .arena__side .figure {
+  outline: 3px solid var(--gold-deep); outline-offset: 3px; border-radius: 10px;
+}
+/* A damage numeral that floats off the figure that took it. Absolute so it
+   cannot push the board a pixel taller on the frame it appears. */
+.fx-num {
+  position: absolute; left: 50%; top: -2px; transform: translateX(-50%);
+  font-weight: 900; font-size: var(--text-base); color: var(--ok);
+  animation: float-up 900ms var(--ease-out) forwards; pointer-events: none; white-space: nowrap;
+}
+.fx-num--bad { color: var(--danger); }
+
+@media (max-width: 700px) {
+  .arena { grid-template-columns: 1fr; grid-template-rows: none; }
+  .arena__boss, .arena__die, .arena__hero, .arena__shelf { grid-area: auto; align-items: flex-start; text-align: left; }
+  .arena__boss .arena__side { flex-direction: row; }
+  .arena__boss .arena__stat, .arena__shelf { align-items: flex-start; }
+  .arena__shelf .gear-row, .arena__boss .targets { justify-content: flex-start; }
+}
+
+/* ── The boss speaks ───────────────────────────────────────── */
+/* Over its own head, with a border-drawn tail pointing down at the figure. It
+   replaces reading the log for intent, and it replaces the full-width rage
+   banner that used to say the same thing again two rows higher. */
+.bubble {
+  position: relative; margin: 0 0 8px; max-width: 34ch; align-self: flex-end;
+  padding: 5px 10px; border: 2px solid var(--border-strong); border-radius: 12px;
+  background: var(--surface-1); box-shadow: var(--shadow-sm, 0 2px 6px rgb(0 0 0 / 0.12));
+  font-size: var(--text-xs); font-weight: 700; line-height: 1.25;
+  animation: bubble-in 260ms var(--ease-out);
+  --bubble-bg: var(--surface-1);
+}
+.bubble b { display: block; }
+.bubble span { font-weight: 600; color: var(--text-secondary); }
+.bubble::before, .bubble::after { content: ''; position: absolute; right: 26px; border: 0 solid transparent; border-style: solid; }
+.bubble::before { bottom: -12px; border-width: 12px 9px 0; border-top-color: var(--border-strong); }
+.bubble::after { bottom: -8px; right: 29px; border-width: 9px 6px 0; border-top-color: var(--bubble-bg); }
+.bubble.is-alert { border-color: var(--gold-deep); }
+.bubble.is-alert::before { border-top-color: var(--gold-deep); }
+.bubble.is-alarm {
+  background: #fee2e2; color: #7f1d1d; border-color: #b91c1c; --bubble-bg: #fee2e2;
+  animation: bubble-in 260ms var(--ease-out), flash 700ms var(--ease-out);
+}
+.bubble.is-alarm::before { border-top-color: #b91c1c; }
+.bubble.is-alarm span { color: #991b1b; }
+.bubble.is-said { border-style: dashed; }
+@media (max-width: 700px) { .bubble { align-self: flex-start; } .bubble::before { right: auto; left: 26px; } .bubble::after { right: auto; left: 29px; } }
+
+/* ── The die in the empty cell ─────────────────────────────── */
+.arena__die .die-face {
+  width: clamp(46px, 7.6vh, 78px); height: clamp(46px, 7.6vh, 78px);
+  font-size: clamp(18px, 3vh, 30px);
+}
+.arena__die .die-face svg { width: 56%; height: 56%; }
+.arena__die small { text-align: center; max-width: 16ch; line-height: 1.15; }
+/* Waiting for a roll the die rocks: the board is asking for a die, and a still
+   die on an empty cell reads as decoration. Rocking, it reads as a prompt. */
+.die-face.is-waiting { border-color: var(--gold-deep); color: var(--gold-deep); animation: rock 1.6s var(--ease-out) infinite; }
+.die-face.is-good { border-color: var(--ok); color: var(--ok); }
+.die-face.is-bad { border-color: var(--danger); color: var(--danger); }
+
+/* ── The gear shelf ────────────────────────────────────────── */
+/* Five slots that are always there. An empty one is a dimmed dashed outline
+   rather than nothing, so the shelf does not reflow every time one fills. */
+.gear-row { display: flex; flex-wrap: wrap; gap: 5px; justify-content: flex-end; }
+.gear {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px;
+  width: clamp(42px, 6.6vh, 60px); min-height: clamp(44px, 7vh, 62px); padding: 4px 2px;
+  border: 2px dashed var(--border-strong); border-radius: 10px; background: var(--surface-1);
+  font-size: 9px; font-weight: 800; line-height: 1.1; text-align: center; opacity: 0.4;
+}
+/* No animation on .is-on: it persists across renders, and render.js replaces the
+   markup wholesale, so an animation here would replay on every unrelated click.
+   Only the fx classes below animate, and play.js clears those after one render. */
+.gear.is-on { opacity: 1; border-style: solid; border-color: var(--gold-deep); }
+.gear svg { width: 20px; height: 20px; flex: none; }
+.gear small { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.gear--ally svg { width: clamp(26px, 4.4vh, 40px); height: auto; }
+.gear--ally.is-struck { animation: shake 420ms var(--ease-out); border-color: var(--ok); }
+.gear--ally.is-lost { animation: gear-lost 700ms var(--ease-out); border-color: var(--danger); color: var(--danger); }
+
+/* ── Life piles ────────────────────────────────────────────── */
+/* Spent is the card turned sideways, which is the physical game's own gesture.
+   Broken is NOT a mirrored face: face.js renders the real printed back for it,
+   so the only styling it needs is to sit back visually. A rotateY(180deg) here
+   would mirror that back and undo the point of showing it. */
+.pile { display: flex; flex-wrap: wrap; gap: 4px; align-items: flex-end; --mini-w: clamp(24px, 4vh, 40px); }
+.pile .lc { width: var(--mini-w); height: auto; transition: transform 400ms var(--ease-out), opacity 300ms; }
+.pile .lc.is-spent { transform: rotate(90deg) translateY(-2px); }
+.pile .lc.is-broken { opacity: 0.5; filter: saturate(0.7); }
+.pile--boss { --mini-w: clamp(20px, 3.4vh, 34px); }
+.pile-label { font-size: var(--text-xs); color: var(--text-muted); font-weight: 700; }
+
+/* ── Target selection ──────────────────────────────────────── */
+/* The strip is always there, body chip included, so "which one am I hitting"
+   has an answer before it becomes a question. The pressed chip carries the same
+   gold ring as the figure in the arena. */
+.targets { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; justify-content: flex-end; }
+.minion { display: flex; align-items: center; gap: 5px; padding: 2px 7px; border: 2px solid var(--border-strong); border-radius: var(--radius); background: var(--surface-1); cursor: pointer; font: inherit; font-weight: 700; font-size: var(--text-xs); transition: transform var(--dur, 160ms) var(--ease-out); }
+.minion:hover { transform: translateY(-2px); }
+.minion svg { width: 20px; height: 20px; flex: none; }
+.minion.is-target, .minion[aria-pressed="true"] { border-color: var(--gold-deep); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold-deep) 34%, transparent); }
+.hp { display: flex; align-items: center; gap: 6px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.hp .bar { flex: 1; min-width: 48px; max-width: 140px; height: 9px; background: var(--surface-sunk); border-radius: 999px; overflow: hidden; border: 1px solid var(--border-strong); }
+.hp .bar i { display: block; height: 100%; background: var(--boss); transition: width 400ms var(--ease-out); }
+
+/* ── The action panel ──────────────────────────────────────── */
+.actions { display: flex; flex-direction: column; gap: 6px; flex: none; padding: 8px 10px; }
+.turn-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
+.slots { display: flex; gap: 5px; align-items: center; font-weight: 800; font-size: var(--text-xs); }
+.slots i { width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--text-primary); display: inline-block; }
+.slots i.used { background: var(--text-primary); }
+/* A planned action is not spent yet: outlined, so the difference is visible. */
+.slots i.planned { background: var(--gold-deep); border-color: var(--gold-deep); }
+
+/* Three bands: what you hold, what you have declared, what resolves it. Only
+   the first spends a line on a label, and the last collapses entirely when
+   there is nothing to resolve, so an empty band never costs a rule of height. */
+.band { display: flex; flex-direction: column; gap: 3px; }
+.band--plan, .band--go { border-top: 1px solid var(--border); padding-top: 5px; }
+.band--go:empty { display: none; }
+
+.hand-row { display: flex; align-items: flex-end; gap: var(--space-4); flex-wrap: wrap; }
+/* Wraps, and that is the only reason a phone does not scroll sideways: four
+   84px cards plus their gaps are 372px of a 358px column, and a non-wrapping
+   flex row of them widened the grid track past the viewport instead. */
+.hand-attacks { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+.hand-attacks .action-card { width: var(--hand-w); }
+.hand-attacks .action-card span { font-size: 10px; }
+/* Cost, stake and risk under the card they belong to. Picking a combination
+   used to mean reading a hint line after the fact. */
+.ac-meta { display: flex; align-items: center; justify-content: center; gap: 3px; flex-wrap: wrap; font-size: 9px; font-weight: 700; color: var(--text-muted); line-height: 1.1; }
+.ac-meta .pips { transform: scale(0.85); }
+.action-card.is-queued { outline: 3px solid var(--gold-deep); outline-offset: 2px; transform: translateY(-4px); }
+.action-card .qty { color: var(--gold-deep); }
+.adv-hand { display: flex; flex-direction: column; gap: 2px; }
+.adv-hand .action-cards { display: flex; flex-wrap: wrap; gap: 6px; --mini-w: calc(var(--hand-w) * 0.62); }
+.adv-hand .action-card { width: calc(var(--hand-w) * 0.62); }
+.adv-hand .action-card span { font-size: 10px; }
+
+/* ── The plan lane ─────────────────────────────────────────── */
+/* Horizontal on purpose. Stacked, three steps cost ~130px of the ~560px the
+   whole board gets on a 720px screen; side by side they cost ~58px. */
+.plan-wrap { display: flex; flex-direction: column; gap: 3px; }
+/* The keyboard hint rides the far right of the lane's own heading row, where
+   there is width for one line. It is a reminder, not a control, so it is the
+   first thing dropped when the row runs out of room. */
+.plan-keys { margin-left: auto; white-space: nowrap; }
+@media (max-width: 1100px) { .plan-keys { display: none; } }
+.plan { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; flex-wrap: wrap; align-items: stretch; min-height: calc(var(--plan-w) * 1.4); }
+.plan-step {
+  display: flex; align-items: center; gap: 5px; padding: 3px 7px 3px 3px;
+  border: 2px solid var(--border-strong); border-radius: var(--radius); background: var(--surface-1);
+  --mini-w: var(--plan-w);
+}
+.plan-step.is-now { border-color: var(--gold-deep); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold-deep) 30%, transparent); }
+.plan-step.is-done { opacity: 0.45; }
+.plan-step--react { border-style: dashed; }
+.plan-step--react.is-on { border-style: solid; border-color: var(--water, var(--gold-deep)); }
+.plan-num {
+  width: 24px; height: 24px; flex: none; border-radius: 50%; cursor: pointer; font: inherit;
+  font-weight: 900; font-size: var(--text-sm); border: 2px solid var(--text-primary);
+  background: var(--text-primary); color: var(--surface-1);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.plan-num:hover { background: var(--danger); border-color: var(--danger); }
+.plan-num--react { background: var(--surface-1); color: var(--text-primary); }
+.plan-num--react svg { width: 15px; height: 15px; }
+.plan-what { display: flex; flex-direction: column; line-height: 1.1; font-size: 11px; font-weight: 700; }
+.plan-what small { color: var(--text-muted); display: flex; align-items: center; gap: 3px; }
+.plan-what small svg { width: 11px; height: 11px; }
+.plan-bet { display: inline-flex; gap: 2px; }
+.plan-bet button, .plan-tgt, .plan-rune {
+  font: inherit; font-size: 10px; font-weight: 800; cursor: pointer; padding: 1px 5px;
+  border: 2px solid var(--border-strong); border-radius: 6px; background: var(--surface-2); color: var(--text-secondary);
+}
+.plan-bet button[aria-pressed="true"], .plan-rune[aria-pressed="true"] { background: var(--text-primary); color: var(--surface-1); border-color: var(--text-primary); }
+/* The per-step target button carries the same gold as the chips in the strip
+   above it: one colour means "this is who that step is aimed at", wherever the
+   player happens to be looking. */
+.plan-tgt { border-color: var(--gold-deep); color: var(--text-primary); }
+.plan-rune { display: inline-flex; align-items: center; padding: 2px 4px; }
+.plan-rune svg { width: 14px; height: 14px; }
+.plan-bar { align-items: center; gap: var(--space-3); }
+.plan-error { font-size: var(--text-xs); font-weight: 800; color: var(--danger); }
+
+.roll-now { padding: 6px 8px; display: flex; flex-direction: column; gap: 5px; }
+.roll-now .row { flex-wrap: wrap; gap: var(--space-3); }
+.typed-roll { width: 68px; min-height: 34px; padding: 0 8px; border: 2px solid var(--border-strong); border-radius: 8px; font: inherit; }
+.verdict-row { gap: var(--space-3); align-items: center; }
+.verdict { font-weight: 900; font-size: var(--text-base); }
+.verdict.hit { color: var(--ok); } .verdict.miss { color: var(--danger); }
+
+/* ── Log and banners ───────────────────────────────────────── */
+.log { list-style: none; display: flex; flex-direction: column; gap: 3px; font-size: 11px; margin: 0; padding: 0; }
+.log li { padding: 4px 6px; border-radius: var(--radius-sm); background: var(--surface-2); color: var(--text-secondary); }
+.log li.boss { border-left: 4px solid var(--boss); }
+.log li.hero { border-left: 4px solid var(--earth); }
+.log li.bad { border-left: 4px solid var(--danger); color: var(--danger); font-weight: 700; }
+.log li.good { border-left: 4px solid var(--ok); color: var(--ok); font-weight: 700; }
+.log li.rage { background: #fee2e2; color: #7f1d1d; font-weight: 800; }
+/* With the log closed its last line still shows, as one line above the action
+   panel. Closing the log hides the history, not the thing that just happened. */
+.log-tick {
+  margin: 0; padding: 4px 8px; border-radius: var(--radius-sm); background: var(--surface-2);
+  color: var(--text-secondary); font-size: 11px; font-weight: 700;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.log-tick.boss { border-left: 4px solid var(--boss); }
+.log-tick.hero { border-left: 4px solid var(--earth); }
+.log-tick.bad { border-left: 4px solid var(--danger); color: var(--danger); }
+.log-tick.good { border-left: 4px solid var(--ok); color: var(--ok); }
+.log-tick.rage { background: #fee2e2; color: #7f1d1d; font-weight: 800; }
+.banner { padding: 6px var(--space-4); border-radius: var(--radius); font-weight: 800; text-align: center; }
+.banner--soon { opacity: 0.75; }
+.banner--win { background: #dcfce7; color: #14532d; border: 2px solid #15803d; }
+.banner--lose { background: var(--surface-sunk); color: var(--text-primary); border: 2px solid var(--border-strong); }
+
+/* ── Motion ────────────────────────────────────────────────── */
+/* Every effect on the board is one of these, driven by a class play.js puts on
+   the markup for exactly one render. Nothing here is on a JS timer: the global
+   prefers-reduced-motion rule in style.css can only zero motion the CSS owns,
+   and a rAF loop would keep running for a player who asked it not to.
+   `shake`, `wobble` and `flash` are shared primitives and live in style.css. */
+@keyframes float-up {
+  0% { opacity: 0; transform: translate(-50%, 6px) scale(0.8); }
+  25% { opacity: 1; transform: translate(-50%, -4px) scale(1.15); }
+  100% { opacity: 0; transform: translate(-50%, -26px) scale(1); }
+}
+@keyframes bubble-in {
+  0% { opacity: 0; transform: translateY(6px) scale(0.9); }
+  60% { transform: translateY(0) scale(1.04); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes rock {
+  0%, 70%, 100% { transform: rotate(0); }
+  80% { transform: rotate(-9deg); }
+  90% { transform: rotate(7deg); }
+}
+@keyframes shudder {
+  0%, 100% { transform: none; }
+  20% { transform: translateX(-3px) rotate(-2deg); }
+  60% { transform: translateX(3px) rotate(2deg); }
+}
+@keyframes gear-lost {
+  0% { opacity: 1; transform: none; }
+  30% { opacity: 1; transform: translateY(-4px) rotate(-6deg); }
+  100% { opacity: 0.4; transform: translateY(8px) rotate(10deg); }
+}
+
+/* ── Setup and the level-end screens ───────────────────────── */
+.setup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4); }
+.pick { display: grid; gap: var(--space-2); }
+.pick button { display: flex; align-items: center; gap: 10px; text-align: left; }
+.pick .figure svg { width: 64px; height: 64px; }
+.draft { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-4); }
+/* The Second Wind toggle: the card itself, next to the sentence that arms it.
+   A checkbox alone never told anyone which card it was putting on the table. */
+.sw-pick { display: flex; align-items: center; gap: var(--space-4); }
+.sw-pick__card { --mini-w: 62px; flex: none; }
+.sw-pick__text { display: flex; flex-direction: column; gap: 2px; cursor: pointer; }
+.sw-pick__text input { width: 20px; height: 20px; }

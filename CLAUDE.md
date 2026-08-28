@@ -1,6 +1,6 @@
 # CLAUDE.md: Enjeu
 
-Enjeu: a print-and-play boss-rush card game for one player, one die, and the construction-toy bricks and figures already on the table. The site teaches it (visual walkthrough plus RULES.md rendered in place), prints it (90 cards, 9 per A4, exactly 10 sheets) and runs it (a First Game or five-level run with stand-in figures, and a batch balance table in a Worker). `data/cards.json` is the one card source, shared with the Python tools; `RULES.md` is the one rulebook. Card faces carry numerals, pips and glyphs only: the name never prints, the player says it out loud.
+Enjeu: a print-and-play boss-rush card game for one player, one die, and the construction-toy bricks and figures already on the table. The site teaches it (visual walkthrough plus RULES.md rendered in place), prints it (94 cards, 9 per A4, 11 sheets) and runs it (a First Game or five-level run with stand-in figures, and a batch balance table in a Worker). `data/cards.json` is the one card source, shared with the Python tools; `RULES.md` is the one rulebook. Card faces carry numerals, pips and glyphs only: the name never prints, the player says it out loud.
 
 **Live:** enjeu.neorgon.com (lifecycle `ready`: CNAME, no remote yet) · **Port:** 8871
 
@@ -22,7 +22,7 @@ make sim        # tools/sim.py, the published balance table
 | `js/navigate.js` | hash routes `#/learn` `#/cards` `#/play` `#/balance`, `reveal()` |
 | `js/render.js` · `js/events.js` | view switch; one delegated `data-action` click handler, modal a11y |
 | `js/strings.js` | every UI string (`t('play.start')`): the i18n seam, English only for now |
-| `js/data/cards.js` | fetch + index cards.json (`byId`, `physical` = copies expanded, 90) |
+| `js/data/cards.js` | fetch + index cards.json (`byId`, `physical` = copies expanded, 94) |
 | `js/cards/glyphs.js` | 59 original 24x24 stroked glyphs keyed by art-manifest slot id; `artSrc()` override |
 | `js/cards/face.js` | `cardFace(card, opts)`: the four-corner SVG on a 630x880 grid (10 units per mm) |
 | `js/cards/sheet.js` | fills `#printSheet`; `css/print.css` pages it 3x3 per A4 |
@@ -39,14 +39,14 @@ Vendored from `packages/neorgon-ui/`, never edit in place: `js/neorgon-header.js
 
 ## Data
 
-- `data/cards.json`: all 90 cards (the Python linter and the JS tests both count them)
+- `data/cards.json`: all 94 cards (the Python linter and the JS tests both count them)
 - `data/art-manifest.json`: 51 art slots; a slot renders `art/<id>.svg` only once it has creator AND licence
 - `localStorage['enjeu-state']`: filters, die, mode, and the run in progress (no card data: the fight's `data` pointer is non-enumerable)
 
 ## Conventions
 
 - Zero build step. Light print-and-play dialect: the page carries its own tokens and does not link the CDN `base.css` (PROPOSED row in `docs/design/dialects.md`).
-- No text on a card face beyond numerals and pips (boss cards may carry their size code; the two player aids are reference cards). `tests/cards.test.mjs` fails on anything else.
+- No text on a card face beyond numerals and pips (boss cards may carry their size code; the four player aids are reference cards). `tests/cards.test.mjs` fails on anything else.
 - Never name a brand: "construction toy", "bricks", "minifigure".
 - Rolls come from outside the engine (a human's die or a seeded stream), never from inside it.
 - No em dashes anywhere (content test scans js, tests, index.html, README, RULES, docs).
