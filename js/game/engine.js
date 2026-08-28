@@ -14,17 +14,23 @@
 //   2. Summon moves a flat 100 hp off the body (not 2 x the boss's per-card
 //      value), needs body > 100, and the fight is won on body alone.
 //   3. Roar flattens the NEXT attack's check to Even, Strike included.
-// Rulings this file makes where RULES.md is silent (all recorded in the brief):
-//   - an attack's element is the card's, falling back to the hero's
-//   - the boss falls when body AND minion cards are gone; a minion's damage
-//     does not spill to the body
-//   - Knight's free guard does not apply under Rage (Rage bypasses guards)
+// Rulings this file made while RULES.md was silent. Most were promoted INTO the
+// rulebook on 2026-08-28, so the list below is now a map of where each one is
+// written down, not a list of things only the code knows:
+//   - an attack's element is the card's, falling back to the hero's: RULES.md s6
+//   - a minion's damage does not spill to the boss's body: RULES.md s7
+//   - Knight's free guard does not apply under Rage: RULES.md s7
+//   - which cards break first under Rage (Ready, then Spent): RULES.md s7
+//   - leftover damage after the Ally's defense is lost: RULES.md s7
+//   - a downgraded Summon is a Strike and can be aimed at the Ally: RULES.md s7
+//   - tier-0 skills start in the pool: RULES.md s8
+// STILL ONLY HERE, and each is a gap worth closing in the rulebook rather than
+// leaving in a comment:
+//   - the boss falls when body AND minion cards are gone
 //   - Ally lasts the level; Relic lasts the level; Rune is one check
-//   - the Ally is only ever the target of a Strike, and only when it is the
-//     boss's own reaction: a minion's 25 always comes for the hero. The
-//     rulebook (RULES.md section 7, "The Ally") names the four reactions that
-//     stay on the hero and says nothing about minions, so this is the reading
-//     that keeps a summoned line dangerous.
+//   - a minion's 25 always comes for the hero, never the Ally
+//   - the Ally's own free 25 always hits the body and can never be aimed at a
+//     minion, which the minion-overkill rule now makes load-bearing
 
 import { UNIT, stepOdds, shiftStep, MODE_SHIFT, targetFor, beats, reactionFor } from './rules.js';
 
@@ -87,6 +93,7 @@ export function newFight(data, init) {
     biome: init.biome || null,
     boss: {
       id: b.id, name: b.name || b.id, size: b.size, perCard, damage: b.damage, rage: b.rage || 99,
+      summonCards: b.summon_cards ?? 2,
       element: b.element || null, body: b.hp ?? b.life_cards * perCard, maxHp: b.hp ?? b.life_cards * perCard,
       minions: [], braced: false, actsTwice: init.biome?.id === 'castle',
     },
@@ -205,6 +212,18 @@ export function attack(f, a, o = {}) {
     say(f, `Bubble: the next ${a.shield} damage is absorbed.`, 'hero');
     return { hit: true, auto: true, shield: a.shield, dealt: 0, bet: 0, step: null, need: null, roll: null };
   }
+  // Run costs an action and no card, like Bubble, and it deals no damage at all.
+  // Without this branch it fell through to applyHit and, because its element is
+  // null, attackElement handed it the hero's element and it collected affinity,
+  // biome and Relic bonuses: a 1-action, no-bet, no-check card dealing up to 75.
+  // Every test passed in that state, because none of them assert that a card
+  // with no damage deals none.
+  if (a.hides) {
+    f.actionsLeft -= a.actions;
+    f.hero.hidden = true;
+    say(f, 'Run: you are Hidden. The boss has to find you.', 'hero');
+    return { hit: true, auto: true, hides: true, dealt: 0, bet: 0, step: null, need: null, roll: null };
+  }
   const bet = a.bet === 'any' ? Math.max(1, Math.min(o.bet || 1, ready(f))) : (a.bet || 0);
   if (bet > ready(f)) throw new Error('cannot afford the bet');
   // Betting turns cards sideways whether the attack lands or not.
@@ -213,7 +232,6 @@ export function attack(f, a, o = {}) {
   f.actionsLeft -= a.actions;
   f.stats.attacks += 1;
   if (a.id === 'all-in') f.stats.allIns += 1;
-  if (a.id === 'strike') f.hero.hideAvailable = true;
 
   const step = effectiveStep(f, a);
   f.hero.penaltyArmed = false; f.hero.penalty = false; // a Roar is spent on the next attack
@@ -324,11 +342,15 @@ function resumeFall(f) {
   return f.phase;
 }
 
-/** Hide: free after a Strike (or anytime in the Forest). Next hit this round halved. */
+/**
+ * The Forest's free hide. Everywhere else, hiding is the Run card and costs an
+ * action; this is the one biome that hands it over, once a round, because it is
+ * the one made of cover. Same Hidden state either way: one rule, two sources.
+ */
 export function hide(f) {
-  if (!f.hero.hideAvailable) throw new Error('Hide needs a Strike first');
+  if (!f.hero.hideAvailable) throw new Error('hiding costs a Run outside the Forest');
   f.hero.hidden = true; f.hero.hideAvailable = false;
-  say(f, 'Hide: the next hit this round is halved.', 'hero');
+  say(f, 'You slip into the trees. The boss has to find you.', 'hero');
 }
 
 /** Play an Advantage card from the hand. Barrier is played through resolveBoss. */
@@ -390,9 +412,13 @@ export function bossRoll(f, d6) {
   if (kind === 'strike' || kind === 'roar') dmg = base;
   else if (kind === 'ruin') dmg = base * 2;
   else if (kind === 'summon') {
-    const chunk = f.legacy ? 100 : 2 * f.boss.perCard;
+    // How much body a Summon moves is CARDS times the card's value, so making the
+    // cards uniform changes the minion's size at every level at once. The count
+    // is data (boss.summon_cards) rather than the literal 2 it used to be,
+    // because that is the dial the uniform-100 change had to be tuned on.
+    const chunk = f.legacy ? 100 : f.boss.summonCards * f.boss.perCard;
     const can = f.legacy ? (f.boss.body > 100 && f.boss.minions.length < 3)
-                         : (f.boss.body > 2 * f.boss.perCard && f.boss.minions.length < 3);
+                         : (f.boss.body > chunk && f.boss.minions.length < 3);
     if (!can) { kind = 'strike'; dmg = base; } else dmg = 0;
     // A Summon that cannot summon IS a Strike, so it can be aimed at the Ally
     // like any other. `at` is read after the downgrade, never before.
@@ -439,8 +465,8 @@ export function resolveBoss(f, { barrier = false, cover = false } = {}) {
         f.boss.body -= p.chunk; f.boss.minions.push({ hp: p.chunk, max: p.chunk });
         say(f, `The boss Summons: ${p.chunk} of its life moves under a minion.`, 'boss'); break;
       }
-      case 'roar': say(f, `The boss Roars for ${p.dmg}. Your next check is one step harder.`, 'boss'); take(f, p.dmg, p.rage); f.hero.penalty = true; break;
-      case 'ruin': say(f, `Ruin! The boss deals ${p.dmg}.`, 'boss'); take(f, p.dmg, p.rage); break;
+      case 'roar': say(f, `The boss Roars for ${p.dmg}. Your next check is one step harder.`, 'boss'); take(f, p.dmg, p.rage, 'roar'); f.hero.penalty = true; break;
+      case 'ruin': say(f, `Ruin! The boss deals ${p.dmg}.`, 'boss'); take(f, p.dmg, p.rage, 'ruin'); break;
       default: {
         // A Strike aimed at the Ally, unless the hero covers for it. `at` was
         // decided when the die was rolled, so a cover cannot be offered for a
@@ -448,9 +474,16 @@ export function resolveBoss(f, { barrier = false, cover = false } = {}) {
         const atAlly = p.at === 'ally' && f.hero.ally && !cover;
         say(f, `The boss Strikes ${atAlly ? 'at the Ally' : ''} for ${p.dmg}.`.replace('  ', ' '), 'boss');
         if (atAlly) takeAlly(f, p.dmg);
-        else {
-          if (p.at === 'ally' && cover) say(f, 'You cover the Ally and take it whole.', 'hero');
+        else if (p.at === 'ally' && cover) {
+          // Covering means stepping out of cover. Otherwise a Hidden hero could
+          // cover the Ally for free every round, the Ally could never fall, and
+          // the choice RULES.md section 7 names as a real one would stop being
+          // one. You cannot be behind the sofa and in front of your friend.
+          if (f.hero.hidden) { f.hero.hidden = false; say(f, 'You break cover to shield the Ally.', 'hero'); }
+          say(f, 'You cover the Ally and take it whole.', 'hero');
           take(f, p.dmg, p.rage);
+        } else {
+          take(f, p.dmg, p.rage, 'strike');
         }
       }
     }
@@ -481,8 +514,22 @@ function endBossPhase(f) {
  * Guarding with a Ready card Spends it (it comes back next round); with a
  * Spent card it Breaks. Under Rage nothing can be guarded with Ready cards.
  */
-export function take(f, damage, unguardable) {
-  if (f.hero.hidden) { damage = halve(damage); f.hero.hidden = false; say(f, `Hidden: halved to ${damage}.`, 'hero'); }
+export function take(f, damage, unguardable, kind = null) {
+  // Hidden is spent by the BOSS and by nothing else. minionStrikes runs before
+  // bossRoll, so while a minion could consume it a single Summon was a permanent
+  // counter to the card: every Run after it paid an action to soak 25 of chip
+  // damage while the boss's own hit landed whole. A minion passes kind=null and
+  // walks straight past this block.
+  if (f.hero.hidden && kind) {
+    if (kind === 'strike') {
+      say(f, 'Hidden: the Strike goes past you. No damage.', 'good');
+      f.hero.hidden = false;
+      return true;
+    }
+    damage = halve(damage);
+    say(f, `Hidden: ${kind === 'ruin' ? 'Ruin' : 'it'} finds you anyway, halved to ${damage}.`, 'hero');
+    f.hero.hidden = false;
+  }
   if (f.hero.shield > 0 && damage > 0) {
     const popped = Math.min(f.hero.shield, damage);
     f.hero.shield -= popped; damage -= popped;

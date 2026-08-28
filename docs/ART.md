@@ -41,7 +41,7 @@ printable pack shipping with a half-filled attribution page is the one failure m
 with a legal edge on it. `--selftest` trips all four refusal paths on purpose, because a
 guard nobody has watched fail is not a guard.
 
-Current state: **0 complete, 42 awaiting attribution, 9 slots with no art chosen.**
+Current state: **56 complete and credited across 21 creators, 5 slots deliberately in-house** (the boss sizes). Regenerate this count with `python3 tools/credits.py`; do not retype it.
 
 ## Three things wrong with the supplied list
 

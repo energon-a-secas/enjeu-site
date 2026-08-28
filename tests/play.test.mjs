@@ -17,7 +17,7 @@ import { useCards } from '../js/data/cards.js';
 import { newFight, playAdvantage, take, bossRoll, endTurn, resolveBoss, ready, spent, broken, bossHp, attack, reviveStep, attemptRevive } from '../js/game/engine.js';
 import { newRun, startLevel } from '../js/game/run.js';
 import { validatePlan, queueStep, unqueueStep, setStepBet, toggleStepRune, advancePlan, planActions, pickable } from '../js/views/play-plan.js';
-import { onPlayAction, renderPlay } from '../js/views/play.js';
+import { onPlayAction, renderPlay, onPlayKey } from '../js/views/play.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const data = useCards(JSON.parse(readFileSync(join(root, 'data/cards.json'), 'utf8')));
@@ -223,6 +223,40 @@ test('declining the comeback ends the level without inventing a die roll', () =>
 });
 
 // ── 5. The markup the keyboard is an alias for ───────────────
+/**
+ * The keyboard alias must not steal Enter from whatever is focused. It used to:
+ * onPlayKey claimed Enter unconditionally and preventDefault'd it, so a keyboard
+ * user who tabbed to "Abandon run" and pressed Enter resolved their turn instead,
+ * and while a primary action existed (most of a fight) no other control on the
+ * board could be activated with Enter at all.
+ */
+test('Enter belongs to the focused control, and only reaches the board when nothing is focused', () => {
+  const clicked = [];
+  const primary = { click: () => clicked.push('primary') };
+  const saved = globalThis.document;
+  globalThis.document = {
+    querySelectorAll: (sel) => (sel === '.actions .btn--primary' ? [primary] : []),
+  };
+  try {
+    const press = (target) => {
+      clicked.length = 0;
+      let prevented = false;
+      onPlayKey({}, { key: 'Enter', target, preventDefault: () => { prevented = true; } });
+      return { clicked: [...clicked], prevented };
+    };
+    // A focused button keeps its own Enter.
+    const onButton = press({ closest: (sel) => (/button/.test(sel) ? {} : null) });
+    assert.deepEqual(onButton.clicked, [], 'Enter on a button must not reach the board');
+    assert.equal(onButton.prevented, false, 'and must not be preventDefault-ed away');
+    // With nothing focused, Enter is the board's.
+    const onBody = press({ closest: () => null });
+    assert.deepEqual(onBody.clicked, ['primary'], 'Enter still resolves the turn from the board');
+    assert.equal(onBody.prevented, true);
+  } finally {
+    globalThis.document = saved;
+  }
+});
+
 test('the board renders the hooks onPlayKey clicks: play-pick, play-unqueue, one primary in .actions', () => {
   const run = newRun(data, { kind: 'first', element: 'fire', die: 'd20', mode: 'standard', secondWind: true });
   startLevel(run, data);
@@ -242,9 +276,16 @@ test('the board renders the hooks onPlayKey clicks: play-pick, play-unqueue, one
   assert.equal(primaries, 1, 'exactly one primary button, so Enter is never ambiguous');
   assert.ok(actions.indexOf('data-action="play-resolve-plan"') > -1);
 
-  // And the rest of the table is on screen, mostly face down.
+  // And the rest of the table is on screen. A First Game has no face-down pile
+  // at all now: it has no skill pool and no Advantage deck, and the boss's life
+  // is face UP on the wall, which is where RULES.md setup step 4 puts it on a
+  // real table. The rail used to draw all three as dashed outlines regardless.
   assert.ok(html.includes('On the table'));
-  assert.ok(html.includes('card back'), 'face-down piles use the printed back');
+  assert.ok(!html.includes('card back'), 'a First Game has no face-down pile to draw');
+  const full = newRun(data, { kind: 'full', element: 'fire', die: 'd20', mode: 'standard', secondWind: false });
+  startLevel(full, data);
+  const fullHtml = renderPlay({ cards: data, run: full, view: 'play' });
+  assert.ok(fullHtml.includes('card back'), 'a full run does have face-down piles, and they use the printed back');
 });
 
 test('the Second Wind toggle is on the setup screen, wired without an inline handler', () => {

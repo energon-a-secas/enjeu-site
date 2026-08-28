@@ -1,6 +1,6 @@
 # CLAUDE.md: Enjeu
 
-Enjeu: a print-and-play boss-rush card game for one player, one die, and the construction-toy bricks and figures already on the table. The site teaches it (visual walkthrough plus RULES.md rendered in place), prints it (94 cards, 9 per A4, 11 sheets) and runs it (a First Game or five-level run with stand-in figures, and a batch balance table in a Worker). `data/cards.json` is the one card source, shared with the Python tools; `RULES.md` is the one rulebook. Card faces carry numerals, pips and glyphs only: the name never prints, the player says it out loud.
+Enjeu: a print-and-play boss-rush card game for one player, one die, and the construction-toy bricks and figures already on the table. The site teaches it (visual walkthrough plus RULES.md rendered in place), prints it (105 cards, 9 per A4, 12 sheets) and runs it (a First Game or five-level run with stand-in figures, and a batch balance table in a Worker). `data/cards.json` is the one card source, shared with the Python tools; `RULES.md` is the one rulebook. Card faces carry numerals, pips and glyphs only: the name never prints, the player says it out loud.
 
 **Live:** enjeu.neorgon.com (lifecycle `ready`: CNAME, no remote yet) · **Port:** 8871
 
@@ -22,7 +22,7 @@ make sim        # tools/sim.py, the published balance table
 | `js/navigate.js` | hash routes `#/learn` `#/cards` `#/play` `#/balance`, `reveal()` |
 | `js/render.js` · `js/events.js` | view switch; one delegated `data-action` click handler, modal a11y |
 | `js/strings.js` | every UI string (`t('play.start')`): the i18n seam, English only for now |
-| `js/data/cards.js` | fetch + index cards.json (`byId`, `physical` = copies expanded, 94) |
+| `js/data/cards.js` | fetch + index cards.json (`byId`, `physical` = copies expanded, 105) |
 | `js/cards/glyphs.js` | 59 original 24x24 stroked glyphs keyed by art-manifest slot id; `artSrc()` override |
 | `js/cards/face.js` | `cardFace(card, opts)`: the four-corner SVG on a 630x880 grid (10 units per mm) |
 | `js/cards/sheet.js` | fills `#printSheet`; `css/print.css` pages it 3x3 per A4 |
@@ -39,8 +39,8 @@ Vendored from `packages/neorgon-ui/`, never edit in place: `js/neorgon-header.js
 
 ## Data
 
-- `data/cards.json`: all 94 cards (the Python linter and the JS tests both count them)
-- `data/art-manifest.json`: 51 art slots; a slot renders `art/<id>.svg` only once it has creator AND licence
+- `data/cards.json`: all 105 cards (the Python linter and the JS tests both count them)
+- `data/art-manifest.json`: 61 art slots (56 credited, 5 in-house on purpose); a slot renders `art/<id>.svg` only once it has creator AND licence
 - `localStorage['enjeu-state']`: filters, die, mode, and the run in progress (no card data: the fight's `data` pointer is non-enumerable)
 
 ## Conventions
@@ -55,8 +55,8 @@ Vendored from `packages/neorgon-ui/`, never edit in place: `js/neorgon-header.js
 
 - **CSS beats SVG presentation attributes.** The first pass declared `fill`/`stroke` on `.face`/`.pip` in `cards.css` and every coloured life card printed white. `cards.css` sizes faces only; all colour lives inline in the SVG, which is also what the printer needs.
 - **Browsers cache plain `http.server` assets, and it looks like broken buttons.** A page can run a mix of old and new ES modules after an edit (it bit the build twice, and the user once after the rename). `make serve` now runs `tools/serve.py`, the same server plus `Cache-Control: no-cache`, so a plain reload is always current; in Playwright still clear with CDP `Network.clearBrowserCache` + `setCacheDisabled` when the server was started the old way.
-- **`legacy` is parity, not a rules mode to ship.** It reproduces three tools/sim.py simplifications (Brace never halves, Summon moves a flat 100 and the fight ends on the body alone, Roar flattens the next check to Even) so `tests/engine.test.mjs` can check BALANCE.md within 4 points. The rulebook mode is markedly harsher (adaptive 73/68/53/45/46 percent by level, turtle 0 everywhere); that gap is a design decision recorded in `.forge/brief.md`, not a bug to "fix" in the engine.
-- **Rulings the rulebook does not make** live in the header comment of `js/game/engine.js` (card element falls back to the hero's; the boss falls when body AND minion cards are gone, minion overflow does not spill; Knight's free guard is off under Rage; Ally and Relic last the level; tier-0 skills sit in the draft pool from the start; boss cards carry no element in cards.json so `placeholders.js` assigns one). Change the rulebook first, the engine second.
+- **`legacy` is parity, not a rules mode to ship.** It reproduces three tools/sim.py simplifications (Brace never halves, Summon moves a flat 100 and the fight ends on the body alone, Roar flattens the next check to Even) so `tests/engine.test.mjs` can check BALANCE.md within 4 points. The rulebook mode is markedly harsher (adaptive 79.5/71.1/51.2/47.4/46.2 percent by level at 20,000 fights per cell, turtle 0 everywhere); that gap is a design decision recorded in `.forge/brief.md`, not a bug to "fix" in the engine.
+- **Rulings the rulebook did not make** live in the header comment of `js/game/engine.js`, which now says which of them were promoted into RULES.md on 2026-08-28 and which four are still only in the code. Change the rulebook first, the engine second.
 - **`element_cycle` in cards.json carries a `$note` key.** Anything iterating it must skip `$`-prefixed keys (the Learn cycle drawing did not, once).
 - **Advantage cards in a fight live in `fight.hero.advantage`**, the deck in `run.advDeck`, and the between-levels hand in `run.hand`. Chest draws from the deck straight into the fight hand.
 - **The worker receives cards.json without `byId`/`physical`** (it re-indexes); posting the indexed object would clone every card twice.

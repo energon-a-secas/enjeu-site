@@ -259,8 +259,15 @@ export function onPlayAction(s, act, el, e) {
  */
 export function onPlayKey(s, e) {
   const hit = (sel, i = 0) => { const list = document.querySelectorAll(sel); const el = list[i]; if (el) { e.preventDefault(); el.click(); } };
+  // Enter belongs to whatever is focused, if anything is. The board used to claim
+  // it unconditionally and preventDefault it, so a keyboard user who tabbed to
+  // "Abandon run" and pressed Enter resolved their turn instead: while a primary
+  // action existed, which is most of a fight, NO other control on the board could
+  // be reached with Enter at all. Digits are safe to keep, since a focused button
+  // does nothing with them.
+  const onControl = e.target?.closest?.('button, a[href], summary, [role="button"]');
   if (/^[1-9]$/.test(e.key)) hit('[data-action="play-pick"]', Number(e.key) - 1);
-  else if (e.key === 'Enter') hit('.actions .btn--primary');
+  else if (e.key === 'Enter' && !onControl) hit('.actions .btn--primary');
   else if (e.key === 'Backspace' || e.key === 'Delete') {
     const marks = document.querySelectorAll('[data-action="play-unqueue"]');
     if (marks.length) hit('[data-action="play-unqueue"]', marks.length - 1);

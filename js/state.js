@@ -1,6 +1,9 @@
 // ── State ────────────────────────────────────────────────────
 // One shared mutable object. The run in progress, the chosen die and mode,
-// and the cards filter all live here so a reload lands where you were.
+// the chosen language, and the cards filter all live here so a reload lands
+// where you were, in the language you were reading.
+
+import { STRINGS, setLang } from './strings.js';
 
 const STORAGE_KEY = 'enjeu-state';
 
@@ -9,7 +12,7 @@ export const state = {
   param: null,          // second path segment, e.g. a deck or a level
   query: {},            // ?k=v after the hash
   cards: null,          // parsed data/cards.json (not persisted)
-  lang: 'en',
+  lang: 'en',           // en | es. Persisted, like the die and the mode.
   // Learn view: which slide of the stepper you were on
   learnStep: 0,
   // Cards view
@@ -50,6 +53,18 @@ const PERSIST = ['lang', 'learnStep', 'deckFilter', 'browse', 'paper', 'withBack
 const NESTED = ['balance', 'browse', 'play'];
 const DEFAULTS = Object.fromEntries(NESTED.map((k) => [k, { ...state[k] }]));
 
+/**
+ * Point js/strings.js at the language in state, and refuse anything it has no
+ * table for. A saved `lang` from a build that shipped a third language would
+ * otherwise leave t() reading English while every toggle button reads unpressed,
+ * so the state is corrected here rather than tolerated.
+ */
+export function useLang(s) {
+  if (!STRINGS[s.lang]) s.lang = 'en';
+  setLang(s.lang);
+  return s.lang;
+}
+
 export function loadSaved(s) {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -64,6 +79,11 @@ export function loadSaved(s) {
     // the merge that read s.balance was a no-op for as long as it existed.
     for (const k of NESTED) if (saved[k]) s[k] = { ...DEFAULTS[k], ...saved[k] };
   } catch { /* corrupted or unavailable storage: start fresh */ }
+  // Outside the try, and last: whether or not there was a save to read, the
+  // string table has to be pointed at whatever `lang` ended up being. A throw
+  // halfway through the restore above must not leave t() on a language the
+  // rest of the page has already stopped agreeing with.
+  useLang(s);
 }
 
 export function save(s) {

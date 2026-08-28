@@ -64,7 +64,7 @@ TIER = {
 
 
 def all_in(cards: int) -> Attack:
-    """All In - two actions, bet what you like, triple it or lose it."""
+    """All In - two actions, bet what you like, quadruple it or lose it."""
     return Attack(f"All In x{cards}", 2, cards, 4 * cards * LIFE, EVEN)
 
 

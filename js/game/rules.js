@@ -86,7 +86,17 @@ export const ladderForAid = (data) => ladderTable(data?.ladder || DEFAULT_LADDER
  * the browse grid, the print sheet and the detail panel each built this object by
  * hand and a fourth site would have shipped an aid card with a blank table.
  */
-export const aidFor = (data) => ({ ladder: ladderForAid(data), reactions: data?.boss_reaction || [] });
+/**
+ * Everything the two reference cards need. `reactionNames` is keyed by the id
+ * cards.json now carries, so the printed Boss Reactions aid says Aguante on a
+ * Spanish sheet and Brace on an English one, and matches whichever rulebook is
+ * on the table. The card renderer itself never imports the string table.
+ */
+export const aidFor = (data, names = null) => ({
+  ladder: ladderForAid(data),
+  reactions: data?.boss_reaction || [],
+  reactionNames: names,
+});
 
 /** Worst gap between stated and real odds, per die, for the fidelity list. */
 export function fidelity(ladder = DEFAULT_LADDER) {

@@ -306,10 +306,15 @@ function attackOrSkill(c) {
   // bottom-right: damage dealt, or (hollow) damage absorbed
   if (c.shield) {
     out += hollowNumeral(String(c.shield), W - 58, H - 58, 92, 'end', ink);
-  } else {
+  } else if (c.damage) {
     const dmg = typeof c.damage === 'number' ? String(c.damage) : c.damage === '4x bet' ? '×4' : String(c.damage ?? '');
     out += numeral(dmg, W - 58, H - 58, dmg.length > 3 ? 72 : 92, 'end', ink);
   }
+  // A card that deals nothing prints nothing in the damage corner. Run is the
+  // first of those, and a printed "0" would read as a damage value rather than
+  // as its absence, which is the opposite of what the grammar promises: every
+  // other mark on this card face means something by being there, so the corner
+  // has to mean something by being empty.
   return out;
 }
 
@@ -443,7 +448,10 @@ function aidCard(c, opts) {
       out += `<rect x="46" y="${y}" width="112" height="112" rx="20" fill="none" stroke="#111" stroke-width="6"/>`;
       out += numeral(label, 102, y + 82, label.length > 1 ? 52 : 72, 'middle');
       out += glyphAt(REACTION_GLYPH[r.name] || 'dice', 190, y + 6, 100, { stroke: '#111' });
-      out += numeral(r.name, 314, y + 82, 58, 'start');
+      // opts.reactionNames is handed in by the view so this module stays free of
+      // the string table: face.js is shared with the Python-free print path and
+      // the node tests, neither of which sets a language.
+      out += numeral((opts.aid?.reactionNames?.[r.id]) || r.name, 314, y + 82, 58, 'start');
       if (i < rows.length - 1) out += `<line x1="40" y1="${y + rowH - 16}" x2="${W - 40}" y2="${y + rowH - 16}" stroke="#ddd6c3" stroke-width="3"/>`;
     });
   } else if (c.id === 'aid-track') {
@@ -583,7 +591,7 @@ function brickEmblem(ink, dark) {
  * so it gets the same studded field with an emblem and NO break. Printing the
  * broken back on a draft pile would say the wrong thing entirely.
  *
- * Both are a solid field, which is deliberate but not free: 94 of these is real
+ * Both are a solid field, which is deliberate but not free: 105 of these is real
  * ink on a home printer. `light` swaps to a paper field with a coloured border
  * for anyone who would rather keep their cartridge.
  */

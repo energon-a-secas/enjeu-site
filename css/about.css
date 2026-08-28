@@ -1,0 +1,53 @@
+/*
+ * ── About view ─────────────────────────────────────────────────
+ * A reading page, and the only one on the site with no controls: where the
+ * game came from, then the art credits built from data/art-manifest.json.
+ *
+ * Only this page's own blocks live here. The panel, the kicker and the
+ * .table-wrap sideways scroller are shared primitives in style.css. The two
+ * tables below are deliberately not a second .bal-grid: that one is a numeric
+ * grid, right-aligned and tabular, and these two are text.
+ */
+
+/* Prose measure. .panel__lead already carries it for the section leads; the
+   body paragraphs are plain <p> inside a .stack, so they set their own. */
+.about-prose p { color: var(--text-secondary); max-width: 62ch; }
+
+/* The three counts. Every one is read off the manifest at render time, so
+   none of them can be typed wrong here or go stale after a download. */
+.about-stats { display: flex; flex-wrap: wrap; gap: var(--space-6); }
+.about-stat { display: flex; flex-direction: column; gap: 2px; min-width: 7rem; }
+.about-stat b {
+  font-size: var(--text-2xl); font-weight: 900; line-height: 1;
+  color: var(--text-primary); font-variant-numeric: tabular-nums;
+}
+.about-stat span {
+  font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+
+/* Attribution is a condition of the licence, not a footnote, so this list is
+   never folded behind a toggle and never truncated. On a phone it scrolls
+   sideways inside .table-wrap, the way every other wide table here does. */
+.about-credits, .about-licence {
+  width: 100%; border-collapse: collapse;
+  font-size: var(--text-sm); text-align: left;
+}
+.about-credits th, .about-credits td,
+.about-licence th, .about-licence td {
+  padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top;
+}
+.about-credits th, .about-licence th {
+  font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-muted); white-space: nowrap;
+}
+/* The slot id is the join key between the manifest, art/ and the card face.
+   It wraps nowhere: a broken id is a broken lookup and reads as two things. */
+.about-credits td:first-child { white-space: nowrap; }
+.about-credits tbody tr:hover { background: var(--surface-2); }
+.about-licence td:last-child { font-weight: 700; }
+
+@media (max-width: 600px) {
+  .about-stats { gap: var(--space-4); }
+  .about-credits { font-size: var(--text-xs); }
+}

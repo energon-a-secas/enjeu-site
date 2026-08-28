@@ -36,6 +36,7 @@ Collection: https://thenounproject.com/browse/collection-icon/role-playing-game-
 | [`mage`](https://thenounproject.com/icon/equipment-wizard-hat-2360088/) | Mage class | Maxicons | CC BY 3.0 |
 | [`necromancer`](https://thenounproject.com/icon/classes-necromancer-2360015/) | Necromancer class | Maxicons | CC BY 3.0 |
 | [`revive`](https://thenounproject.com/icon/zombie-hand-5193546/) | Second Wind (gentle-mode card) | Narakorn Chanchittakarn | CC BY 3.0 |
+| [`run`](https://thenounproject.com/icon/run-1651221/) | Attack: Run | Adrien Coquet | CC BY 3.0 |
 | [`skill-boulder`](https://thenounproject.com/icon/rock-2632080/) | Skill: Boulder (earth t1) | RIZCA | CC BY 3.0 |
 | [`skill-cataclysm`](https://thenounproject.com/icon/disaster-6140448/) | Skill: Cataclysm (earth t4) | Afianroc | CC BY 3.0 |
 | [`skill-cold-curse`](https://thenounproject.com/icon/skill-magic-cold-curse-2360200/) | Skill: Cold Curse | Maxicons | CC BY 3.0 |
@@ -65,4 +66,4 @@ Collection: https://thenounproject.com/browse/collection-icon/role-playing-game-
 | [`water`](https://thenounproject.com/icon/element-stream-2360063/) | Water element sigil | Maxicons | CC BY 3.0 |
 | [`wind`](https://thenounproject.com/icon/element-wind-2360065/) | Wind element sigil | Maxicons | CC BY 3.0 |
 
-55 icons.
+56 icons.

@@ -2,20 +2,21 @@
 import { state } from './state.js';
 import { t } from './strings.js';
 import { escHtml } from './utils.js';
-import { VIEWS } from './navigate.js';
+import { NAV_VIEWS } from './navigate.js';
 import { DECKS } from './data/cards.js';
 import { glyphSvg } from './cards/glyphs.js';
 import { renderLearn } from './views/learn.js';
 import { renderCards } from './views/cards.js';
 import { renderPlay } from './views/play.js';
 import { renderBalance } from './views/balance.js';
+import { renderAbout } from './views/about.js';
 
-const NAV_ICON = { learn: 'book', cards: 'dice', play: 'strike', balance: 'trend-up' };
+const NAV_ICON = { learn: 'book', cards: 'dice', play: 'strike', about: 'star', balance: 'trend-up' };
 
 export function renderNav(s) {
   const nav = document.getElementById('skNav');
   if (!nav) return;
-  nav.innerHTML = VIEWS.map((v) => `
+  nav.innerHTML = NAV_VIEWS.map((v) => `
     <a class="sk-tab" role="tab" href="#/${v}" aria-selected="${s.view === v}" data-view="${v}">
       ${glyphSvg(NAV_ICON[v], '', 16)}<span>${escHtml(t(`nav.${v}`))}</span>
     </a>`).join('');
@@ -36,6 +37,7 @@ export function render(s) {
       root.innerHTML = renderCards(s);
       break;
     case 'play': root.innerHTML = renderPlay(s); break;
+    case 'about': root.innerHTML = renderAbout(s); break;
     case 'balance': root.innerHTML = renderBalance(s); break;
     default: root.innerHTML = renderLearn(s);
   }

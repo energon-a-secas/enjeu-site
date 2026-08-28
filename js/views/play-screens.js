@@ -4,7 +4,7 @@
 // fit the viewport, so keeping them out of play.js keeps that file about the
 // board and nothing else.
 
-import { t } from '../strings.js';
+import { t, cardName } from '../strings.js';
 import { escHtml } from '../utils.js';
 import { cardFace } from '../cards/face.js';
 import { glyphSvg } from '../cards/glyphs.js';
@@ -77,7 +77,7 @@ export function renderClassPick(s, run) {
     <p class="kicker">${escHtml(t('play.level'))} ${run.level} cleared</p>
     <h2 class="panel__title">${escHtml(t('play.pickClass'))}</h2>
     <div class="draft">${s.cards.class.map((c) => `
-      <button class="action-card" data-action="play-class" data-id="${c.id}">${cardFace(c, { size: 'browse' })}<b>${escHtml(c.name)}</b><span class="small" style="white-space:normal">${escHtml(c.passive)}</span></button>`).join('')}</div>
+      <button class="action-card" data-action="play-class" data-id="${c.id}">${cardFace(c, { size: 'browse' })}<b>${escHtml(cardName(c))}</b><span class="small" style="white-space:normal">${escHtml(c.passive)}</span></button>`).join('')}</div>
   </div>`;
 }
 
@@ -86,7 +86,7 @@ export function renderDraft(s, run) {
     <p class="kicker">${escHtml(t('play.level'))} ${run.level} cleared · ${escHtml(t('play.draftLead'))}</p>
     <h2 class="panel__title">${escHtml(t('play.draftTitle'))}</h2>
     <div class="draft">${run.draft.map((id) => { const c = s.cards.byId[id]; return `
-      <button class="action-card" data-action="play-draft" data-id="${id}">${cardFace(c, { size: 'browse' })}<b>${escHtml(c.name)}</b><span class="small">tier ${c.tier} · bet ${c.bet} · ${c.damage} · ${escHtml(t(`cards.check.${c.check || 'none'}`))}${c.element ? ` · ${cap(c.element)}` : ''}</span></button>`; }).join('')}</div>
+      <button class="action-card" data-action="play-draft" data-id="${id}">${cardFace(c, { size: 'browse' })}<b>${escHtml(cardName(c))}</b><span class="small">tier ${c.tier} · bet ${c.bet} · ${c.damage} · ${escHtml(t(`cards.check.${c.check || 'none'}`))}${c.element ? ` · ${cap(c.element)}` : ''}</span></button>`; }).join('')}</div>
   </div>`;
 }
 
@@ -95,7 +95,7 @@ export function renderAdvantage(s, run) {
   return `<div class="container stack">
     <p class="kicker">${escHtml(t('play.level'))} ${run.level} cleared</p>
     <h2 class="panel__title">${escHtml(t('play.advDraw'))}</h2>
-    <div class="draft">${drawn.map((id) => { const c = s.cards.byId[id]; return `<div class="action-card" style="cursor:default">${cardFace(c, { size: 'browse' })}<b>${escHtml(c.name)}</b><span class="small" style="white-space:normal">${escHtml(c.effect)}</span></div>`; }).join('')}</div>
+    <div class="draft">${drawn.map((id) => { const c = s.cards.byId[id]; return `<div class="action-card" style="cursor:default">${cardFace(c, { size: 'browse' })}<b>${escHtml(cardName(c))}</b><span class="small" style="white-space:normal">${escHtml(c.effect)}</span></div>`; }).join('')}</div>
     <p class="small muted">${escHtml(t('play.advHand'))}: ${run.hand.map((id) => escHtml(s.cards.byId[id].name)).join(', ') || 'none'}</p>
     <div class="row"><button class="btn btn--primary btn--lg" data-action="play-next-level">${escHtml(t('play.nextLevel'))} ${run.level + 1}</button></div>
   </div>`;

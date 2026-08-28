@@ -1,8 +1,8 @@
 // ── Cards view ───────────────────────────────────────────────
 // The catalogue. Browse every printed card, grouped by whatever you are
 // actually looking for (deck, element, tier, class, risk, damage, name), narrow
-// it with the element / tier / class chips, flip the whole grid over to the
-// printed BACKS, and tap any card for the name and the numbers its face
+// it with the deck / element / tier / class menus, flip the whole grid over to
+// the printed BACKS, and tap any card for the name and the numbers its face
 // deliberately does not spell out.
 //
 // PRINTING IS NOT AFFECTED BY ANY OF THIS. printOrder() below is the only thing
@@ -11,7 +11,7 @@
 // the screen is its preview: two players who print the deck have to end up with
 // the same sheets in the same order, whatever either screen was sorted by.
 
-import { t } from '../strings.js';
+import { t, cardName, reactionNames } from '../strings.js';
 import { escHtml, showToast } from '../utils.js';
 import { DECKS, CHECKS } from '../data/cards.js';
 import { cardFace, cardBack, FACE } from '../cards/face.js';
@@ -169,7 +169,7 @@ export function filterCards(data, s) {
     && matchesAxis(c, 'class', b.klass));
 }
 
-/** A copy of the state with one chip changed, for the facet counts on the chips. */
+/** A copy of the state with one filter changed, for the facet counts on the values. */
 function patched(s, key, value) {
   if (key === 'deck') return { ...s, deckFilter: value };
   const field = { element: 'element', tier: 'tier', class: 'klass' }[key];
@@ -177,18 +177,44 @@ function patched(s, key, value) {
 }
 
 // ── Rendering ────────────────────────────────────────────────
-function chipRow({ label, action, dataKey, current, options, count }) {
+/**
+ * One filter, as a menu that folds away. The values inside are the same chip
+ * buttons the four filter ROWS used to render, so the click seam is untouched:
+ * a value still carries data-action + data-<key> and its own facet count, and
+ * picking one re-renders the view, which is what closes the menu it came from.
+ *
+ * The counts are the point of keeping the values open rather than putting them
+ * in a <select>: every one is computed against the OTHER filters as they stand
+ * (see `patched`), so the menu answers "what is left if I also pick this" and
+ * not "what exists in the box". A value that would empty the grid shows its 0
+ * and cannot be picked, which is a different statement from hiding it: a reader
+ * hunting for a fire Knight is told there is none, rather than left looking for
+ * a control that quietly went away.
+ *
+ * `name` groups the four menus, so opening one closes the others and the bar is
+ * never more than one panel tall.
+ */
+function filterMenu({ label, action, dataKey, current, options, count }) {
   const id = `fl-${dataKey}`;
+  const chosen = options.find((o) => String(o.value) === String(current)) || options[0];
   const chips = options.map(({ value, label: text, colour }) => {
     const on = String(current) === String(value);
+    const n = count(value);
     const style = colour ? ` style="--chip:${colour}"` : '';
     const dot = colour ? '<span class="dot"></span>' : '';
-    return `<button class="chip" data-action="${action}" data-${dataKey}="${escHtml(String(value))}" aria-pressed="${on}"${style}>${dot}${escHtml(text)} <span class="muted">${count(value)}</span></button>`;
+    const off = n === 0 && !on ? ' disabled' : '';
+    return `<button class="chip" data-action="${action}" data-${dataKey}="${escHtml(String(value))}" aria-pressed="${on}"${style}${off}>${dot}${escHtml(text)} <span class="muted">${n}</span></button>`;
   }).join('');
-  return `<div class="filter-row">
-      <span class="filter-row__label" id="${id}">${escHtml(label)}</span>
-      <div class="chips" role="group" aria-labelledby="${id}">${chips}</div>
-    </div>`;
+  return `<details class="filter-menu" name="cards-filter" data-on="${String(current) !== 'all'}">
+      <summary class="filter-menu__button">
+        <span class="filter-menu__label">${escHtml(label)}</span>
+        <span class="filter-menu__value">${escHtml(chosen.label)}</span>
+      </summary>
+      <div class="filter-menu__panel">
+        <span class="filter-menu__title" id="${id}">${escHtml(label)}</span>
+        <div class="chips" role="group" aria-labelledby="${id}">${chips}</div>
+      </div>
+    </details>`;
 }
 
 /**
@@ -201,7 +227,7 @@ function chipRow({ label, action, dataKey, current, options, count }) {
  */
 function printRow(s) {
   return `<div class="cards-print">
-      <button class="btn btn--primary" data-action="cards-print">${glyphSvg('dice', '', 16)} ${escHtml(t('cards.printAll'))}</button>
+      <button class="btn btn--primary" data-action="cards-print" title="${escHtml(t('cards.printOrder'))}">${glyphSvg('dice', '', 16)} ${escHtml(t('cards.printAll'))}</button>
       ${s.deckFilter !== 'all' ? `<button class="btn" data-action="cards-print-deck" data-deck="${escHtml(s.deckFilter)}">${escHtml(t('cards.printDeck'))}</button>` : ''}
       <span class="seg" role="group" aria-label="${escHtml(t('cards.paper'))}">
         <button data-action="cards-paper" data-paper="a4" aria-pressed="${s.paper === 'a4'}">${escHtml(t('cards.a4'))}</button>
@@ -210,35 +236,45 @@ function printRow(s) {
       <span class="seg" role="group" aria-label="${escHtml(t('cards.backs._'))}">
         ${['none', 'few', 'all'].map((k) => `<button data-action="cards-print-backs" data-backs="${k}" aria-pressed="${(s.withBacks || 'none') === k}">${escHtml(t(`cards.backs.${k}`))}</button>`).join('')}
       </span>
-      <span class="small muted cards-print__note">${escHtml(t('cards.printOrder'))}</span>
     </div>`;
 }
 
+/**
+ * The whole browser on one line: sort, the four filters as menus, the backs
+ * toggle, Clear.
+ *
+ * It used to be four rows of chips under the sort row, 256px of controls above
+ * the first card at 1440x900, and the catalogue is what the page is for. Nothing
+ * was dropped to buy that back: every filter and every count is still here, one
+ * fold away.
+ */
 function toolbar(data, s) {
   const b = s.browse;
   const count = (key) => (value) => copiesOf(filterCards(data, patched(s, key, value)));
   const opt = (value, label, colour) => ({ value, label, colour });
 
-  const deckRow = chipRow({
-    label: t('cards.sort.deck'), action: 'cards-deck', dataKey: 'deck', current: s.deckFilter, count: count('deck'),
-    options: [opt('all', t('cards.filterAll')), ...DECKS.map((d) => opt(d, t(`cards.deck.${d}`), DECK_CHIP[d] || '#111'))],
-  });
-  const elementRow = chipRow({
-    label: t('cards.element._'), action: 'cards-element', dataKey: 'element', current: b.element, count: count('element'),
-    options: [opt('all', t('cards.element.all')), ...ELEMENTS.map((e) => opt(e, cap(e), `var(--${e})`)), opt('none', t('cards.element.none'))],
-  });
-  const tierRow = chipRow({
-    label: t('cards.tier._'), action: 'cards-tier', dataKey: 'tier', current: b.tier, count: count('tier'),
-    options: [opt('all', t('cards.tier.all')), ...values(allCards(data), 'tier', num).map((n) => opt(n, `${t('cards.tier._')} ${n}`))],
-  });
-  const classRow = chipRow({
-    label: t('cards.klass._'), action: 'cards-class', dataKey: 'class', current: b.klass, count: count('class'),
-    options: [opt('all', t('cards.klass.all')), ...values(allCards(data), 'class', alpha).map((k) => opt(k, cap(k), FACE.violet)), opt('none', t('cards.klass.none'))],
-  });
+  const menus = [
+    filterMenu({
+      label: t('cards.sort.deck'), action: 'cards-deck', dataKey: 'deck', current: s.deckFilter, count: count('deck'),
+      options: [opt('all', t('cards.filterAll')), ...DECKS.map((d) => opt(d, t(`cards.deck.${d}`), DECK_CHIP[d] || '#111'))],
+    }),
+    filterMenu({
+      label: t('cards.element._'), action: 'cards-element', dataKey: 'element', current: b.element, count: count('element'),
+      options: [opt('all', t('cards.element.all')), ...ELEMENTS.map((e) => opt(e, cap(e), `var(--${e})`)), opt('none', t('cards.element.none'))],
+    }),
+    filterMenu({
+      label: t('cards.tier._'), action: 'cards-tier', dataKey: 'tier', current: b.tier, count: count('tier'),
+      options: [opt('all', t('cards.tier.all')), ...values(allCards(data), 'tier', num).map((n) => opt(n, `${t('cards.tier._')} ${n}`))],
+    }),
+    filterMenu({
+      label: t('cards.klass._'), action: 'cards-class', dataKey: 'class', current: b.klass, count: count('class'),
+      options: [opt('all', t('cards.klass.all')), ...values(allCards(data), 'class', alpha).map((k) => opt(k, cap(k), FACE.violet)), opt('none', t('cards.klass.none'))],
+    }),
+  ].join('');
 
   // Anything the reader changed, so Clear is offered only when there is
-  // something to clear. The deck chips count as a filter row here, so Clear
-  // clears them too; the backs toggle does not, it is a display mode.
+  // something to clear. The deck menu counts as one more filter here, so Clear
+  // clears it too; the backs toggle does not, it is a display mode.
   const dirty = b.sort !== 'deck' || b.element !== 'all' || b.tier !== 'all' || b.klass !== 'all' || s.deckFilter !== 'all';
 
   return `<div class="cards-toolbar">
@@ -249,10 +285,10 @@ function toolbar(data, s) {
             ${SORTS.map((k) => `<option value="${k}"${b.sort === k ? ' selected' : ''}>${escHtml(t(`cards.sort.${k}`))}</option>`).join('')}
           </select>
         </label>
+        <div class="cards-filters">${menus}</div>
         <button class="btn" data-action="cards-backs" aria-pressed="${!!b.backs}">${escHtml(t(b.backs ? 'cards.showFaces' : 'cards.showBacks'))}</button>
         ${dirty ? `<button class="btn btn--ghost" data-action="cards-reset">${escHtml(t('cards.reset'))}</button>` : ''}
       </div>
-      <div class="cards-filters">${deckRow}${elementRow}${tierRow}${classRow}</div>
     </div>`;
 }
 
@@ -262,15 +298,15 @@ function cell(c, aid, backs) {
   // faces it replaced. 'sheet' is millimetres and would print-size it on screen.
   const art = backs ? cardBack(backKind(c), { size: 'browse' }) : cardFace(c, { size: 'browse', aid });
   const copies = (c.copies || 1) > 1 ? ` <span class="copies">×${c.copies}</span>` : '';
-  return `<button class="card-btn" data-action="cards-detail" data-id="${escHtml(c.id)}" aria-label="${escHtml(c.name)}">
+  return `<button class="card-btn" data-action="cards-detail" data-id="${escHtml(c.id)}" aria-label="${escHtml(cardName(c))}">
         ${art}
-        <span>${escHtml(c.name)}${copies}</span>
+        <span>${escHtml(cardName(c))}${copies}</span>
       </button>`;
 }
 
 export function renderCards(s) {
   const data = s.cards;
-  const aid = aidFor(data);
+  const aid = aidFor(data, reactionNames());
   const list = filterCards(data, s);
   const groups = groupCards(list, s.browse.sort);
 
@@ -316,7 +352,7 @@ export function printOrder(s, deck = null) {
 
 /** Fill the print root and open the browser's print dialog. */
 export function printCards(s, deck = null) {
-  const pages = renderPrintSheet(printOrder(s, deck), { backs: s.withBacks, paper: s.paper, aid: aidFor(s.cards) });
+  const pages = renderPrintSheet(printOrder(s, deck), { backs: s.withBacks, paper: s.paper, aid: aidFor(s.cards, reactionNames()) });
   // Give the browser one frame to lay the sheet out before the dialog snapshots it.
   requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
   return pages;
@@ -329,17 +365,18 @@ const CHECK_LABEL = (c) => (c ? t(`cards.check.${c}`) : t('cards.check.none'));
 export function showCardDetail(s, id) {
   const c = s.cards.byId[id];
   if (!c) return;
-  const aid = aidFor(s.cards);
+  const aid = aidFor(s.cards, reactionNames());
   const rows = [];
   const add = (k, v) => { if (v !== undefined && v !== null && v !== '') rows.push(`<dt>${escHtml(t(`cards.corner.${k}`))}</dt><dd>${v}</dd>`); };
   if (c.deck === 'attack' || c.deck === 'skill') {
     add('actions', c.actions);
-    add('bet', c.bet === 'any' ? 'any number of Ready cards' : c.bet === 0 ? 'none' : `${c.bet} life card${c.bet > 1 ? 's' : ''}`);
+    add('bet', c.bet === 'any' ? t('cards.val.betAny') : c.bet === 0 ? t('cards.val.none')
+      : `${c.bet} ${t(c.bet > 1 ? 'cards.val.lifeCards' : 'cards.val.lifeCard')}`);
     add('check', escHtml(CHECK_LABEL(c.check)));
-    add('damage', c.damage === '4x bet' ? '4 × what you bet' : c.damage);
+    add('damage', c.damage === '4x bet' ? t('cards.val.xBet') : c.damage);
     add('tier', c.tier);
     if (c.element) add('element', escHtml(cap(c.element)));
-    if (c.class) add('class', `${escHtml(cap(c.class))} only`);
+    if (c.class) add('class', `${escHtml(cardName({ id: c.class, name: cap(c.class) }))} ${escHtml(t('cards.val.classOnly'))}`);
   } else if (c.deck === 'class') add('passive', escHtml(c.passive));
   else if (c.deck === 'advantage') { add('effect', escHtml(c.effect)); add('copies', c.copies); }
   else if (c.deck === 'boss') {
@@ -351,7 +388,7 @@ export function showCardDetail(s, id) {
   add('icon', `<code>${escHtml(c.icon || 'none')}</code>`);
 
   const say = (c.deck === 'attack' || c.deck === 'skill')
-    ? `<div class="say">${escHtml(t('common.sayIt'))}: <b>${escHtml(c.name)}</b></div>` : '';
+    ? `<div class="say">${escHtml(t('common.sayIt'))}: <b>${escHtml(cardName(c))}</b></div>` : '';
   document.getElementById('cardModalTitle').textContent = c.name;
   // Face and back together, because until now the redesigned back existed only
   // on the print sheet and nothing on screen ever showed one.
@@ -363,7 +400,7 @@ export function showCardDetail(s, id) {
       </div>
       <div>
         <p class="kicker">${escHtml(t(`cards.deck.${c.deck}`))}</p>
-        <h3>${escHtml(c.name)}</h3>
+        <h3>${escHtml(cardName(c))}</h3>
         <dl>${rows.join('')}</dl>
         ${say}
       </div>

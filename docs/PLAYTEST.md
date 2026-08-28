@@ -1,8 +1,8 @@
 # Playtest log
 
-**No human has played Enjeu yet.** Everything in [BALANCE.md](BALANCE.md) comes from a
-simulator, which can tell you a line is mathematically dominant and cannot tell you whether
-anyone enjoyed the twenty minutes.
+**One human session is on record**, 2026-08-27, logged under Sessions below. Everything in
+[BALANCE.md](BALANCE.md) still comes from a simulator, which can tell you a line is
+mathematically dominant and cannot tell you whether anyone enjoyed the twenty minutes.
 
 Log every session here, newest at the top. One entry per run, even the abandoned ones,
 especially the abandoned ones, since *where* somebody stopped is the most useful signal
@@ -33,8 +33,9 @@ Carried from [BALANCE.md](BALANCE.md). These are what the first sessions exist t
 2. **Does the guard line get felt?** The intended moment is looking at your Ready cards,
    wanting to bet one more, and not. If nobody hesitates there, the core mechanic is not
    landing and nothing else matters.
-3. **Is a 19% run completion too brutal?** Play six full runs. If nobody clears one, raise
-   the Advantage draw or soften levels 4–5.
+3. **Is the published run completion too brutal?** Take the current figure from
+   [BALANCE.md](BALANCE.md) rather than from a copy kept here, then play six full runs. If
+   nobody clears one, raise the Advantage draw or soften levels 4–5.
 4. **Do the cards read without the rulebook?** Show the corners to somebody who has never
    played. Three seconds. If they cannot *guess* (not work out) what a glyph means, it is
    the wrong glyph.
@@ -73,12 +74,18 @@ The first time a human played this. Everything above this line was simulated.
 - **Also raised:** a defensive "bubble" card, a safe mode with a shield worth 25.
   Not yet designed; the exact effect is an open question.
 
+> **Superseded 2026-08-28.** The entry above records the change as All In paying **6x**
+> the bet. The shipped multiplier is **4x**: `data/cards.json` gives `all-in` a damage of
+> `"4x bet"`, RULES.md section 5 prints `4x what you bet`, and `tools/sim.py` computes
+> `4 * cards * LIFE`. The entry is left as it was written on the day; this note carries the
+> correction.
+
 **What this session proves about the method:** four play styles and 20,000
 simulated fights per cell never found this, because the simulator's `choose()`
 ranks options by expected damage and simply never picked a dominated card, which
 looks identical to a card being fine. One person playing for a few minutes found
-it immediately. Question 5 on the list below ("does anyone actually cast All In?")
-was the right question and the sim could not answer it.
+it immediately. Question 5 in "The six questions" above ("does anyone actually cast All
+In?") was the right question and the sim could not answer it.
 
 <!--
 ### YYYY-MM-DD - v0.1.0 - <player>

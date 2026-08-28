@@ -151,10 +151,39 @@ export function bubblesNeeded(f, style) {
   return shortfall;
 }
 
+/**
+ * Whether to Run before attacking. Same shape as bubblesNeeded and for the same
+ * reason: an action spent hiding is an action not spent shortening the fight,
+ * and under Rage the clock is what kills you.
+ *
+ * Where it differs is that Run scales with the boss and Bubble does not. Bubble
+ * stops a flat 25; Run stops the whole Strike a third of the time and half of
+ * everything else, so its expected saving is half the boss's Damage, doubled
+ * under Rage. At level 1 that is 25, the same as a Bubble. At level 5 under Rage
+ * it is 100, which is four Bubbles for one action.
+ *
+ * Outside Rage it is still usually wrong: a Ready card guards for free, so the
+ * only damage worth dodging is damage you cannot guard.
+ */
+export function wantsRun(f, style) {
+  if (style !== 'safe' && style !== 'adaptive') return false;
+  const run = legalAttacks(f).find((a) => a.hides);
+  if (!run || f.hero.hidden || f.actionsLeft < run.actions) return false;
+  if (!raging(f)) return false;
+  const incoming = f.boss.damage * 2 + f.boss.minions.length * UNIT;
+  const shortfall = Math.ceil(incoming / UNIT) - alive(f);
+  if (shortfall <= 0) return false;              // you survive it anyway
+  const hp = f.boss.body > 0 || f.legacy ? f.boss.body : Math.min(...f.boss.minions.map((m) => m.hp));
+  const kill = affordable(f, ready(f));
+  if (kill.some((c) => pKill(f, c, hp) >= 0.5)) return false;  // a likely kill beats hiding
+  return true;
+}
+
 export function playTurn(f, style, next, drawFn) {
   playOpeners(f, drawFn);
   const bub = legalAttacks(f).find((a) => a.shield);
   for (let i = bubblesNeeded(f, style); i > 0 && f.actionsLeft >= bub.actions; i--) attack(f, bub, {});
+  if (wantsRun(f, style)) attack(f, legalAttacks(f).find((a) => a.hides), {});
   const combo = choose(f, style);
   // Rune goes on the biggest checked attack in the combo.
   let runeOn = -1, big = 0;

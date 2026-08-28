@@ -76,9 +76,11 @@ system vocabulary.
 Good: **Ice Spear. Earthquake. Soul Strike. Stone Wall. Meteor.**
 Bad: Tier 3 Area Attack. Damage Modifier B. Buff Card.
 
-The name never appears on the card. It lives in the rulebook's card list and in the
-player's mouth. That is the entire point of an iconographic deck: the table stays clear,
-and the story is told out loud instead of read silently.
+The name never appears on the card. The printed deck ships without it. It lives in
+`data/cards.json`, the only place any card name is written down, and in the player's mouth;
+the site's Cards tab reads it back to you when you tap a face. That is the entire point of
+an iconographic deck: the table stays clear, and the story is told out loud instead of read
+silently.
 
 ## The icon test
 
@@ -89,5 +91,5 @@ From the board-game-design reference, and it is not negotiable:
 > an icon, that icon is wrong.
 
 Run this before committing to a single printed sheet. Iconography is the failure mode this
-kind of deck dies of, and it is cheap to catch now and expensive to catch after 89 cards
+kind of deck dies of, and it is cheap to catch now and expensive to catch after 105 cards
 are laid out.

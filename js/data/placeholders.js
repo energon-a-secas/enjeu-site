@@ -2,8 +2,9 @@
 // Stand-in enemies and heroes for the runner until the real art lands.
 // Every entry says so (placeholder: true) so a later pass can find them.
 // Names follow the card naming rule: two concrete words, never a brand.
-// Boss cards in data/cards.json carry no element (the rulebook says a boss
-// card states one), so the roster assigns it here.
+// Boss cards in data/cards.json carry no element, and RULES.md section 7 now
+// says so plainly rather than claiming the card prints one. The roster assigns
+// it here, which is where it has always actually come from.
 
 export const HEROES = [
   { id: 'hero-fire',  name: 'Ember Scout',  kind: 'hero', element: 'fire',  silhouette: 'minifig', placeholder: true },

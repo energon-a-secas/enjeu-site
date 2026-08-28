@@ -30,10 +30,26 @@
 <body>
   <main>
     <p class="code">404</p>
-    <h1>That page is not here</h1>
-    <p>The link may be old, or the address may have a typo in it.</p>
-    <a href="/">Back to Enjeu</a>
-    <a href="https://neorgon.com">All tools</a>
+    <h1 data-en="That page is not here" data-es="Esa página no está acá">That page is not here</h1>
+    <p data-en="The link may be old, or the address may have a typo in it."
+       data-es="El enlace puede ser viejo, o la dirección puede tener un error.">The link may be old, or the address may have a typo in it.</p>
+    <a href="/" data-en="Back to Enjeu" data-es="Volver a Enjeu">Back to Enjeu</a>
+    <a href="https://neorgon.com" data-en="All tools" data-es="Todas las herramientas">All tools</a>
   </main>
+  <script>
+    /* Self-contained, like the CSS above and for the same reason: a 404 that
+       imports the site's modules breaks exactly when the paths are already
+       broken. It reads the same localStorage key the app persists the language
+       in, so a Spanish visitor who mistypes a URL still lands in Spanish. */
+    try {
+      var saved = JSON.parse(localStorage.getItem('enjeu-state') || '{}');
+      var lang = saved && saved.lang === 'es' ? 'es' : 'en';
+      if (lang === 'es') {
+        document.documentElement.lang = 'es';
+        document.title = 'No encontrado | Enjeu';
+        document.querySelectorAll('[data-es]').forEach(function (el) { el.textContent = el.dataset.es; });
+      }
+    } catch (e) { /* an unreadable store just leaves the page in English */ }
+  </script>
 </body>
 </html>

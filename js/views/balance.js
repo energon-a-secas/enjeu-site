@@ -4,7 +4,7 @@
 // page stays alive. Shows the published tools/sim.py table beside the run.
 
 import { state } from '../state.js';
-import { t } from '../strings.js';
+import { t, getLang } from '../strings.js';
 import { escHtml, showToast } from '../utils.js';
 import { STYLES } from '../game/strategies.js';
 import { PUBLISHED } from '../data/published.js';
@@ -28,10 +28,10 @@ function table(cellsByKey, trials, caption) {
   for (let L = 1; L <= 5; L++) { const c = cellsByKey[`${L}:adaptive`]; if (c) product *= c.win / 100; else complete = false; }
   return `<div class="table-wrap"><table class="bal-grid">
     <caption class="kicker" style="text-align:left;padding-bottom:6px">${escHtml(caption)}</caption>
-    <thead><tr><th>${escHtml(t('balance.cols.level'))}</th>${STYLES.map((s) => `<th>${escHtml(t(`balance.style.${s}`))} ${escHtml(t('balance.cols.win'))}</th>`).join('')}<th>adaptive ${escHtml(t('balance.cols.rounds'))}</th><th>adaptive ${escHtml(t('balance.cols.broken'))}</th></tr></thead>
+    <thead><tr><th>${escHtml(t('balance.cols.level'))}</th>${STYLES.map((s) => `<th>${escHtml(t(`balance.style.${s}`))} ${escHtml(t('balance.cols.win'))}</th>`).join('')}<th>${escHtml(t('balance.adaptiveCol'))} ${escHtml(t('balance.cols.rounds'))}</th><th>${escHtml(t('balance.adaptiveCol'))} ${escHtml(t('balance.cols.broken'))}</th></tr></thead>
     <tbody>${[1, 2, 3, 4, 5].map((L) => `<tr><td>${L}</td>${STYLES.map((s) => { const c = cellsByKey[`${L}:${s}`]; return `<td class="${best[L] === s ? 'best' : ''}">${c ? fmt(c.win) + '%' : '…'}</td>`; }).join('')}<td>${fmt(cellsByKey[`${L}:adaptive`]?.rounds)}</td><td>${fmt(cellsByKey[`${L}:adaptive`]?.broken)}</td></tr>`).join('')}</tbody>
   </table></div>
-  <p class="small muted">${trials.toLocaleString()} fights per cell. ${complete ? `Five-level run completion on the adaptive line: <b>${fmt(product * 100)}%</b>.` : ''}</p>`;
+  <p class="small muted">${trials.toLocaleString(getLang() === 'es' ? 'es' : 'en')} ${escHtml(t('balance.fightsPerCell'))}. ${complete ? `${escHtml(t('balance.runCompletion'))}: <b>${fmt(product * 100)}%</b>.` : ''}</p>`;
 }
 
 export function renderBalance(s) {
@@ -61,8 +61,8 @@ export function renderBalance(s) {
         <span class="small muted">${running ? `${escHtml(t('balance.running'))} ${progress}/20` : rows.length ? `${rows.length}/20 cells` : ''}</span>
       </div>
     </div>
-    ${rows.length ? `<div class="panel">${table(mine, lastOpts?.trials || b.trials, `This run: ${lastOpts?.legacy ? 'tools/sim.py legacy rules' : 'rulebook rules'}${lastOpts?.bonus ? `, +${lastOpts.bonus} bonus` : ''}${lastOpts?.klass && lastOpts.klass !== 'none' ? `, ${lastOpts.klass}` : ''}${lastOpts?.advantage ? ', Advantage deck' : ''}`)}</div>` : ''}
-    <div class="panel panel--sunk">${table(pub, PUBLISHED.trials, 'Published: docs/BALANCE.md, tools/sim.py, seed 7, no bonus, no classes, no Advantage')}</div>
+    ${rows.length ? `<div class="panel">${table(mine, lastOpts?.trials || b.trials, `${t('balance.thisRun')}: ${lastOpts?.legacy ? t('balance.legacyRules') : t('balance.rulebookRules')}${lastOpts?.bonus ? `, +${lastOpts.bonus} ${t('balance.bonus')}` : ''}${lastOpts?.klass && lastOpts.klass !== 'none' ? `, ${lastOpts.klass}` : ''}${lastOpts?.advantage ? `, ${t('balance.advantage')}` : ''}`)}</div>` : ''}
+    <div class="panel panel--sunk">${table(pub, PUBLISHED.trials, t('balance.publishedCaption'))}</div>
   </div>`;
 }
 

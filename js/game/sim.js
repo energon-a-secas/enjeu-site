@@ -45,7 +45,15 @@ export function advantageDeck(data, next) {
  */
 export function runFight(data, opts, next) {
   const L = levels(data)[opts.level - 1];
-  const attacks = [STRIKE, FOCUS, ALL_IN, ...(opts.legacy || opts.noBubble ? [] : [BUBBLE]), ...L.tiers.map((t) => TIER[t])];
+  // Derived from data, not listed here. The constants above stay because legacy
+  // mode has to reproduce tools/sim.py exactly, and sim.py knows only three
+  // attacks. Everything else reads data.attack, so a card added to the deck
+  // reaches the simulator the same turn it reaches a player: a hardcoded trio
+  // is what once left Bubble out of every simulated hand, and then Run.
+  const extra = opts.legacy ? [] : data.attack.filter((c) => c.id !== 'strike' && c.id !== 'focus' && c.id !== 'all-in')
+    .filter((c) => !(opts.noBubble && c.id === 'bubble'))
+    .filter((c) => !(opts.noRun && c.id === 'run'));
+  const attacks = [STRIKE, FOCUS, ALL_IN, ...extra, ...L.tiers.map((t) => TIER[t])];
   const el = opts.element || 'fire';
   const pool = Array.from({ length: L.cards }, (_, i) => (i < 4 ? el : 'extra'));
   let deck = null, hand = [];

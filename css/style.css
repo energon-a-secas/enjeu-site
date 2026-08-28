@@ -235,6 +235,30 @@ strong { font-weight: 700; }
 .seg button:last-child { border-right: 0; }
 .seg button[aria-pressed="true"] { background: var(--text-primary); color: var(--surface-1); }
 
+/* The language toggle in the header. The .seg control above re-dressed for the
+   dark gradient, on the same rules as .sk-tab: translucent white, gold when it
+   is the one in use, the kit's control height so it lines up with the tabs and
+   the home button. It has to come AFTER the .seg block and not beside .sk-tab,
+   where it was first written: `.seg--lang button[aria-pressed="true"]` and
+   `.seg button[aria-pressed="true"]` have identical specificity, so the one
+   further down the file is the one that paints, and the toggle rendered in the
+   panel's dark ink on the dark header instead of gold. */
+.seg--lang {
+  flex: 0 0 auto;
+  border-color: rgba(255,255,255,0.18);
+  background: transparent;
+  align-self: center;
+}
+.seg--lang button {
+  min-height: var(--header-control-h, 40px);
+  padding: 0 10px;
+  color: rgba(255,255,255,0.92);
+  font-size: var(--text-xs); letter-spacing: 0.04em;
+  border-right-color: rgba(255,255,255,0.18);
+}
+.seg--lang button:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.seg--lang button[aria-pressed="true"] { background: var(--gold); color: #1c1917; }
+
 /* Inputs */
 .field { display: flex; flex-direction: column; gap: 6px; font-size: var(--text-sm); font-weight: 600; }
 .field input[type="number"], .field select {

@@ -84,11 +84,68 @@ test('every enumerated label table is complete (a gap renders the raw [key] on s
   need('cards.deck', DECKS);
   need('cards.check', ['none', 'sure', 'even', 'hard', 'wild']);
   need('cards.backs', ['_', 'none', 'few', 'all']);
-  need('nav', ['learn', 'cards', 'play', 'balance']);
+  need('nav', ['learn', 'cards', 'play', 'about', 'balance']);
   need('play', ['story', 'standard', 'nightmare']);
   need('play.modeHint', ['story', 'standard', 'nightmare']);
   need('balance.style', ['turtle', 'safe', 'adaptive', 'gamble']);
   assert.deepEqual(missing, []);
+});
+
+/**
+ * The header of js/strings.js promises that a key present in one language and
+ * missing in the other is caught here. It was not: both checks below this one
+ * walked STRINGS.en and nothing ever read STRINGS.es, so the Spanish table
+ * could silently lose a key and the page would render the literal [some.key].
+ * A stated guard that does not run is worse than no guard, because it gets
+ * quoted. This is the guard the comment describes.
+ */
+test('every language table has exactly the same keys, in both directions', () => {
+  const leaves = (o, at = '') => Object.entries(o).flatMap(([k, v]) =>
+    (v && typeof v === 'object' && !Array.isArray(v)) ? leaves(v, at ? `${at}.${k}` : k) : [at ? `${at}.${k}` : k]);
+  const langs = Object.keys(STRINGS);
+  assert.ok(langs.length >= 2, `expected more than one language table, found ${langs}`);
+  const base = new Set(leaves(STRINGS.en));
+  for (const l of langs) {
+    if (l === 'en') continue;
+    const other = new Set(leaves(STRINGS[l]));
+    // cards.name is a deliberate one-way overlay: English names live in
+    // data/cards.json, so `en` carries no table and cardName falls through.
+    const missing = [...base].filter((k) => !other.has(k));
+    const extra = [...other].filter((k) => !base.has(k) && !k.startsWith('cards.name.'));
+    assert.deepEqual(missing, [], `${l} is missing keys that en has`);
+    assert.deepEqual(extra, [], `${l} has keys en does not`);
+  }
+});
+
+/**
+ * The house rule is that the toy brand is never named: only "construction toy",
+ * "bricks", "figure". It had no guard, and the rulebook broke it on line 7 for
+ * months inside a non-affiliation notice while every other line obeyed it. A
+ * legal disclaimer is exactly where the name creeps back in, so the scan covers
+ * living prose. Dated records under .forge are what was written at the time.
+ */
+test('no toy brand is named in any living document', () => {
+  const BRANDS = [/\bLEGO\b/i, /\bMega ?Bloks\b/i, /\bK'?NEX\b/i, /\bPlaymobil\b/i];
+  const files = [];
+  const walk = (dir) => {
+    for (const f of readdirSync(dir)) {
+      if (['node_modules', '.git', '.forge', 'art', 'print', 'docs/journal'].includes(f)) continue;
+      const full = join(dir, f);
+      if (statSync(full).isDirectory()) walk(full);
+      // This file names the brands in its own pattern list, so it cannot scan itself.
+      else if (/\.(md|js|mjs|html|json)$/.test(f) && !f.startsWith('neorgon-') && f !== 'content.test.mjs') files.push(full);
+    }
+  };
+  walk(root);
+  const hits = [];
+  for (const f of files) {
+    const text = readFileSync(f, 'utf8');
+    for (const b of BRANDS) {
+      const m = b.exec(text);
+      if (m) hits.push(`${f.replace(root + '/', '')}: "${m[0]}"`);
+    }
+  }
+  assert.deepEqual(hits, [], 'a brand name reached a living document');
 });
 
 console.log(`\n${passed} passed, ${failed} failed`);

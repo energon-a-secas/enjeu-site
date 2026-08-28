@@ -25,7 +25,7 @@
 // prefers-reduced-motion, and that rule can only protect motion the CSS owns:
 // a JS timer or a rAF loop here would run anyway.
 
-import { t } from '../strings.js';
+import { t, cardName } from '../strings.js';
 import { escHtml } from '../utils.js';
 import { cardFace, cardBack, lifeMini, riskDots } from '../cards/face.js';
 import { glyphSvg } from '../cards/glyphs.js';
@@ -36,6 +36,14 @@ import { targetFor, dieMax, stepOdds } from '../game/rules.js';
 import { validatePlan, planActions, attackFor, betFor, readyAt, runeSpare, pickable, awaitingStep } from './play-plan.js';
 
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
+
+/**
+ * A boss reaction, named in the player's language. cards.json carries the
+ * English name and now an id; the id is what the string table is keyed on, so
+ * the board, the printed aid and the rulebook all say the same word. Before
+ * this the board said "Brace" while the Spanish rulebook said "Aguante".
+ */
+const reactionName = (p) => (p?.kind ? t(`play.reactionName.${p.kind}`) : p?.name || '');
 
 /**
  * A refusal from play-plan.js as a sentence. Mapped rather than interpolated:
@@ -52,10 +60,37 @@ function heroPile(f) {
     .map((c) => lifeMini(c.kind, c.st === 'spent' ? 'is-spent' : c.st === 'broken' ? 'is-broken' : '')).join('');
 }
 
-function bossPile(f) {
-  const cards = Math.ceil(f.boss.body / f.boss.perCard);
-  const shown = Math.min(cards, 8);
-  return `${lifeMini('boss').repeat(shown)}${cards > 8 ? `<b class="muted">+${cards - 8}</b>` : ''}`;
+/**
+ * The boss's life, as the wall of cards it is on the table. This is the board's
+ * centre of gravity, so it draws EVERY card: the old pile capped at 8 with a
+ * "+12" badge, which is right for a pile in a corner and wrong for the thing the
+ * whole fight is about. Twenty cards that visibly come apart is the point.
+ *
+ * The leading card is drawn part-broken, and that detail is load-bearing rather
+ * than decorative. Damage arrives in 25s and a card is worth 100, so a wall of
+ * whole cards only moves on one hit in four: as a progress bar it would be
+ * COARSER than the numeral it replaces. The fraction makes it exact to 25.
+ */
+const WALL_SHAPE = { 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 3, 7: 4, 8: 4, 9: 5, 10: 5, 11: 4, 12: 6, 20: 5 };
+export function wallShape(cards, narrow = false) {
+  if (cards <= 0) return { cols: 1, rows: 1 };
+  if (narrow) { const cols = Math.min(cards, 10); return { cols, rows: Math.ceil(cards / cols) }; }
+  const cols = WALL_SHAPE[cards] || Math.min(cards, 6);
+  return { cols, rows: Math.ceil(cards / cols) };
+}
+
+function bossWall(f) {
+  const per = f.boss.perCard || 100;
+  const whole = Math.floor(f.boss.body / per);
+  const part = f.boss.body - whole * per;                 // 0, 25, 50 or 75
+  const cards = whole + (part > 0 ? 1 : 0);
+  const { cols, rows } = wallShape(cards);
+  const lead = part > 0
+    ? `<span class="lc-part" style="--frac:${(part / per).toFixed(2)}" aria-hidden="true">${lifeMini('boss')}</span>`
+    : '';
+  return `<div class="wall" style="--wall-cols:${cols};--wall-rows:${rows}"
+    role="img" aria-label="${escHtml(t('play.bossLife'))}: ${f.boss.body} / ${f.boss.maxHp}"
+    >${lead}${lifeMini('boss').repeat(whole)}</div>`;
 }
 
 /** A face-down pile as a small offset stack, never a spread: the fit is the point. */
@@ -81,7 +116,6 @@ function tablePanel(s, run, f) {
   const first = run.kind === 'first';
   const biome = s.cards.byId[f.biomeCard];
   const sw = s.cards.byId['second-wind'];
-  const bossCards = Math.ceil(f.boss.body / f.boss.perCard);
   const slot = (label, art, note, id) => {
     const title = `${label}: ${note || t('play.inTheBox')}`;
     const inner = `<span class="tbl-slot__art">${art || '<span class="stack-of is-empty"></span>'}</span>
@@ -90,14 +124,19 @@ function tablePanel(s, run, f) {
       ? `<button class="tbl-slot" data-action="cards-detail" data-id="${escHtml(id)}" title="${escHtml(title)}" aria-label="${escHtml(title)}">${inner}</button>`
       : `<div class="tbl-slot" title="${escHtml(title)}" aria-label="${escHtml(title)}" role="img">${inner}</div>`;
   };
-  return `<aside class="panel panel--tight fight-table" aria-label="${escHtml(t('play.table'))}">
-    ${slot(t('play.biomeCard'), biome ? cardFace(biome, { size: 'mini' }) : '', biome?.name || '', biome?.id)}
-    ${slot(t('play.drawPile'), first ? '' : stackOf(cardBack('skill', { size: 'mini' }), run.skillPool.length), first ? '' : String(run.skillPool.length))}
-    ${slot(t('play.advPile'), first ? '' : stackOf(cardBack('skill', { size: 'mini' }), run.advDeck.length), first ? '' : String(run.advDeck.length))}
-    ${slot(t('play.extraPile'), run.extraLives ? stackOf(lifeMini('extra'), run.extraLives) : '', run.extraLives ? String(run.extraLives) : '')}
-    ${slot(t('play.secondWind'), run.secondWind && sw ? cardFace(sw, { size: 'mini' }) : '', run.secondWind ? 'in play' : '', run.secondWind ? sw?.id : null)}
-    ${slot(t('play.bossPile'), stackOf(cardBack('boss', { size: 'mini' }), bossCards), `${bossCards} × ${f.boss.perCard}`)}
-  </aside>`;
+  // Only the piles that exist. Three of the six were hard-coded empty in a First
+  // Game (no draw pile, no Advantage deck, and no extra lives outside a Village),
+  // so half the rail was dashed outlines promising piles the mode cannot have.
+  // The boss pile is gone from here entirely: the wall in the middle of the duel
+  // IS the boss pile, and drawing it twice made the smaller copy the wrong one.
+  const rows = [
+    slot(t('play.biomeCard'), biome ? cardFace(biome, { size: 'mini' }) : '', biome?.name || '', biome?.id),
+    first ? '' : slot(t('play.drawPile'), stackOf(cardBack('skill', { size: 'mini' }), run.skillPool.length), String(run.skillPool.length)),
+    first ? '' : slot(t('play.advPile'), stackOf(cardBack('skill', { size: 'mini' }), run.advDeck.length), String(run.advDeck.length)),
+    run.extraLives ? slot(t('play.extraPile'), stackOf(lifeMini('extra'), run.extraLives), String(run.extraLives)) : '',
+    run.secondWind && sw ? slot(t('play.secondWind'), cardFace(sw, { size: 'mini' }), 'in play', sw.id) : '',
+  ].filter(Boolean);
+  return `<aside class="panel panel--tight fight-table" aria-label="${escHtml(t('play.table'))}">${rows.join('')}</aside>`;
 }
 
 // ── The boss speaks ──────────────────────────────────────────
@@ -121,7 +160,7 @@ function bubble(f, ui) {
       : p.kind === 'brace' ? 'no damage, and it halves what it takes next turn'
         : p.kind === 'summon' ? `${p.chunk} of its life moves under a minion` : '';
     return `<p class="bubble ${p.rage || p.kind === 'ruin' ? 'is-alarm' : 'is-alert'}" role="status">
-      <b>${escHtml(p.name)}</b><span>${what}</span></p>`;
+      <b>${escHtml(reactionName(p))}</b><span>${what}</span></p>`;
   }
   if (ui.bossSaid) return `<p class="bubble is-said" role="status">${escHtml(ui.bossSaid)}</p>`;
   if (raging(f)) return `<p class="bubble is-alarm" role="status"><b>${escHtml(t('play.rage'))}</b></p>`;
@@ -138,7 +177,7 @@ function bubble(f, ui) {
 function dieCell(f, ui) {
   const wait = f.phase === 'act' ? awaitingStep(f, ui) : null;
   let big, note, cls = '';
-  if (f.pending) { big = f.pending.roll; note = `d6 · ${f.pending.name}`; cls = 'is-rolling'; }
+  if (f.pending) { big = f.pending.roll; note = `d6 · ${reactionName(f.pending)}`; cls = 'is-rolling'; }
   else if (wait) {
     big = `${targetFor(f.die, wait.step)}+`;
     note = `${wait.a.name} · ${cap(wait.step)}`;
@@ -148,7 +187,10 @@ function dieCell(f, ui) {
     note = ui.last.hit ? t('play.hit') : t('play.miss');
     cls = `is-rolling ${ui.last.hit ? 'is-good' : 'is-bad'}`;
   } else { big = glyphSvg('dice', '', 30); note = f.die; }
-  return `<div class="arena__die"><div class="die-face ${cls}">${big}</div><small class="muted">${escHtml(note)}</small></div>`;
+  // It lives beside the hand, not opposite the boss. The old cell was 504x169
+  // and 93.3% empty, and it sat 300px above the roll button, the typed-roll box
+  // and the verdict, which is where a player is actually looking while rolling.
+  return `<div class="die-cell"><div class="die-face ${cls}">${big}</div><small class="muted">${escHtml(note)}</small></div>`;
 }
 
 // ── The gear shelf ───────────────────────────────────────────
@@ -170,16 +212,20 @@ function shelf(f, ui) {
         ${figureSvg({ ...MINION, name: t('play.ally') }, {})}<small>${ALLY_DEF} ${escHtml(t('play.allyDef'))}</small></div>`
     : `<div class="gear gear--ally ${ui.fx === 'ally-gone' ? 'is-lost' : ''}" title="${escHtml(`${t('play.ally')}: ${ui.fx === 'ally-gone' ? t('play.allyGone') : t('play.slotEmpty')}`)}">
         ${glyphSvg('adv-ally', '', 22)}<small>${escHtml(ui.fx === 'ally-gone' ? t('play.allyGone') : t('play.ally'))}</small></div>`;
-  return `<div class="arena__shelf">
-    <span class="pile-label">${escHtml(t('play.shelf'))}</span>
-    <div class="gear-row">
-      ${slot(t('play.relic'), glyphSvg('adv-relic', '', 22), f.hero.relic)}
-      ${slot(t('play.rune'), glyphSvg('adv-rune', '', 22), f.hero.rune > 0, `${t('play.rune')} ${f.hero.rune}`)}
-      ${slot(t('play.bubbleSlot'), glyphSvg('bubble', '', 22), f.hero.shield > 0, `${f.hero.shield} absorbed`)}
-      ${slot(t('play.hidden'), glyphSvg('eye', '', 22), f.hero.hidden)}
-      ${ally}
-    </div>
-  </div>`;
+  // Only what is actually on. Five dimmed slots were drawn permanently so the
+  // row would not reflow, and in a First Game three of the five could never
+  // light up at all: Relic, Rune and Ally are set only by playAdvantage, which
+  // that mode never reaches. Five labelled boxes meaning "you do not have this"
+  // is a promise the mode cannot keep. The row reserves its height in CSS
+  // instead, so nothing jumps when the first one arrives.
+  const on = [
+    f.hero.relic ? slot(t('play.relic'), glyphSvg('adv-relic', '', 22), true) : '',
+    f.hero.rune > 0 ? slot(t('play.rune'), glyphSvg('adv-rune', '', 22), true, `${t('play.rune')} ${f.hero.rune}`) : '',
+    f.hero.shield > 0 ? slot(t('play.bubbleSlot'), glyphSvg('bubble', '', 22), true, `${f.hero.shield} absorbed`) : '',
+    f.hero.hidden ? slot(t('play.hidden'), glyphSvg('eye', '', 22), true) : '',
+    f.hero.ally || ui.fx === 'ally-gone' ? ally : '',
+  ].filter(Boolean).join('');
+  return `<div class="gear-row" aria-label="${escHtml(t('play.shelf'))}">${on}</div>`;
 }
 
 // ── Target selection ─────────────────────────────────────────
@@ -211,7 +257,6 @@ export function renderFight(s, run) {
   const roster = f.roster || {};
   const hero = heroFor(run.element);
   const biome = s.cards.byId[f.biomeCard];
-  const hpPct = Math.round((100 * bossHp(f)) / (f.boss.maxHp || 1));
   const logOpen = s.play?.logOpen !== false;
   const fx = ui.fx || '';
   const bossRing = (ui.target === undefined || ui.target === 'body') ? 'is-target' : '';
@@ -231,38 +276,31 @@ export function renderFight(s, run) {
     <div class="fight-grid" data-log="${logOpen ? 'open' : 'closed'}">
       ${tablePanel(s, run, f)}
       <div class="fight-main">
-        <div class="arena">
-          <div class="arena__boss ${bossRing}">
+        <div class="duel">
+          <div class="duel__hero">
+            <div class="figure ${fx === 'hurt' ? 'is-hit' : ''}">
+              ${figureSvg({ ...hero, klass: run.klass })}<b>${escHtml(hero.name)}</b>
+              ${fx === 'hurt' && ui.took ? `<span class="fx-num fx-num--bad">-${ui.took}</span>` : ''}
+            </div>
+            <div class="pile-label">${escHtml(t('play.ready'))} ${ready(f)} · ${escHtml(t('play.spent'))} ${spent(f)} · ${escHtml(t('play.broken'))} ${broken(f)}</div>
+            <div class="pile">${heroPile(f)}</div>
+            ${shelf(f, ui)}
+          </div>
+          <div class="duel__wall">
+            <div class="wall-count"><b>${bossHp(f)}</b><span class="muted small">/ ${f.boss.maxHp}</span>${f.boss.braced ? '<span class="chip">Braced</span>' : ''}</div>
+            ${bossWall(f)}
+          </div>
+          <div class="duel__boss ${bossRing}">
             ${bubble(f, ui)}
-            <div class="arena__side">
-              <div class="figure ${fx === 'hit' ? 'is-hit' : ''} ${fx === 'miss' ? 'is-missed' : ''}">
-                ${figureSvg(roster)}<b>${escHtml(roster.name || '')}</b>
-                ${fx === 'hit' && ui.dealt ? `<span class="fx-num fx-num--bad">-${ui.dealt}</span>` : ''}
-                ${fx === 'miss' ? `<span class="fx-num">${escHtml(t('play.miss'))}</span>` : ''}
-              </div>
-              <div class="arena__stat">
-                <div class="hp"><span>${bossHp(f)}</span><div class="bar"><i style="width:${hpPct}%"></i></div><span class="muted small">/ ${f.boss.maxHp}</span>${f.boss.braced ? '<span class="chip">Braced</span>' : ''}</div>
-                <div class="pile pile--boss">${bossPile(f)}</div>
-              </div>
+            <div class="figure ${fx === 'hit' ? 'is-hit' : ''} ${fx === 'miss' ? 'is-missed' : ''}">
+              ${figureSvg(roster)}<b>${escHtml(roster.name || '')}</b>
+              ${fx === 'hit' && ui.dealt ? `<span class="fx-num fx-num--bad">-${ui.dealt}</span>` : ''}
+              ${fx === 'miss' ? `<span class="fx-num">${escHtml(t('play.miss'))}</span>` : ''}
             </div>
             ${targets(f, ui, roster)}
           </div>
-          ${dieCell(f, ui)}
-          <div class="arena__hero">
-            <div class="arena__side">
-              <div class="figure ${fx === 'hurt' ? 'is-hit' : ''}">
-                ${figureSvg({ ...hero, klass: run.klass })}<b>${escHtml(hero.name)}</b>
-                ${fx === 'hurt' && ui.took ? `<span class="fx-num fx-num--bad">-${ui.took}</span>` : ''}
-              </div>
-              <div class="arena__stat">
-                <div class="pile-label">${escHtml(t('play.ready'))} ${ready(f)} · ${escHtml(t('play.spent'))} ${spent(f)} · ${escHtml(t('play.broken'))} ${broken(f)}</div>
-                <div class="pile">${heroPile(f)}</div>
-              </div>
-            </div>
-          </div>
-          ${shelf(f, ui)}
         </div>
-        ${logOpen || !last ? '' : `<p class="log-tick ${last.cls}">${escHtml(last.text)}</p>`}
+        ${last ? `<p class="log-tick ${last.cls}">${escHtml(last.text)}</p>` : ''}
         <div class="panel actions">${renderActions(s, run, f, ui)}</div>
       </div>
       ${!logOpen ? '' : `<aside class="panel panel--tight fight-side">
@@ -333,7 +371,7 @@ function renderBoss(s, f, ui) {
   const letBtn = `<button class="btn ${parked ? '' : 'btn--primary'}" data-action="play-resolve" data-barrier="0">${escHtml(letLabel)}</button>`;
   return `<div class="row" style="gap: var(--space-4)">
       <div class="die-face is-rolling">${p.roll}</div>
-      <div class="grow"><b>${escHtml(p.name)}</b>${what}${atAlly ? ` · ${escHtml(t('play.aimedAtAlly'))}` : ''}</div>
+      <div class="grow"><b>${escHtml(reactionName(p))}</b>${what}${atAlly ? ` · ${escHtml(t('play.aimedAtAlly'))}` : ''}</div>
     </div>
     <div class="row">${parked ? barrierBtn + letBtn + coverBtn : letBtn + coverBtn + barrierBtn}</div>`;
 }
@@ -363,18 +401,27 @@ function renderTurn(s, run, f, ui) {
       `${a.actions} ${a.actions > 1 ? 'actions' : 'action'}`,
       a.bet === 'any' ? `${t('play.bet')} any` : a.bet ? `${t('play.bet')} ${a.bet}` : '',
     ].filter(Boolean).join(' · ');
+    // What the card DOES, on hover and in the accessible name. The face carries
+    // no words by design, so until now the only way to learn what a Bubble was
+    // for was to read the rulebook: the board showed a picture, a cost and a
+    // number, and never the reason.
+    const what = t(`play.what.${a.id}`);
+    const explains = !what.startsWith('[');
     return `<button class="action-card ${n ? 'is-queued' : ''}" data-action="play-pick" data-id="${a.id}"
-      ${can[a.id] ? '' : 'aria-disabled="true"'} aria-label="${escHtml(a.name)}">
+      ${can[a.id] ? '' : 'aria-disabled="true"'}
+      ${explains ? `title="${escHtml(`${cardName(a)}. ${what}`)}"` : ''}
+      aria-label="${escHtml(explains ? `${cardName(a)}. ${what}` : cardName(a))}">
       ${cardFace(a, { size: 'hand' })}
-      <span>${escHtml(a.name)}${n ? ` <b class="qty">x${n}</b>` : ''}</span>
+      <span>${escHtml(cardName(a))}${n ? ` <b class="qty">x${n}</b>` : ''}</span>
       <small class="ac-meta">${escHtml(meta)}${step ? ` ${riskDots(step)}` : ''}</small></button>`;
   }).join('');
 
   const adv = f.hero.advantage.map((id) => {
     const c = s.cards.byId[id];
     const on = id === 'barrier' && ui.reaction === 'barrier';
-    return `<button class="action-card ${on ? 'is-queued' : ''}" data-action="play-adv" data-id="${id}" aria-pressed="${on}" aria-label="${escHtml(c.name)}">
-      ${cardFace(c, { size: 'mini' })}<span>${escHtml(c.name)}</span></button>`;
+    return `<button class="action-card ${on ? 'is-queued' : ''}" data-action="play-adv" data-id="${id}" aria-pressed="${on}"
+      title="${escHtml(`${cardName(c)}. ${c.effect || ''}`.trim())}" aria-label="${escHtml(`${cardName(c)}. ${c.effect || ''}`.trim())}">
+      ${cardFace(c, { size: 'mini' })}<span>${escHtml(cardName(c))}</span></button>`;
   }).join('');
 
   // Three bands: what you hold, what you have declared, and what resolves it.
@@ -387,8 +434,8 @@ function renderTurn(s, run, f, ui) {
       <button class="btn ${!plan.length && !Object.values(can).some(Boolean) ? 'btn--primary' : ''}" data-action="play-end-turn">${escHtml(t('play.endTurn'))} ${glyphSvg('skip', '', 16)}</button></div>
     </div>
     <div class="band band--cards">
-      <span class="pile-label">${escHtml(t('play.bandCards'))}</span>
       <div class="hand-row">
+        ${dieCell(f, ui)}
         <div class="action-cards hand-attacks">${hand}</div>
         ${adv ? `<div class="adv-hand"><span class="pile-label">${escHtml(t('play.advHand'))}</span><div class="action-cards">${adv}</div></div>` : ''}
       </div>
@@ -416,7 +463,7 @@ function planLane(s, f, ui, plan) {
     return `<li class="plan-step ${ui.awaiting === i ? 'is-now' : ''} ${i < at ? 'is-done' : ''}">
       <button class="plan-num" data-action="play-unqueue" data-i="${i}" aria-label="${escHtml(t('play.planStep'))} ${i + 1}" title="${escHtml(t('play.planStep'))} ${i + 1}">${i + 1}</button>
       ${cardFace(a, { size: 'mini' })}
-      <span class="plan-what"><b>${escHtml(a.name)}</b><small>${bet ? `${escHtml(t('play.bet'))} ${bet}` : ''}${step ? ` ${riskDots(step)}` : ''}${st.rune ? ' auto' : ''}</small></span>
+      <span class="plan-what"><b>${escHtml(cardName(a))}</b><small>${bet ? `${escHtml(t('play.bet'))} ${bet}` : ''}${step ? ` ${riskDots(step)}` : ''}${st.rune ? ' auto' : ''}</small></span>
       ${bets}${tgt}${rune}
     </li>`;
   }).join('');
@@ -451,7 +498,7 @@ function rollPanel(f, ui, wait) {
   const dmg = attackDamage(f, a, betFor(a, st));
   return `<div class="panel panel--sunk roll-now">
     <div class="row row--between">
-      <b>${escHtml(t('play.planStep'))} ${i + 1}: ${escHtml(a.name)}</b>
+      <b>${escHtml(t('play.planStep'))} ${i + 1}: ${escHtml(cardName(a))}</b>
       <span>${riskDots(step)} ${escHtml(cap(step))}, ${Math.round(stepOdds(step) * 100)}%: ${escHtml(t('play.need'))} <b>${need}+</b> on ${f.die}</span>
       <span>${dmg} damage${f.boss.braced ? ' (Braced: halved)' : ''}</span>
     </div>

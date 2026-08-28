@@ -1,12 +1,13 @@
 // ── Learn view ───────────────────────────────────────────────
 // A horizontal slide deck, not a page: the cover, one walkthrough step per
 // slide (data/walkthrough.js), the dice bridge, then the whole rulebook
-// (RULES.md fetched and rendered, the single canonical text) as the last slide.
+// (RULES.md or RULES.es.md fetched and rendered, the canonical text in the
+// language the reader picked) as the last slide.
 // The page itself never scrolls; only the rulebook slide scrolls, inside
 // itself. css/learn.css claims the viewport through html[data-view="learn"].
 
 import { state, save } from '../state.js';
-import { t } from '../strings.js';
+import { t, getLang, cardName } from '../strings.js';
 import { escHtml, renderMarkdown } from '../utils.js';
 import { cardFace, cardBack, lifeMini, riskDots, FACE } from '../cards/face.js';
 import { glyphSvg, glyphPath, GLYPH_SIZE } from '../cards/glyphs.js';
@@ -16,19 +17,32 @@ import { DECKS } from '../data/cards.js';
 import { figureSvg } from '../game/figures.js';
 import { BOSSES, heroFor } from '../data/placeholders.js';
 
-let rulebookHtml = null, rulebookLoading = false;
+/**
+ * The rulebook, one entry per language. RULES.md and RULES.es.md are the same
+ * document twice, same headings, same tables, same section numbers, so the
+ * citations on every step slide land on the same section whichever one is open.
+ *
+ * Keyed by language rather than held in one variable because switching language
+ * has to switch the rulebook, and a single cache would keep serving the first
+ * one fetched. Each is fetched once and kept: going back is free.
+ */
+const rulebookHtml = {};
+const rulebookLoading = new Set();
 function ensureRulebook() {
   // Guarded so the whole deck can be rendered to a string under `node` (see
   // tests/learn.test.mjs): there is no document to repaint and no base URL to
-  // fetch RULES.md against, and an unguarded fetch would reject into a
+  // fetch the rulebook against, and an unguarded fetch would reject into a
   // ReferenceError inside .finally() and take the test process with it.
   if (typeof document === 'undefined' || typeof fetch !== 'function') return;
-  if (rulebookHtml || rulebookLoading) return;
-  rulebookLoading = true;
-  fetch('RULES.md').then((r) => (r.ok ? r.text() : Promise.reject(r.status)))
-    .then((md) => { rulebookHtml = renderMarkdown(md); })
-    .catch(() => { rulebookHtml = '<p class="muted">RULES.md did not load. It ships in the repo next to this page.</p>'; })
-    .finally(() => { rulebookLoading = false; document.dispatchEvent(new CustomEvent('enjeu:rerender')); });
+  const lang = getLang();
+  if (rulebookHtml[lang] || rulebookLoading.has(lang)) return;
+  rulebookLoading.add(lang);
+  const file = t('learn.rulebookFile');
+  const fail = t('learn.rulebookFail');
+  fetch(file).then((r) => (r.ok ? r.text() : Promise.reject(r.status)))
+    .then((md) => { rulebookHtml[lang] = renderMarkdown(md); })
+    .catch(() => { rulebookHtml[lang] = `<p class="muted">${escHtml(fail)}</p>`; })
+    .finally(() => { rulebookLoading.delete(lang); document.dispatchEvent(new CustomEvent('enjeu:rerender')); });
 }
 
 /**
@@ -47,8 +61,12 @@ export const clampSlide = (n) => Math.max(0, Math.min(SLIDE_COUNT - 1, Number(n)
 export const SLIDE_SLUGS = [...STEPS.map((st) => st.id), 'dice', 'rulebook'];
 /** The slide a slug opens, or -1. */
 export const slideForSlug = (slug) => SLIDE_SLUGS.indexOf(String(slug || ''));
-/** Rail labels: the step's own title, then the two closing slides. */
-const SLIDE_TITLES = [...STEPS.map((st) => st.title), t('learn.slide.dice'), t('learn.slide.rulebook')];
+/**
+ * Rail labels: the step's own title, then the two closing slides. A function and
+ * not a const: the last two come from the string table, and a const evaluated at
+ * module load froze them in whatever language the page started in.
+ */
+const slideTitles = () => [...STEPS.map((st) => st.title), t('learn.slide.dice'), t('learn.slide.rulebook')];
 /**
  * Which chapter each slide sits in, derived from the steps the same way the
  * titles are. The two closing slides are Advanced: the full eight-die bridge and
@@ -157,9 +175,15 @@ function statesVisual(s) {
 }
 
 function attacksVisual(s) {
-  return `<div class="action-cards action-cards--three">${['strike', 'focus', 'all-in'].map((id) => {
+  // Derived from data.attack, never listed here. This slide's copy already says
+  // five cards; a hardcoded trio drew three of them next to that sentence, which
+  // is the same defect run.js records having shipped once when Bubble was added
+  // and no hand ever dealt it.
+  const deck = s.cards.attack.map((c) => c.id);
+  const wide = deck.length > 4 ? ' action-cards--wide' : '';
+  return `<div class="action-cards action-cards--${deck.length === 4 ? 'four' : deck.length === 3 ? 'three' : 'five'}${wide}">${deck.map((id) => {
     const c = s.cards.byId[id];
-    return `<a class="action-card" href="#/cards/attack" data-action="go" data-view="cards" data-param="attack">${cardFace(c, { size: 'hand' })}<span>${escHtml(c.name)}</span></a>`;
+    return `<a class="action-card" href="#/cards/attack" data-action="go" data-view="cards" data-param="attack">${cardFace(c, { size: 'hand' })}<span>${escHtml(cardName(c))}</span></a>`;
   }).join('')}</div>`;
 }
 
@@ -168,12 +192,17 @@ function turnVisual() {
     <div class="strip__cell">${glyphSvg(s.glyph, '', 36)}<b>${i + 1}. ${escHtml(s.name)}</b><span>${escHtml(s.note)}</span></div>`).join('')}</div>`;
 }
 
-const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+/**
+ * The name of a check step. It used to be the raw id with its first letter
+ * raised ('sure' -> 'Sure'), which is a name in exactly one language; the ladder
+ * has its own four words in each, so the table is asked instead.
+ */
+const stepName = (step) => t(`cards.step.${step}`);
 
 /** The four checks, on the same traffic light the card prints (face.js riskDots). */
 function checkLegend() {
   return `<div class="checks">${[['sure', 75], ['even', 50], ['hard', 25], ['wild', 15]].map(([step, odds]) => `
-    <span class="checks__item">${riskDots(step)}<b>${escHtml(cap(step))}</b><i>${odds}%</i></span>`).join('')}</div>`;
+    <span class="checks__item">${riskDots(step)}<b>${escHtml(stepName(step))}</b><i>${odds}%</i></span>`).join('')}</div>`;
 }
 
 /**
@@ -187,7 +216,7 @@ function checksVisual(s) {
   return `${checkLegend()}
   <div class="table-wrap"><table class="ladder">
     <thead><tr><th>${escHtml(t('learn.step'))}</th><th>${escHtml(t('learn.odds'))}</th><th>${escHtml(die)}</th></tr></thead>
-    <tbody>${rows.map((r) => `<tr><td>${riskDots(r.step)} ${escHtml(cap(r.step))}</td><td>${r.odds}%</td><td class="is-mine">${r.targets[die]}+</td></tr>`).join('')}</tbody>
+    <tbody>${rows.map((r) => `<tr><td>${riskDots(r.step)} ${escHtml(stepName(r.step))}</td><td>${r.odds}%</td><td class="is-mine">${r.targets[die]}+</td></tr>`).join('')}</tbody>
   </table></div>
   <p class="small muted">${escHtml(COPY.yourDie.replace('{die}', die))}</p>`;
 }
@@ -199,7 +228,7 @@ function ladderVisual(s) {
   return `${checkLegend()}
   <div class="table-wrap"><table class="ladder">
     <thead><tr><th>${escHtml(t('learn.step'))}</th><th>${escHtml(t('learn.odds'))}</th>${DICE.map((d) => `<th>${d}</th>`).join('')}</tr></thead>
-    <tbody>${rows.map((r) => `<tr><td>${riskDots(r.step)} ${escHtml(cap(r.step))}</td><td>${r.odds}%</td>${DICE.map((d) => `<td class="${d === die ? 'is-mine' : ''}">${r.targets[d]}+</td>`).join('')}</tr>`).join('')}</tbody>
+    <tbody>${rows.map((r) => `<tr><td>${riskDots(r.step)} ${escHtml(stepName(r.step))}</td><td>${r.odds}%</td>${DICE.map((d) => `<td class="${d === die ? 'is-mine' : ''}">${r.targets[d]}+</td>`).join('')}</tr>`).join('')}</tbody>
   </table></div>
   <p class="small muted">${escHtml(COPY.yourColumn.replace('{die}', die))}</p>`;
 }
@@ -273,7 +302,7 @@ function cycleVisual(s) {
  * its last rows off the bottom.
  */
 function levelsVisual(s) {
-  const classes = s.cards.class.map((c) => `<a class="action-card" href="#/cards/class" data-action="go" data-view="cards" data-param="class">${cardFace(c, { size: 'hand' })}<span>${escHtml(c.name)}</span></a>`).join('');
+  const classes = s.cards.class.map((c) => `<a class="action-card" href="#/cards/class" data-action="go" data-view="cards" data-param="class">${cardFace(c, { size: 'hand' })}<span>${escHtml(cardName(c))}</span></a>`).join('');
   const camp = s.cards.boss.filter((b) => b.rage).map((b, i) => `<tr><td>${i + 1}</td><td>${b.size}</td><td>${b.life_cards} × ${b.per_card}</td><td>${b.damage}</td><td>${b.rage}</td></tr>`).join('');
   return `<div class="action-cards action-cards--four">${classes}</div>
   <div class="table-wrap"><table class="ladder ladder--tight">
@@ -320,7 +349,7 @@ const CHEV = {
 };
 
 /** The rules citation, as a jump to the rulebook slide rather than a dead label. */
-const ruleLink = (rule) => `<button type="button" class="slide__rule" data-action="learn-step" data-step="${SLIDE_RULEBOOK}">rules §${escHtml(rule)}</button>`;
+const ruleLink = (rule) => `<button type="button" class="slide__rule" data-action="learn-step" data-step="${SLIDE_RULEBOOK}">${escHtml(t('learn.rulesRef'))}${escHtml(rule)}</button>`;
 
 /**
  * Every slide is a paper panel that scrolls INSIDE itself and an inner block
@@ -369,7 +398,7 @@ function diceSlide(s) {
     <div class="slide__text">
       <h3 class="slide__title" id="slideTitle">${escHtml(t('learn.bridgeTitle'))}</h3>
       <p>${escHtml(t('learn.bridgeLead'))}</p>
-      <p class="small muted">Worst gap between a step's stated odds and the die's real odds: ${fid.map((f) => `${escHtml(f.die)} ${(f.gap * 100).toFixed(1)}`).join(' · ')} points.</p>
+      <p class="small muted">${escHtml(t('learn.fidelityLead'))} ${fid.map((f) => `${escHtml(f.die)} ${(f.gap * 100).toFixed(1)}`).join(' · ')} ${escHtml(t('learn.fidelityUnit'))}</p>
     </div>
     <div class="slide__visual slide__visual--table">${ladderVisual(s)}</div>`);
 }
@@ -380,7 +409,7 @@ function rulebookSlide() {
       <h3 class="slide__title" id="slideTitle">${escHtml(t('learn.rulebookTitle'))}</h3>
       <p class="small muted">${escHtml(t('learn.rulebookLead'))}</p>
     </div>
-    <div class="rulebook">${rulebookHtml || `<p class="muted">${escHtml(t('common.loading'))}</p>`}</div>`);
+    <div class="rulebook">${rulebookHtml[getLang()] || `<p class="muted">${escHtml(t('common.loading'))}</p>`}</div>`);
 }
 
 const slideFor = (s, i) => (i === SLIDE_RULEBOOK ? rulebookSlide()
@@ -398,7 +427,7 @@ function deckHead(i) {
   // where the dots already own the whole width; the group boundary survives as a
   // gap, and the sr-only name on every dot still carries its chapter.
   let dots = '', chapter = null;
-  SLIDE_TITLES.forEach((title, n) => {
+  slideTitles().forEach((title, n) => {
     if (SLIDE_CHAPTERS[n] !== chapter) {
       if (chapter !== null) dots += '</div></div>';
       chapter = SLIDE_CHAPTERS[n];

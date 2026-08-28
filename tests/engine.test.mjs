@@ -24,7 +24,7 @@ function test(name, fn) {
 
 const L1 = data.byId['boss-m'];
 const basic = (over = {}) => newFight(data, {
-  level: 1, boss: L1, hero: { element: 'fire', klass: null, pool: ['fire', 'fire', 'fire', 'fire'], attacks: [STRIKE, FOCUS, ALL_IN] },
+  level: 1, boss: L1, hero: { element: 'fire', klass: null, pool: ['fire', 'fire', 'fire', 'fire'], attacks: data.attack },
   die: 'd20', mode: 'standard', ...over,
 });
 
@@ -93,9 +93,12 @@ test('Brace halves the next turn in rulebook mode, never in legacy mode', () => 
 });
 
 test('Summon moves 2 x per-card off the body (legacy: flat 100); capped at 3 minions; boss falls only when all cards are gone', () => {
+  // Every boss life card is 100 since 2026-08-28, so two of them is 200 at every
+  // level. That uniformity is the point of the change: a minion is the same size
+  // wherever you meet it, and the player never divides.
   const f = basic();
   endTurn(f); bossRoll(f, 4); resolveBoss(f);
-  assert.equal(f.boss.minions.length, 1); assert.equal(f.boss.minions[0].hp, 100); assert.equal(f.boss.body, 300);
+  assert.equal(f.boss.minions.length, 1); assert.equal(f.boss.minions[0].hp, 200); assert.equal(f.boss.body, 200);
   assert.equal(bossHp(f), 400);
   f.boss.body = 0;
   assert.equal(bossDown(f), false, 'a minion still carries the boss\'s life');
@@ -103,8 +106,10 @@ test('Summon moves 2 x per-card off the body (legacy: flat 100); capped at 3 min
   endTurn(g); bossRoll(g, 4); resolveBoss(g);
   assert.equal(g.boss.minions[0].hp, 100, 'legacy: sim.py moves a flat 100');
   g.boss.body = 0; assert.equal(bossDown(g), true, 'legacy: body alone ends it');
-  // cap at 3: a harmless boss (no Rage, no damage) so the hero lives to see the fourth roll
-  const h = basic({ boss: { ...L1, rage: 99, damage: 0 } });
+  // Cap at 3, on a boss with the body to reach it. Level 1 is 4 cards of 100 and
+  // a Summon needs body > 200, so the tutorial boss can summon exactly once now:
+  // the cap has to be exercised on a big boss or the test proves nothing.
+  const h = basic({ boss: { ...data.byId['boss-um'], rage: 99, damage: 0 } });
   for (let i = 0; i < 3; i++) { endTurn(h); bossRoll(h, 4); resolveBoss(h); }
   assert.equal(h.boss.minions.length, 3);
   endTurn(h);
@@ -116,9 +121,91 @@ test('a minion strikes each round for 25; felling it stops that, and a Necromanc
   const f = basic({ hero: { element: 'fire', klass: 'necromancer', pool: ['fire', 'fire', 'fire', 'fire'], attacks: [STRIKE, FOCUS, ALL_IN] } });
   endTurn(f); bossRoll(f, 4); resolveBoss(f);
   const allIn = legalAttacks(f).find((a) => a.id === 'all-in');
-  attack(f, allIn, { bet: 2, target: 0, roll: 20 });   // 150 at the 100hp minion
+  attack(f, allIn, { bet: 4, target: 0, roll: 20 });   // 400 at the 200hp minion
   assert.equal(f.boss.minions.length, 0); assert.equal(f.hero.pool.length, 5, 'one boss card pocketed');
-  assert.equal(f.boss.body, 300, 'minion overflow does not spill to the body');
+  assert.equal(f.boss.body, 200, 'minion overflow does not spill to the body');
+});
+
+/**
+ * Run shipped for an hour as a 1-action, no-bet card dealing up to 75 damage,
+ * because data/cards.json knew what `hides` meant and js/ did not. All 124 tests
+ * passed in that state. These are the assertions that would have caught it.
+ */
+test('Run deals nothing, costs an action and no card, and Hides you', () => {
+  const f = basic();
+  const run = legalAttacks(f).find((a) => a.id === 'run');
+  assert.ok(run, 'Run is dealt into the hand');
+  const before = bossHp(f);
+  const r = attack(f, run, {});
+  assert.equal(r.dealt, 0, 'Run deals no damage at all');
+  assert.equal(bossHp(f), before, 'and the boss loses nothing');
+  assert.equal(ready(f), 4, 'it bets no card');
+  assert.equal(f.actionsLeft, 2, 'it costs exactly one action');
+  assert.equal(f.hero.hidden, true);
+});
+
+test('Hidden: the boss Strike misses entirely, everything else is halved', () => {
+  // Asserted on the log, not on ready(), because resolveBoss ends by starting the
+  // next round and Recover stands every Spent card back up: counting Ready after
+  // the fact shows 4 whatever happened, which is how the first draft of this test
+  // passed a miss and a full hit identically.
+  const guarded = (f) => f.log.map((l) => l.text || l).find((t) => t.startsWith('Guarded ')) || 'nothing';
+  const play = (roll) => {
+    const f = basic();
+    attack(f, legalAttacks(f).find((a) => a.id === 'run'), {});
+    endTurn(f); bossRoll(f, roll); resolveBoss(f);
+    return f;
+  };
+  const miss = play(2);                       // Strike, 50 at level 1
+  assert.match(miss.log.map((l) => l.text || l).join('|'), /the Strike goes past you/);
+  assert.equal(guarded(miss), 'nothing', 'a Strike must cost a Hidden hero nothing at all');
+  const roar = play(5);                       // Roar, 50 -> 25
+  assert.match(guarded(roar), /^Guarded 25 with 1 Ready card/, 'Roar is halved, not dodged');
+  const ruin = play(6);                       // Ruin, 100 -> 50
+  assert.match(guarded(ruin), /^Guarded 50 with 2 Ready cards/, 'Ruin is halved, not dodged');
+  for (const f of [miss, roar, ruin]) assert.equal(f.hero.hidden, false, 'the boss spends it either way');
+});
+
+test('a minion never spends your Hidden, and Summon is not a counter to Run', () => {
+  // minionStrikes runs before bossRoll. While a minion could consume Hidden, one
+  // Summon permanently blanked the card: every later Run soaked 25 of chip damage
+  // while the boss's own hit landed whole.
+  const f = basic();
+  endTurn(f); bossRoll(f, 4); resolveBoss(f);          // a minion is on the table
+  assert.equal(f.boss.minions.length, 1);
+  attack(f, legalAttacks(f).find((a) => a.id === 'run'), {});
+  assert.equal(f.hero.hidden, true);
+  endTurn(f);                                          // the minion strikes here
+  assert.equal(f.hero.hidden, true, 'the minion must not have spent it');
+  bossRoll(f, 2); resolveBoss(f);
+  assert.equal(f.hero.hidden, false, 'the boss did');
+});
+
+test('covering the Ally breaks cover, so a Hidden hero cannot shield it for free', () => {
+  const f = basic();
+  f.hero.ally = { def: 50 };
+  attack(f, legalAttacks(f).find((a) => a.id === 'run'), {});
+  endTurn(f);
+  const p = bossRoll(f, 2);
+  assert.equal(p.at, 'ally', 'the Strike is aimed at the Ally');
+  resolveBoss(f, { cover: true });
+  assert.equal(f.hero.hidden, false, 'cover breaks the hide');
+  const text = f.log.map((l) => l.text || l).join('|');
+  assert.match(text, /break cover to shield the Ally/);
+  assert.match(text, /Guarded 50 with 2 Ready cards/, 'the hero takes the Strike whole, not halved and not dodged');
+  assert.ok(f.hero.ally, 'and the Ally is still standing, which is what covering bought');
+});
+
+test('Strike no longer grants a free Hide: Run is the only way to hide', () => {
+  // It used to arm hideAvailable on every Strike, which made Run strictly worse
+  // than Strike (same Hidden, plus 25 damage, same one action).
+  const f = basic();
+  attack(f, legalAttacks(f).find((a) => a.id === 'strike'), {});
+  assert.equal(f.hero.hideAvailable, false, 'a Strike must not arm a free Hide');
+  assert.equal(f.hero.hidden, false);
+  // The Forest still does, which is the terrain rule.
+  const g = basic({ biome: { id: 'forest' } });
+  assert.equal(g.hero.hideAvailable, true, 'the Forest gives one free Run a round');
 });
 
 test('Roar: the next checked attack is one rung harder (legacy: flattened to Even, even for Strike)', () => {
@@ -143,15 +230,17 @@ test('mode dial: Story makes Sure automatic, Nightmare makes Sure an Even', () =
   assert.equal(effectiveStep(night, f2), 'even');
 });
 
-test('Hide after a Strike halves the next hit this round; Knight guards 25 free once per round (not under Rage)', () => {
-  const f = basic({ hero: { element: 'fire', klass: 'knight', pool: ['fire', 'fire', 'fire', 'fire'], attacks: [STRIKE, FOCUS, ALL_IN] } });
-  assert.throws(() => hide(f), /Strike/);
-  attack(f, legalAttacks(f).find((a) => a.id === 'strike'), {});
-  hide(f);
+test('the Forest gives a free Run; Knight guards 25 free once per round (not under Rage)', () => {
+  // Hide used to be free after any Strike. It is now the Run card, and only the
+  // Forest still gives it away, which is what a biome full of cover should do.
+  const f = basic({ biome: { id: 'forest' }, hero: { element: 'fire', klass: 'knight', pool: ['fire', 'fire', 'fire', 'fire'], attacks: data.attack } });
+  const plain = basic({ hero: { element: 'fire', klass: 'knight', pool: ['fire', 'fire', 'fire', 'fire'], attacks: data.attack } });
+  assert.throws(() => hide(plain), /Run/, 'outside the Forest, hiding costs the card');
+  hide(f);                                             // free, and no Strike needed
   endTurn(f); bossRoll(f, 6); resolveBoss(f);          // Ruin 100 -> hidden 50 -> knight 25 -> one Ready card spent
   assert.deepEqual([ready(f), spent(f), broken(f)], [4, 0, 0].map((v, i) => i === 0 ? 4 : v), 'round 2 started, recovered');
-  assert.ok(f.log.some((l) => /Knight guards/.test(l.text)) && f.log.some((l) => /Hidden: halved to 50/.test(l.text)));
-  const g = basic({ hero: { element: 'fire', klass: 'knight', pool: ['fire', 'fire', 'fire', 'fire'], attacks: [STRIKE, FOCUS, ALL_IN] } });
+  assert.ok(f.log.some((l) => /Knight guards/.test(l.text)) && f.log.some((l) => /halved to 50/.test(l.text)));
+  const g = basic({ hero: { element: 'fire', klass: 'knight', pool: ['fire', 'fire', 'fire', 'fire'], attacks: data.attack } });
   g.round = 4; g.phase = 'boss'; bossRoll(g, 2); resolveBoss(g);
   assert.equal(broken(g), 4, 'Rage ignores the Knight guard');
 });
@@ -433,11 +522,16 @@ test('a comeback resumes the step that felled you, it does not hand back a free 
 });
 
 // ── 2. Strategies ────────────────────────────────────────────
-test('affordable: turtle budget 0 leaves only Strike combos; pKill of 3 Strikes vs 75 is 1', () => {
+test('affordable: a budget of 0 buys only the cards that cost no card; pKill of 3 Strikes vs 75 is 1', () => {
   const f = basic();
   const t = affordable(f, 0);
-  assert.ok(t.every((c) => c.every((a) => a.id === 'strike')) && t.length === 3);
-  assert.equal(pKill(f, t[2], 75), 1);
+  // Strike, Bubble and Run all bet nothing, so a turtle on budget 0 can reach
+  // any combination of the three. What must stay true is that nothing needing a
+  // card gets in, and that three Strikes is still one of the lines.
+  assert.ok(t.every((c) => c.every((a) => (a.bet || 0) === 0)), 'no card-betting attack fits a zero budget');
+  assert.ok(t.some((c) => c.length === 3 && c.every((a) => a.id === 'strike')), 'three Strikes is still reachable');
+  const threeStrikes = t.find((c) => c.length === 3 && c.every((a) => a.id === 'strike'));
+  assert.equal(pKill(f, threeStrikes, 75), 1);
   const safe = choose(f, 'safe');     // 4 ready, guard need 2 -> budget 2
   assert.ok(safe.reduce((a, x) => a + (x.betN || 0), 0) <= 2, 'safe keeps a guard');
   const gamble = choose(f, 'gamble');

@@ -2,7 +2,8 @@
 // One delegated click listener reads data-action; views never bind their
 // own. Keyboard: Esc closes the modal, Tab is trapped inside it.
 
-import { state, save } from './state.js';
+import { state, save, useLang } from './state.js';
+import { t } from './strings.js';
 import { render } from './render.js';
 import { syncFromHash, goTo } from './navigate.js';
 import { onCardsAction } from './views/cards.js';
@@ -35,6 +36,31 @@ const ACTIONS = { learn: onLearnAction, cards: onCardsAction, play: onPlayAction
 // Cards is a browsable grid: native tab order is the right keyboard for it, so
 // it registers an action handler and no key handler.
 const KEYS = { learn: onLearnKey, play: onPlayKey };
+
+// ── Language ─────────────────────────────────────────────────
+/**
+ * The toggle lives in the header, outside #viewRoot, so render() never touches
+ * it: the pressed button is set here instead. `lang` is also the second action
+ * no view owns (the first is `go`). A language is not a property of the Cards
+ * screen or the Play screen, it is a property of the page, so it is handled
+ * beside the router rather than routed to whichever view happens to be open.
+ */
+function applyLang(s) {
+  const l = useLang(s);
+  if (typeof document === 'undefined') return;
+  // The document's own language, for a screen reader picking a voice and for
+  // the browser's translate prompt. index.html ships lang="en"; this is what
+  // makes the attribute true after a switch.
+  document.documentElement.lang = l;
+  for (const b of document.querySelectorAll('[data-action="lang"]')) {
+    b.setAttribute('aria-pressed', String(b.dataset.lang === l));
+  }
+  // The chrome in index.html: the header subtitle, the skip link, the footer
+  // note, and the two landmark labels. Marked up rather than listed here, so a
+  // new bit of chrome is one attribute and no change to this function.
+  for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n);
+  for (const el of document.querySelectorAll('[data-i18n-label]')) el.setAttribute('aria-label', t(el.dataset.i18nLabel));
+}
 
 // ── Modal (from the fleet template) ──────────────────────────
 function focusable(root) {
@@ -108,14 +134,36 @@ function onClick(e) {
   const a = el.dataset.action;
   const s = state;
 
-  // `go` is the one action no view owns: it changes which view is on screen, so
-  // it belongs to the router. Everything else is `<view>-<act>`.
+  // `go` and `lang` are the two actions no view owns: one changes which view is
+  // on screen and the other changes the words on every view at once, so both sit
+  // here. Everything else is `<view>-<act>`.
   if (a === 'go') {
     goTo(el.dataset.view, el.dataset.param || null, el.dataset.q ? Object.fromEntries(new URLSearchParams(el.dataset.q)) : null);
     return;
   }
+  if (a === 'lang') {
+    if (el.dataset.lang === s.lang) return;
+    s.lang = el.dataset.lang;
+    applyLang(s);
+    save(s);
+    render(s);
+    return;
+  }
   dispatch(s, a, el, e);
 }
+
+/**
+ * The Play view's stages (setup, the fight, the class pick, the draft, the two
+ * endings) are separate screens that share one hash, so `onHashChange` never
+ * fires between them and the scroll position carried over. On a phone the setup
+ * screen is taller than the viewport, so a player had scrolled down to reach
+ * Start, and their first sight of the fight was their own hand with the boss,
+ * the die and the wall all above the fold. Measured at 390x844: scrollY 737.
+ */
+const STAGE_ACTIONS = new Set([
+  'play-start', 'play-continue', 'play-next-level', 'play-new-run',
+  'play-abandon', 'play-pick-class', 'play-draft', 'play-give-up',
+]);
 
 /** Route `<view>-<act>` to the owning view. Returns false if nothing claimed it. */
 function dispatch(s, a, el, e) {
@@ -123,8 +171,10 @@ function dispatch(s, a, el, e) {
   if (cut < 0) return false;
   const handler = ACTIONS[a.slice(0, cut)];
   if (!handler) return false;
-  if (handler(s, a.slice(cut + 1), el, e)) { save(s); render(s); }
-  else save(s);
+  if (handler(s, a.slice(cut + 1), el, e)) {
+    save(s); render(s);
+    if (STAGE_ACTIONS.has(a)) window.scrollTo({ top: 0 });
+  } else save(s);
   return true;
 }
 
@@ -142,6 +192,9 @@ function onHashChange() {
 }
 
 export function bindEvents() {
+  // Before any listener: the saved language has to be on the header buttons and
+  // on <html lang> from the first paint, not from the first click.
+  applyLang(state);
   document.addEventListener('click', onClick);
   document.addEventListener('change', onChange);
   document.addEventListener('input', onChange);
@@ -150,6 +203,6 @@ export function bindEvents() {
   // Views that finish loading something (the rulebook) ask for a repaint this way
   // instead of importing render.js into a module render.js already imports.
   document.addEventListener('enjeu:rerender', () => render(state));
-  // After printing, empty the sheet so 94 SVGs do not sit in the DOM.
+  // After printing, empty the sheet so 105 SVGs do not sit in the DOM.
   window.addEventListener('afterprint', () => { const h = document.getElementById('printSheet'); if (h) h.innerHTML = ''; });
 }

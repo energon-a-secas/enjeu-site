@@ -177,6 +177,10 @@ html[data-view="learn"] #viewRoot { min-height: 0; }
 .slide .action-cards { width: 100%; }
 .slide .action-cards--three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .slide .action-cards--four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+/* Five is the Attack deck since Run joined it. The row is derived from the data
+   in learn.js, so this is the width the deck happens to be, not a magic number. */
+.slide .action-cards--five { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.slide .action-cards--wide .action-card span { font-size: var(--text-xs); }
 .slide .action-card .sk-card { width: auto; height: clamp(96px, 19vh, 150px); }
 
 /* A campaign or components table sits under another visual in the same half

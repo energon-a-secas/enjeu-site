@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Enjeu | Boss-rush card game</title>
-  <meta name="description" content="Print 94 cards, grab one die and the bricks and figures you already own, then play a solo boss rush where the same cards are your attack and your defense">
+  <meta name="description" content="Print 105 cards, grab one die and the bricks and figures you already own, then play a solo boss rush where the same cards are your attack and your defense">
   <meta property="og:title" content="Enjeu: Boss-rush card game">
   <meta property="og:description" content="Print the cards, grab one die and your own bricks. Balance your attack and your defense.">
   <meta property="og:type" content="website">
@@ -33,6 +33,7 @@
        the runner; anything two views share stays in style.css. -->
   <link rel="stylesheet" href="css/learn.css">
   <link rel="stylesheet" href="css/browse.css">
+  <link rel="stylesheet" href="css/about.css">
   <link rel="stylesheet" href="css/play.css">
   <link rel="stylesheet" href="css/print.css">
   <!-- Neorgon Header Kit (vendored). Keep after the site styles; the kit owns the header. -->
@@ -61,7 +62,7 @@
 </head>
 <body>
 
-  <a class="skip-link" href="#main">Skip to content</a>
+  <a class="skip-link" href="#main" data-i18n="chrome.skip">Skip to content</a>
 
   <header class="header-bar" data-header-mode="content" data-header-skin="custom">
     <div class="header-logo">
@@ -70,7 +71,7 @@
       </a>
       <a href="#/learn" class="header-title-link">
         <h1>Enjeu</h1>
-        <div class="header-subtitle">Balance your attack and your defense</div>
+        <div class="header-subtitle" data-i18n="chrome.subtitle">Balance your attack and your defense</div>
       </a>
     </div>
 
@@ -80,7 +81,16 @@
            .header-actions deletes it on first render). data-keep-mobile keeps the four
            tabs on the bar; the row scrolls sideways when the bar is narrow. -->
       <div class="header-actions">
-        <nav class="sk-nav" id="skNav" role="tablist" aria-label="Sections" data-keep-mobile></nav>
+        <nav class="sk-nav" id="skNav" role="tablist" aria-label="Sections" data-i18n-label="chrome.sections" data-keep-mobile></nav>
+        <!-- Language. Static markup, because it sits outside #viewRoot and render.js
+             never touches it: js/events.js sets the pressed button and <html lang>.
+             The two labels are language codes, so they read the same in both and
+             nothing here needs translating. data-keep-mobile because a bilingual
+             reader switching mid-sentence should not have to open a menu first. -->
+        <div class="seg seg--lang" role="group" aria-label="Language / Idioma" data-keep-mobile>
+          <button type="button" data-action="lang" data-lang="en" aria-pressed="true" lang="en">EN</button>
+          <button type="button" data-action="lang" data-lang="es" aria-pressed="false" lang="es">ES</button>
+        </div>
       </div>
       <a class="header-home" href="https://neorgon.com/" title="neorgon.com" aria-label="Neorgon home">
         <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -100,7 +110,7 @@
     <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="cardModalTitle" tabindex="-1">
       <header class="modal__header">
         <h2 id="cardModalTitle">Card</h2>
-        <button type="button" class="btn btn--ghost btn--icon" data-modal-close aria-label="Close dialog">
+        <button type="button" class="btn btn--ghost btn--icon" data-modal-close aria-label="Close dialog" data-i18n-label="chrome.closeDialog">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </header>
@@ -112,7 +122,11 @@
   <div class="print-sheet" id="printSheet" aria-hidden="true"></div>
 
   <footer class="neo-footer" data-footer-mode="minimal">
-    Rules and cards are MIT. Card art is placeholder, drawn in-house, until the credited set lands. Runs save on this device only.
+    <!-- A span, not a bare text node: js/events.js rewrites it on a language
+         switch, and the footer kit MOVES loose children into .neo-footer-inner
+         rather than cloning them, so the element it is holding stays the one
+         on the page. -->
+    <span data-i18n="chrome.footerNote">Rules and cards are MIT. Card art is CC BY, credited on the About page. Runs save on this device only.</span>
   </footer>
 
   <script type="module" src="js/app.js"></script>

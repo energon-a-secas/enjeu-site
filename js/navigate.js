@@ -1,12 +1,20 @@
 // ── Hash router ──────────────────────────────────────────────
 // Routes (contract C6 in docs/plans/2026-08-22-enjeu-site.md):
 //   #/learn · #/learn/<section> · #/cards · #/cards/<deck> · #/cards/print
-//   #/play · #/play/<level> · #/balance
+//   #/play · #/play/<level> · #/about · #/balance
 // The hash is the source of truth for view + param; state mirrors it.
 
 import { state } from './state.js';
 
-export const VIEWS = ['learn', 'cards', 'play', 'balance'];
+export const VIEWS = ['learn', 'cards', 'play', 'about', 'balance'];
+
+/**
+ * The tabs the header actually shows. Balance is routable and unlisted: it is a
+ * simulator readout for whoever is tuning the game, and it was the fourth thing
+ * a child saw when they came to play. #/balance still works for anyone who wants
+ * it, which is the difference between hiding a page and deleting one.
+ */
+export const NAV_VIEWS = ['learn', 'cards', 'play', 'about'];
 
 /** Parse location.hash into { view, param, query }. */
 export function parseHash(hash = location.hash) {

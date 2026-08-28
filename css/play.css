@@ -35,8 +35,13 @@
     max-width: 1520px; flex: 1; min-height: 0;
     display: flex; flex-direction: column; gap: 6px;
     padding: 8px var(--space-4) 6px;
-    /* Everything card-shaped, sized from the window's height. */
-    --hand-w: clamp(58px, 9.6vh, 96px);
+    /* Sized from the window's height, EXCEPT inside the duel, which sizes from
+       the height it was actually granted (see .duel). vh is why 1366x768 and
+       1280x720 used to clip: the action panel and the arena both measured the
+       window, the panel is content-sized so it took what it wanted first, and
+       the arena absorbed the whole deficit by painting its children under an
+       opaque panel. 418 + 251 into 526 has no reflow that fixes it. */
+    --hand-w: clamp(52px, 8.4vh, 88px);
     --plan-w: clamp(24px, 3.8vh, 34px);
     --tbl-w: clamp(22px, 3.4vh, 32px);
     --fig: clamp(42px, 8.2vh, 92px);
@@ -56,7 +61,25 @@
 /* Two columns, because the closed log is not rendered at all: hiding sixty
    log lines with CSS would still build them on every single render. */
 .fight-grid[data-log="closed"] { grid-template-columns: 74px minmax(0, 1fr); }
-.fight-main { display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+/* Three rows: the duel takes the slack, the turn band is content-sized but
+   capped, and the resolve band collapses when empty. The cap is what stops the
+   turn band eating the duel: it used to take 60 to 79 percent of the box. */
+/* The duel gets a FLOOR, not just the slack. Without one it was handed whatever
+   the action panel left over, which at 1280x720 with three steps queued was
+   101px against the 133px its own children need, and the difference was painted
+   under the panel. The panel scrolls inside itself, so it is the one that gives. */
+.fight-main { display: grid; grid-template-rows: minmax(150px, 1fr) auto auto; gap: 6px; min-height: 0; }
+/* The action panel is content-sized and comes second, so before this cap it
+   simply took what it wanted and left the duel the remainder, which at 1280x720
+   was 102px against the 251px it needed. Capped, it scrolls inside itself,
+   which is the rule this whole file is built on: panels scroll, the page never
+   does. */
+/* The panel does not scroll; the HAND inside it does. Scrolling the whole panel
+   pushed the resolve button off the bottom at 600px of height, which breaks the
+   one promise at the top of this file. The plan lane and the resolve band are
+   flex:none, so the button that ends the turn is always the last thing on screen
+   and always on it. */
+.fight-main > .actions { display: flex; flex-direction: column; gap: 6px; min-height: 0; }
 .fight-side { min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 4px; }
 /* The rail must NOT scroll: a hovered slot grows 4x out of its own box, and any
    overflow on this axis clips the enlargement that is the point of the hover.
@@ -114,41 +137,72 @@ button.tbl-slot { cursor: zoom-in; }
 }
 
 /* ── The arena ─────────────────────────────────────────────── */
-/* A duel on a diagonal. The boss is top-right and the hero bottom-left, which
-   is the arrangement the request asked for and the one that reads as two sides
-   facing each other rather than as two rows of a table. The two cells that
-   diagonal leaves over are not padding: the die goes opposite the boss, where
-   the eye already is while waiting for a roll, and the gear shelf goes under
-   the boss, next to the hero it belongs to. DOM order is boss, die, hero,
-   shelf, so the single-column stack under 700px still reads top to bottom. */
-.arena {
-  display: grid; min-height: 0; flex: 1 1 auto; align-content: space-between;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-rows: auto auto; gap: 8px var(--space-4);
+/* ── The duel ───────────────────────────────────────────────
+   Hero left, the boss's life in the middle, the boss right: three columns that
+   face across the thing the fight is about, instead of a 2x2 diagonal whose
+   spare cells were filled with a die and a shelf.
+
+   `align-content: space-between` is deliberately absent. It was a void
+   generator: every pixel of slack went into the gap between the two rows, so
+   the more room the board had the emptier it looked (80.6% empty on your turn,
+   88.9% on the boss's, with one unbroken 1048x352 rectangle across the middle),
+   and the hero figure moved 335px vertically inside a single turn purely
+   because the panel below changed height. Slack now goes into the wall's card
+   size, which is the one thing on the board that should grow.
+
+   container-type: size is what stops the clipping. Everything card-shaped in
+   here is a fraction of cqh, so it sizes from the height the duel was actually
+   granted rather than from the window. overflow: hidden is the guard rail, not
+   the mechanism: after this it should never fire, and if it does you get a
+   clean crop instead of content painted under an opaque panel. */
+.duel {
+  display: grid; min-height: 0; overflow: hidden;
+  container-type: size; container-name: duel;
+  grid-template-columns: minmax(120px, 190px) minmax(0, 1fr) minmax(120px, 190px);
+  align-items: center; gap: 8px var(--space-3);
   background: var(--surface-2); border-radius: var(--radius); padding: 8px 10px;
   border: 2px solid var(--border);
+  --fig: clamp(38px, 22cqh, 88px);
 }
-.arena__boss { grid-area: 1 / 2; align-items: flex-end; text-align: right; }
-.arena__die { grid-area: 1 / 1; align-items: center; justify-content: center; gap: 4px; }
-.arena__hero { grid-area: 2 / 1; align-items: flex-start; }
-.arena__shelf { grid-area: 2 / 2; align-items: flex-end; justify-content: flex-end; gap: 3px; }
-.arena > * { display: flex; flex-direction: column; min-width: 0; gap: 4px; }
-
-.arena__side { display: flex; align-items: center; gap: var(--space-3); width: 100%; }
-/* Row-reverse, not a reordered figure: the boss's figure belongs on the outer
-   edge of its own half, so the two figures face across the empty middle. */
-.arena__boss .arena__side { flex-direction: row-reverse; }
-.arena__stat { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
-.arena__boss .arena__stat { align-items: flex-end; }
-.arena .figure { gap: 0; font-size: 10px; position: relative; flex: none; }
-.arena .figure svg { width: var(--fig); height: var(--fig); }
-.arena .figure.is-missed svg { animation: shudder 400ms var(--ease-out); }
-/* The selected target is ringed here AND on its chip in the strip below, so the
-   link between "the chip I pressed" and "the figure I am about to hit" is drawn
-   rather than left to be inferred. */
-.arena__boss.is-target > .arena__side .figure {
+.duel > * { display: flex; flex-direction: column; min-width: 0; min-height: 0; gap: 4px; }
+.duel__hero { align-items: flex-start; }
+.duel__wall { align-items: center; justify-content: center; gap: 6px; }
+.duel__boss { align-items: flex-end; text-align: right; }
+.duel .figure { gap: 0; font-size: 10px; position: relative; flex: none; }
+.duel .figure svg { width: var(--fig); height: var(--fig); }
+.duel .figure.is-missed svg { animation: shudder 400ms var(--ease-out); }
+.duel__boss.is-target .figure {
   outline: 3px solid var(--gold-deep); outline-offset: 3px; border-radius: 10px;
 }
+
+/* ── The wall ──────────────────────────────────────────────
+   The boss's life as the cards on the table. The card size solves from BOTH
+   axes of the region, so twenty cards can never overflow the band: whichever of
+   width or height is tighter wins. */
+.wall-count { display: flex; align-items: baseline; gap: 6px; font-size: var(--text-lg); font-weight: 800; }
+.wall {
+  display: grid; justify-content: center; align-content: center; gap: 4px;
+  grid-template-columns: repeat(var(--wall-cols, 4), auto);
+  --wall-card: clamp(16px, min(
+      (100cqw - 380px - (var(--wall-cols) - 1) * 4px) / var(--wall-cols),
+      ((92cqh - 34px - (var(--wall-rows) - 1) * 4px) / var(--wall-rows)) * 0.716
+    ), 148px);
+}
+.wall .lc { width: var(--wall-card); height: auto; }
+/* A ragged last row (4+3, 6+4) centres rather than hanging left. */
+.wall > :last-child:nth-child(odd) { }
+/* The leading card, part broken. Damage lands in 25s and a card is 100, so
+   without this the wall only moves on one hit in four and is a COARSER readout
+   than the numeral it replaces. The wipe is a mask over the real printed card,
+   not a second drawing of one: face.js stays the only card renderer. */
+.lc-part { position: relative; display: inline-block; width: var(--wall-card); }
+.lc-part .lc { width: 100%; }
+.lc-part::after {
+  content: ""; position: absolute; inset: 0 0 calc(var(--frac) * 100%) 0;
+  background: var(--surface-2); opacity: 0.86; border-radius: 4px 4px 0 0;
+  border-bottom: 2px dashed var(--border-strong); pointer-events: none;
+}
+
 /* A damage numeral that floats off the figure that took it. Absolute so it
    cannot push the board a pixel taller on the frame it appears. */
 .fx-num {
@@ -159,11 +213,17 @@ button.tbl-slot { cursor: zoom-in; }
 .fx-num--bad { color: var(--danger); }
 
 @media (max-width: 700px) {
-  .arena { grid-template-columns: 1fr; grid-template-rows: none; }
-  .arena__boss, .arena__die, .arena__hero, .arena__shelf { grid-area: auto; align-items: flex-start; text-align: left; }
-  .arena__boss .arena__side { flex-direction: row; }
-  .arena__boss .arena__stat, .arena__shelf { align-items: flex-start; }
-  .arena__shelf .gear-row, .arena__boss .targets { justify-content: flex-start; }
+  .duel { grid-template-columns: 1fr; align-items: stretch; container-type: normal; }
+  .duel > * { align-items: flex-start; text-align: left; }
+  /* Order for a phone: what is coming, then what it costs you, then your gear.
+     The rail used to be the second thing on screen and it is the least
+     important thing on the board. */
+  .duel__boss { order: 1; align-items: flex-start; text-align: left; }
+  .duel__wall { order: 2; align-items: flex-start; }
+  .duel__hero { order: 3; }
+  .duel__boss .targets, .duel .gear-row { justify-content: flex-start; }
+  /* Twenty cards five wide is 380px tall on a 358px column. Go wider and smaller. */
+  .wall { --wall-card: clamp(14px, calc((100% - (var(--wall-cols) - 1) * 4px) / var(--wall-cols)), 44px); }
 }
 
 /* ── The boss speaks ───────────────────────────────────────── */
@@ -195,12 +255,12 @@ button.tbl-slot { cursor: zoom-in; }
 @media (max-width: 700px) { .bubble { align-self: flex-start; } .bubble::before { right: auto; left: 26px; } .bubble::after { right: auto; left: 29px; } }
 
 /* ── The die in the empty cell ─────────────────────────────── */
-.arena__die .die-face {
+.die-cell .die-face {
   width: clamp(46px, 7.6vh, 78px); height: clamp(46px, 7.6vh, 78px);
   font-size: clamp(18px, 3vh, 30px);
 }
-.arena__die .die-face svg { width: 56%; height: 56%; }
-.arena__die small { text-align: center; max-width: 16ch; line-height: 1.15; }
+.die-cell .die-face svg { width: 56%; height: 56%; }
+.die-cell small { text-align: center; max-width: 16ch; line-height: 1.15; }
 /* Waiting for a roll the die rocks: the board is asking for a die, and a still
    die on an empty cell reads as decoration. Rocking, it reads as a prompt. */
 .die-face.is-waiting { border-color: var(--gold-deep); color: var(--gold-deep); animation: rock 1.6s var(--ease-out) infinite; }
@@ -268,11 +328,16 @@ button.tbl-slot { cursor: zoom-in; }
 .band--plan, .band--go { border-top: 1px solid var(--border); padding-top: 5px; }
 .band--go:empty { display: none; }
 
-.hand-row { display: flex; align-items: flex-end; gap: var(--space-4); flex-wrap: wrap; }
+/* Three columns, not a centred flex row: the die and the gear are side matter,
+   and centring the row as a whole pushed the CARDS off centre by however wide
+   the die happened to be. The middle column is what the eye should find. */
+.hand-row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: end; gap: var(--space-3); }
+.hand-row > .die-cell { justify-self: start; }
+.hand-row > .adv-hand { justify-self: end; }
 /* Wraps, and that is the only reason a phone does not scroll sideways: four
    84px cards plus their gaps are 372px of a 358px column, and a non-wrapping
    flex row of them widened the grid track past the viewport instead. */
-.hand-attacks { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+.hand-attacks { display: flex; gap: var(--space-3); flex-wrap: wrap; justify-content: center; }
 .hand-attacks .action-card { width: var(--hand-w); }
 .hand-attacks .action-card span { font-size: 10px; }
 /* Cost, stake and risk under the card they belong to. Picking a combination
@@ -295,7 +360,7 @@ button.tbl-slot { cursor: zoom-in; }
    first thing dropped when the row runs out of room. */
 .plan-keys { margin-left: auto; white-space: nowrap; }
 @media (max-width: 1100px) { .plan-keys { display: none; } }
-.plan { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; flex-wrap: wrap; align-items: stretch; min-height: calc(var(--plan-w) * 1.4); }
+.plan { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; flex-wrap: wrap; align-items: stretch; min-height: 0; }
 .plan-step {
   display: flex; align-items: center; gap: 5px; padding: 3px 7px 3px 3px;
   border: 2px solid var(--border-strong); border-radius: var(--radius); background: var(--surface-1);
@@ -408,3 +473,40 @@ button.tbl-slot { cursor: zoom-in; }
 .sw-pick__card { --mini-w: 62px; flex: none; }
 .sw-pick__text { display: flex; flex-direction: column; gap: 2px; cursor: pointer; }
 .sw-pick__text input { width: 20px; height: 20px; }
+
+
+/* ── Collapsing the things that were reserved and empty ────── */
+/* The plan lane billed 61px at 1280x720 (11.6% of the whole fight box) to hold
+   zero steps, in the state the player is in at the start of every turn. */
+.band--plan:has(.plan:empty) { display: none; }
+/* The gear row reserves ONE slot's height so nothing jumps when the first chip
+   arrives, which was the real goal of drawing five permanent ghosts. */
+.gear-row { min-height: var(--gear-h, 30px); }
+.gear-row:empty { min-height: 0; }
+/* The resolve band already collapses; make it explicit next to the other two. */
+.band--go:empty { display: none; }
+.die-cell { flex: none; align-items: center; justify-content: center; gap: 4px; display: flex; flex-direction: column; }
+/* The hand grows from the middle out, so the cards stay where the eye already
+   is instead of starting at the left edge under a 1000px band. */
+.hand-attacks { justify-content: center; }
+.hand-row > .hand-attacks { grid-column: 2; }
+
+
+/* ── Too short to lock ──────────────────────────────────────
+   Under about 660px of height the three promises this file makes stop being
+   satisfiable together: the page must not scroll, the resolve button must be
+   reachable, and the duel must not crop. Something has to give, and the honest
+   one is the lock. A 1280x600 window gets an ordinary scrolling page, exactly
+   like a phone does, instead of a board that hides a third of itself.
+
+   Scrolling the action panel was tried first and was worse: the hand scrolled
+   under the plan lane and a card in it stopped being clickable at all. */
+@media (min-width: 901px) and (max-height: 659px) {
+  html[data-view="play"] body:has(.board-fit) { height: auto; overflow: visible; }
+  .fight-main { grid-template-rows: auto auto auto; }
+  /* container-type: size needs a definite height to resolve cqh against, and in
+     this branch the duel is content-sized, so the query units would resolve to
+     zero and the wall would collapse. Back to ordinary sizing here. */
+  .duel { overflow: visible; container-type: normal; --fig: 60px; }
+  .wall { --wall-card: clamp(20px, calc((100% - (var(--wall-cols) - 1) * 4px) / var(--wall-cols)), 64px); }
+}

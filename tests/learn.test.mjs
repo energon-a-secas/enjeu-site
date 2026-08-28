@@ -259,5 +259,21 @@ test('a check is always the card\'s own traffic light, from riskDots', () => {
   }
 });
 
+/**
+ * The slide that says "your first fight is five cards" must draw five. It drew
+ * three, from a hardcoded ['strike','focus','all-in'], while the copy beside it
+ * had already been corrected: a caption disagreeing with its own picture is the
+ * exact defect this deck's comments record twice before.
+ */
+test('the attack slide draws every card in the Attack deck, not a hardcoded list', () => {
+  const html = renderLearn({ cards: data, learnStep: 2, view: 'learn' });
+  for (const c of data.attack) {
+    assert.ok(html.includes(`data-id="${c.id}"`) || html.includes(`>${c.name}<`),
+      `${c.name} is in the Attack deck but not on the slide that teaches it`);
+  }
+  const shown = (html.match(/class="action-card"/g) || []).length;
+  assert.equal(shown, data.attack.length, `the slide draws ${shown} cards for a deck of ${data.attack.length}`);
+});
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

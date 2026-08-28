@@ -240,7 +240,11 @@ test('the toolbar offers every sort, both toggles and the print-order note', () 
   for (const el of ['fire', 'water', 'earth', 'wind']) assert.ok(html.includes(`data-element="${el}"`), `no ${el} chip`);
   assert.ok(html.includes('data-tier="4"') && html.includes('data-class="knight"'), 'tier and class chips');
   assert.ok(/aria-pressed="(true|false)"/.test(html), 'chips carry aria-pressed');
-  assert.ok(html.includes('Printing always uses the boxed order'), 'the print-order note is on the page');
+  // The note used to be a line of prose beside the button. It is now the button's
+  // own tooltip: the page lost a sentence, the guarantee did not move.
+  assert.ok(/data-action="cards-print" title="Printing always uses the boxed order/.test(html),
+    'the print button still states that sorting cannot reach the sheet');
+  assert.ok(!html.includes('cards-print__note'), 'and the standalone line is gone');
   // Clear appears only when there is something to clear.
   assert.ok(!html.includes('data-action="cards-reset"'), 'nothing to clear on a fresh view');
   assert.ok(renderCards(S({ tier: '2' })).includes('data-action="cards-reset"'), 'a filtered view offers Clear');

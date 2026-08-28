@@ -28,12 +28,37 @@ let passed = 0, failed = 0;
 const queue = [];
 const test = (name, fn) => queue.push([name, fn]);
 
-test('94 physical cards, matching the component table in RULES.md section 10', () => {
+test('105 physical cards, matching the component table in RULES.md section 10', () => {
   // 90, then Bubble and Second Wind after the first playtest, then the Boss
-  // Reactions and Damage Track aids after the second. All on 2026-08-27.
-  assert.equal(data.physical.length, 94);
+  // Reactions and Damage Track aids after the second (all 2026-08-27). Then, on
+  // 2026-08-28, Run, and ten more boss life cards: making every boss card worth
+  // 100 took the level 5 pile from 10 cards to 20.
+  assert.equal(data.physical.length, 105);
   const per = Object.fromEntries(DECKS.map((d) => [d, (data[d] || []).reduce((a, c) => a + (c.copies || 1), 0)]));
-  assert.deepEqual(per, { attack: 4, skill: 25, class: 4, advantage: 12, boss: 6, biome: 7, life: 31, mode: 1, aid: 4 });
+  assert.deepEqual(per, { attack: 5, skill: 25, class: 4, advantage: 12, boss: 6, biome: 7, life: 41, mode: 1, aid: 4 });
+  // The printed pile has to be able to hold the biggest boss, or level 5 runs
+  // out of cards halfway through the fight it is the climax of.
+  const bossLife = data.life.find((c) => c.id === 'life-boss');
+  assert.ok(bossLife.copies >= Math.max(...data.boss.map((b) => b.life_cards)),
+    'fewer boss life cards printed than the largest boss needs');
+});
+
+/**
+ * The components table in RULES.md is prose, and prose drifts. It has now been
+ * wrong twice in the same way: it summed to 93 under a stated 94, and after the
+ * rewrite to 105 it summed to 104. Both times the missing row was Second Wind.
+ * RULES.md itself claims the table is "checkable rather than remembered", which
+ * was not true of anything in the repo until this test. Now it is.
+ */
+test('the components table in RULES.md sums to its own total, and to the deck', () => {
+  const rules = readFileSync(join(root, 'RULES.md'), 'utf8');
+  const table = /\| Deck \| Cards \|[\s\S]*?\| \*\*Total\*\* \| \*\*(\d+)\*\* \|/.exec(rules);
+  assert.ok(table, 'the components table is still in RULES.md');
+  const rows = [...table[0].matchAll(/^\| (?!\*\*Total)([^|]+?) \| (\d+) \|$/gm)];
+  assert.ok(rows.length >= 8, `expected the full table, parsed ${rows.length} rows`);
+  const sum = rows.reduce((a, r) => a + Number(r[2]), 0);
+  assert.equal(sum, Number(table[1]), 'the rows must add up to the printed total');
+  assert.equal(sum, data.physical.length, 'and the total must be the deck in cards.json');
 });
 
 test('C2: every card icon resolves to a glyph', () => {
@@ -127,6 +152,20 @@ test('the Boss Reactions aid draws the rows cards.json states, not a copy of the
   assert.deepEqual(stub, ['6', 'Ruin'], 'one row in, one row out');
 });
 
+test('the Boss Reactions aid prints the names in the language it is handed', () => {
+  // The board said "Brace" while the Spanish rulebook said "Aguante", so the
+  // same term reached the same player two different ways. The renderer takes a
+  // map rather than importing the string table, because face.js is shared with
+  // the print path and the node tests, neither of which sets a language.
+  const texts = (aid) => [...cardFace(data.byId['aid-boss'], { size: 'sheet', aid }).matchAll(/<text[^>]*>([^<]*)<\/text>/g)]
+    .map((m) => m[1]).filter((x) => /[A-Za-z]/.test(x));
+  assert.deepEqual(texts(aidFor(data)), ['Brace', 'Strike', 'Summon', 'Roar', 'Ruin'], 'no map means the data\'s own names');
+  const es = { brace: 'Aguante', strike: 'Golpe', summon: 'Invocacion', roar: 'Rugido', ruin: 'Ruina' };
+  assert.deepEqual(texts(aidFor(data, es)), Object.values(es), 'a map renames every row');
+  // Every row must be reachable by id, or a rename silently falls back.
+  for (const r of data.boss_reaction) assert.ok(r.id && es[r.id], `${r.name} has no id the map can key on`);
+});
+
 test('the Damage Track aid draws four bands and the hundreds box', () => {
   const svg = cardFace(data.byId['aid-track'], { size: 'sheet', aid: aidFor(data) });
   const texts = [...svg.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map((m) => m[1]);
@@ -164,7 +203,7 @@ test('C1: the four corners carry what the layout doc says they carry (spot check
   const bossLife = cardFace(data.byId['life-boss'], { size: 'sheet' });
   assert.ok(bossLife.includes('fill="#111111"') && !/<text/.test(bossLife), 'Boss life: black, crown, no numeral');
   const boss5 = cardFace(data.byId['boss-um'], { size: 'sheet' });
-  assert.ok(/>10×200<\/text>/.test(boss5) && />100<\/text>/.test(boss5) && />5<\/text>/.test(boss5), 'Level 5 boss: 10x200, dmg 100, rage 5');
+  assert.ok(/>20×100<\/text>/.test(boss5) && />100<\/text>/.test(boss5) && />5<\/text>/.test(boss5), 'Level 5 boss: 20x100, dmg 100, rage 5');
   setArtManifest(manifest);
 });
 
@@ -175,6 +214,16 @@ test('C1: the four corners carry what the layout doc says they carry (spot check
  * risk pips rectangles, or dropped the traffic light back to black, would undo
  * the readability fix without failing a single other test.
  */
+test('every boss life card is worth exactly 100, and the counts match the totals', () => {
+  // The uniform 100 is an ergonomic rule, not a cosmetic one: a child turns one
+  // card over per 100 damage and never divides. One boss drifting back to 150
+  // silently hands them the arithmetic again, so this is checked per boss.
+  for (const b of data.boss) {
+    assert.equal(b.per_card, 100, `${b.id}: every boss life card is 100`);
+    assert.equal(b.life_cards * b.per_card, b.hp, `${b.id}: ${b.life_cards} cards must sum to its ${b.hp} hp`);
+  }
+});
+
 test('C1: bet and check are different shapes, and check is on the traffic light', () => {
   setArtManifest({ slots: [] });
   const RAMP = { sure: '#16a34a', even: '#eab308', hard: '#f97316', wild: '#dc2626' };

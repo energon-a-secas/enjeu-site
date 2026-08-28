@@ -2,7 +2,7 @@
 
 **What it is:** A print-and-play boss-rush card game for one player, one die, and the
 construction-toy bricks and figures already on the table. The site teaches it, prints it,
-and runs it on screen: a visual walkthrough with the full rulebook behind it, all 90
+and runs it on screen: a visual walkthrough with the full rulebook behind it, all 105
 cards as true-size print sheets, and a simulator that plays a run with stand-in
 figures or batch-runs the balance table.
 
