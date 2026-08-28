@@ -533,8 +533,24 @@ export function cardFace(card, opts = {}) {
   return `<svg class="sk-card sk-card--${size} ${opts.cls || ''}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(card.name || card.id)}" data-card="${esc(card.id)}">${label}${body}</svg>`;
 }
 
+/**
+ * The picture on an unbroken back, per deck. A pile face down should still say
+ * which pile it is: a book for the skills you are learning, a coin for the
+ * Advantage and the comeback you are spending, bricks for the place you are
+ * fighting in, and a learning mark for the two reference cards.
+ */
+const BACK_EMBLEM = {
+  skill: 'back-skill',
+  advantage: 'back-coin',
+  mode: 'back-coin',
+  biome: 'back-biome',
+  aid: 'back-aid',
+};
+
 /** A card back: the deck's face colour, a gold ring, nothing else. */
-const BACK_DARK = { fire: '#7f1d1d', water: '#1e3a8a', earth: '#14532d', wind: '#334155', extra: '#713f12', boss: '#000000', skill: '#713f12' };
+const BACK_DARK = { fire: '#7f1d1d', water: '#1e3a8a', earth: '#14532d', wind: '#334155', extra: '#713f12', boss: '#000000', skill: '#713f12', advantage: '#78350f', biome: '#3f3a1f', aid: '#3f3f46' };
+/** The field colour per deck back. Without this every non-life back is gold. */
+const BACK_FIELD = { skill: FACE.gold, advantage: '#d97706', biome: '#8a8f4a', aid: '#71717a' };
 
 /** A field of studs: the construction-toy language the whole game is played in. */
 function studField(ink) {
@@ -598,7 +614,7 @@ function brickEmblem(ink, dark) {
 export function cardBack(kind = 'skill', { light = false, size = 'sheet', cls = '' } = {}) {
   // The Extra life card is white-faced, and a white back on white paper is a
   // blank card: it gets the brown instead.
-  const colour = kind === 'extra' ? FACE.brown : FACE[kind] || FACE.gold;
+  const colour = kind === 'extra' ? FACE.brown : BACK_FIELD[kind] || FACE[kind] || FACE.gold;
   const dark = BACK_DARK[kind] || '#713f12';
   const field = light ? FACE.extra : colour;
   const ink = light ? colour : FACE.extra;
@@ -612,8 +628,16 @@ export function cardBack(kind = 'skill', { light = false, size = 'sheet', cls = 
     out += `<path d="${asPath(pts, -12)}" fill="none" stroke="${dark}" stroke-width="6" stroke-linejoin="round"/>`;
     out += `<path d="${asPath(pts, 12)}" fill="none" stroke="${dark}" stroke-width="6" stroke-linejoin="round"/>`;
   } else {
+    // An emblem that says what the pile IS. The unbroken back used to be one
+    // ring plus a generic brick for every non-life deck, so the skill pool, the
+    // Advantage deck, the biomes and the player aids were four identical piles
+    // face down on the same table. BACK_EMBLEM is the slot id per deck; each
+    // falls back to the brick if its art has not been downloaded yet.
     out += `<circle cx="315" cy="440" r="132" fill="none" stroke="${ink}" stroke-width="14" opacity="0.85"/>`;
-    out += brickEmblem(ink, dark);
+    const emblem = BACK_EMBLEM[kind];
+    out += emblem && (artBody(emblem) || glyphPath(emblem))
+      ? glyphAt(emblem, 315 - 96, 440 - 96, 192, { stroke: ink, width: 2.6 })
+      : brickEmblem(ink, dark);
   }
   return `<svg class="sk-card sk-card--${size} ${cls}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="card back">${out}</svg>`;
 }

@@ -16,8 +16,12 @@ Collection: https://thenounproject.com/browse/collection-icon/role-playing-game-
 | [`adv-relic`](https://thenounproject.com/icon/game-ui-weapon-2360110/) | Advantage: Relic | Maxicons | CC BY 3.0 |
 | [`adv-rune`](https://thenounproject.com/icon/item-rune-stone-2360138/) | Advantage: Rune | Maxicons | CC BY 3.0 |
 | [`all-in`](https://thenounproject.com/icon/betting-5754807/) | All In (attack card) | Amethyst Studio | CC BY 3.0 |
+| [`back-aid`](https://thenounproject.com/icon/learning-7740728/) | Card back: player aid | Nur Achmadi Yusuf | CC BY 3.0 |
+| [`back-biome`](https://thenounproject.com/icon/blocks-7983307/) | Card back: biome | Graphic Nehar | CC BY 3.0 |
 | [`back-breakup`](https://thenounproject.com/icon/breakup-5619033/) | Card back, alternate: a split heart | Ir Studio | CC BY 3.0 |
 | [`back-brokenheart`](https://thenounproject.com/icon/broken-heart-6414622/) | Card back: a bandaged heart, what a Broken life card shows | Gulalicon | CC BY 3.0 |
+| [`back-coin`](https://thenounproject.com/icon/coin-7280138/) | Card back: Advantage and Second Wind | Putri Amaliya | CC BY 3.0 |
+| [`back-skill`](https://thenounproject.com/icon/book-7375971/) | Card back: skill pool | Putri Amaliya | CC BY 3.0 |
 | [`biome-castle`](https://thenounproject.com/icon/landscape-castle-2360157/) | Biome: Castle | Maxicons | CC BY 3.0 |
 | [`biome-desert`](https://thenounproject.com/icon/landscape-desert-2360152/) | Biome: Desert | Maxicons | CC BY 3.0 |
 | [`biome-forest`](https://thenounproject.com/icon/landscape-forest-2360154/) | Biome: Forest | Maxicons | CC BY 3.0 |
@@ -27,6 +31,12 @@ Collection: https://thenounproject.com/browse/collection-icon/role-playing-game-
 | [`biome-volcano`](https://thenounproject.com/icon/landscape-volcano-2360153/) | Biome: Volcano | Maxicons | CC BY 3.0 |
 | [`bubble`](https://thenounproject.com/icon/bubble-8403070/) | Bubble (attack card) | BnB Studio | CC BY 3.0 |
 | [`crown`](https://thenounproject.com/icon/crown-8440024/) | Boss life marker | Kim Sun Young | CC BY 3.0 |
+| [`die-d10`](https://thenounproject.com/icon/d10-2453698/) | Die face: d10 | Lonnie Tapscott | CC BY 3.0 |
+| [`die-d12`](https://thenounproject.com/icon/d12-2453697/) | Die face: d12 | Lonnie Tapscott | CC BY 3.0 |
+| [`die-d20`](https://thenounproject.com/icon/d20-2453700/) | Die face: d20 | Lonnie Tapscott | CC BY 3.0 |
+| [`die-d4`](https://thenounproject.com/icon/d4-2453696/) | Die face: d4 | Lonnie Tapscott | CC BY 3.0 |
+| [`die-d6`](https://thenounproject.com/icon/d6-2453695/) | Die face: d6 | Lonnie Tapscott | CC BY 3.0 |
+| [`die-d8`](https://thenounproject.com/icon/d8-2453699/) | Die face: d8 | Lonnie Tapscott | CC BY 3.0 |
 | [`earth`](https://thenounproject.com/icon/element-mountain-2360067/) | Earth element sigil | Maxicons | CC BY 3.0 |
 | [`fire`](https://thenounproject.com/icon/element-fire-2360070/) | Fire element sigil | Maxicons | CC BY 3.0 |
 | [`focus`](https://thenounproject.com/icon/classes-monk-2360006/) | Focus (attack card) | Maxicons | CC BY 3.0 |
@@ -66,4 +76,4 @@ Collection: https://thenounproject.com/browse/collection-icon/role-playing-game-
 | [`water`](https://thenounproject.com/icon/element-stream-2360063/) | Water element sigil | Maxicons | CC BY 3.0 |
 | [`wind`](https://thenounproject.com/icon/element-wind-2360065/) | Wind element sigil | Maxicons | CC BY 3.0 |
 
-56 icons.
+66 icons.

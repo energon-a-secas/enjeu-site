@@ -37,6 +37,17 @@ export const GLYPHS = {
   focus:   { label: 'Focus', d: 'M12 4a8 8 0 1 1 0 16 8 8 0 0 1 0-16zM12 8.8a3.2 3.2 0 1 1 0 6.4 3.2 3.2 0 0 1 0-6.4zM12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3' },
   'all-in':{ label: 'All In', d: 'M5 17.5a7 2.6 0 1 0 14 0 7 2.6 0 1 0-14 0M5 17.5v-3.2M19 17.5v-3.2M5 14.3a7 2.6 0 0 0 14 0M5 14.3v-3.2M19 14.3v-3.2M5 11.1a7 2.6 0 0 0 14 0M12 1.5v6M9.2 5l2.8 2.8L14.8 5' },
 
+  // Dice. Fallbacks only: the attributed set in art/ takes over once the manifest
+  // carries creator and licence, and it does. These exist because the swap
+  // contract (tests/cards.test.mjs, C2) says every art slot has a glyph of the
+  // same id, so a missing download degrades to a drawing rather than a blank.
+  'die-d4':  { label: 'd4',  d: 'M12 2.6 21.4 19.4H2.6ZM12 2.6V19.4M12 19.4 6.5 11M12 19.4 17.5 11' },
+  'die-d6':  { label: 'd6',  d: 'M4.4 4.4h15.2v15.2H4.4zM8.6 8.6a1 1 0 1 0 0-.1M15.4 8.6a1 1 0 1 0 0-.1M8.6 15.4a1 1 0 1 0 0-.1M15.4 15.4a1 1 0 1 0 0-.1M12 12a1 1 0 1 0 0-.1' },
+  'die-d8':  { label: 'd8',  d: 'M12 2.2 21.4 12 12 21.8 2.6 12ZM2.6 12h18.8M12 2.2 7 12l5 9.8M12 2.2l5 9.8-5 9.8' },
+  'die-d10': { label: 'd10', d: 'M12 2.2 21.2 10.2 12 21.8 2.8 10.2ZM2.8 10.2h18.4M12 2.2v8M12 10.2 6.5 15M12 10.2 17.5 15' },
+  'die-d12': { label: 'd12', d: 'M12 2.3 21.6 9.3 17.9 20.6H6.1L2.4 9.3ZM12 2.3v6.4M12 8.7 6.2 12.9M12 8.7l5.8 4.2M6.2 12.9 8.4 19.8M17.8 12.9l-2.2 6.9' },
+  'die-d20': { label: 'd20', d: 'M12 2.2 20.5 7.1v9.8L12 21.8 3.5 16.9V7.1ZM3.5 7.1 12 12l8.5-4.9M12 12v9.8M12 12 3.5 16.9M12 12l8.5 4.9' },
+
   // Classes
   knight:       { label: 'Knight', d: 'M5 10a7 7 0 0 1 14 0v6.5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4zM5 12.5h5v3H5zM14 12.5h5v3h-5zM12 9v11.5' },
   mage:         { label: 'Mage', d: 'M12 2.5l5 12.5H7zM4.5 15h15l1 4.5c-5.5 1.5-11.5 1.5-17 0z' },

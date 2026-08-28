@@ -585,6 +585,76 @@
    "creator": "Kim Sun Young",
    "licence": "CC BY 3.0",
    "note": "GAP. Candidate: equipment-crown-2360075 (Maxicons), the collection's only crown, same equipment-* family as the Knight and Mage class icons. This slot prints GOLD on the black boss life card, so see $tinting below before sourcing it."
+  },
+  {
+   "id": "die-d4",
+   "use": "Die face: d4",
+   "source": "https://thenounproject.com/icon/d4-2453696/",
+   "creator": "Lonnie Tapscott",
+   "licence": "CC BY 3.0"
+  },
+  {
+   "id": "die-d6",
+   "use": "Die face: d6",
+   "source": "https://thenounproject.com/icon/d6-2453695/",
+   "creator": "Lonnie Tapscott",
+   "licence": "CC BY 3.0"
+  },
+  {
+   "id": "die-d8",
+   "use": "Die face: d8",
+   "source": "https://thenounproject.com/icon/d8-2453699/",
+   "creator": "Lonnie Tapscott",
+   "licence": "CC BY 3.0"
+  },
+  {
+   "id": "die-d10",
+   "use": "Die face: d10",
+   "source": "https://thenounproject.com/icon/d10-2453698/",
+   "creator": "Lonnie Tapscott",
+   "licence": "CC BY 3.0"
+  },
+  {
+   "id": "die-d12",
+   "use": "Die face: d12",
+   "source": "https://thenounproject.com/icon/d12-2453697/",
+   "creator": "Lonnie Tapscott",
+   "licence": "CC BY 3.0"
+  },
+  {
+   "id": "die-d20",
+   "use": "Die face: d20",
+   "source": "https://thenounproject.com/icon/d20-2453700/",
+   "creator": "Lonnie Tapscott",
+   "licence": "CC BY 3.0"
+  },
+  {
+   "id": "back-skill",
+   "use": "Card back: skill pool",
+   "source": "https://thenounproject.com/icon/book-7375971/",
+   "creator": "Putri Amaliya",
+   "licence": "CC BY 3.0"
+  },
+  {
+   "id": "back-coin",
+   "use": "Card back: Advantage and Second Wind",
+   "source": "https://thenounproject.com/icon/coin-7280138/",
+   "creator": "Putri Amaliya",
+   "licence": "CC BY 3.0"
+  },
+  {
+   "id": "back-biome",
+   "use": "Card back: biome",
+   "source": "https://thenounproject.com/icon/blocks-7983307/",
+   "creator": "Graphic Nehar",
+   "licence": "CC BY 3.0"
+  },
+  {
+   "id": "back-aid",
+   "use": "Card back: player aid",
+   "source": "https://thenounproject.com/icon/learning-7740728/",
+   "creator": "Nur Achmadi Yusuf",
+   "licence": "CC BY 3.0"
   }
  ]
 }

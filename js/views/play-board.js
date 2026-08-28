@@ -210,7 +210,13 @@ function dieCell(f, ui) {
     big = ui.last.roll;
     note = ui.last.hit ? t('play.hit') : t('play.miss');
     cls = `is-rolling ${ui.last.hit ? 'is-good' : 'is-bad'}`;
-  } else { big = glyphSvg('dice', '', 30); note = f.die; }
+  } else {
+    // The die you actually chose, drawn as that die. A generic d6 pip face sat
+    // under the label "d20" for every player who picked one, which is the same
+    // caption-fights-picture defect the teaching slide had.
+    big = glyphSvg(`die-${f.die.replace(/^\d+/, '')}`, '', 34) || glyphSvg('dice', '', 30);
+    note = f.die;
+  }
   // It lives beside the hand, not opposite the boss. The old cell was 504x169
   // and 93.3% empty, and it sat 300px above the roll button, the typed-roll box
   // and the verdict, which is where a player is actually looking while rolling.

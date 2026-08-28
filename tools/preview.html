@@ -58,7 +58,11 @@
     html += `<div class="cell">${cardFace(c, { size: 'browse' })}</div>`;
   }
   html += '</div><h2>Backs</h2><div class="grid">';
-  for (const k of ['fire', 'water', 'earth', 'wind', 'extra', 'skill']) html += `<div class="cell">${cardBack(k)}<div class="cap">${k}</div></div>`;
+  for (const k of ['fire', 'water', 'earth', 'wind', 'extra', 'skill', 'advantage', 'biome', 'aid']) html += `<div class="cell">${cardBack(k)}<div class="cap">${k}</div></div>`;
+  html += '</div><h2>Dice</h2><div class="grid small">';
+  const { glyphSvg } = await import('/js/cards/glyphs.js');
+  for (const d of ['die-d4','die-d6','die-d8','die-d10','die-d12','die-d20'])
+    html += `<div class="cell" style="text-align:center">${glyphSvg(d,'',60)}<div class="cap">${d.slice(4)}</div></div>`;
   html += '</div>';
   document.getElementById('out').innerHTML = html;
 </script>

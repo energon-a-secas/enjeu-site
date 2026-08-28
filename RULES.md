@@ -389,10 +389,21 @@ the deck stays readable without colour vision.
 
 **Backs.** A life card's back is its own element colour, snapped across the
 middle: a Broken card sits face down, so the card itself reads as broken rather
-than carrying a picture of something broken. Every other card gets the unbroken
-pool back, because a skill waiting in the draft pile is not damaged. Printing
-backs is optional (none, four, or one per card) and they are solid colour, which
-is a real amount of ink on a home printer.
+than carrying a picture of something broken.
+
+Every other back is unbroken, because a skill waiting in the draft pile is not
+damaged, and each pile carries the picture of what it is. Face down on a table
+these are four different piles, and they used to be four identical ones:
+
+| Pile | Back |
+|---|---|
+| Skills | a book: the pile you are learning from |
+| Advantage and Second Wind | a coin: the thing you spend |
+| Biomes | bricks: the place you are fighting in |
+| Player aids | a learning mark: the two cards you look things up on |
+
+Printing backs is optional (none, four, or one per card) and they are solid
+colour, which is a real amount of ink on a home printer.
 
 | Deck | Cards |
 |---|---|

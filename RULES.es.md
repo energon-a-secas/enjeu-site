@@ -392,10 +392,21 @@ sigue leyendo sin visión de color.
 
 **Reversos.** El reverso de una carta de vida es el color de su propio elemento, partido por la
 mitad: una carta Rota queda boca abajo, así que la carta misma se lee como rota en vez de llevar
-el dibujo de algo roto. Todas las demás cartas llevan el reverso del mazo entero, porque una
-habilidad esperando en la pila del sorteo no está dañada. Imprimir los reversos es opcional
-(ninguno, cuatro, o uno por carta) y son de color macizo, que es harta tinta en una impresora de
-casa.
+el dibujo de algo roto.
+
+Todos los demás reversos están enteros, porque una habilidad esperando en el mazo no está
+dañada, y cada montón lleva el dibujo de lo que es. Boca abajo sobre la mesa son cuatro montones
+distintos, y antes eran cuatro montones idénticos:
+
+| Montón | Reverso |
+|---|---|
+| Habilidades | un libro: el montón del que estás aprendiendo |
+| Ventaja y Segundo Aire | una moneda: lo que gastas |
+| Biomas | bloques: el lugar donde estás peleando |
+| Ayudas | una marca de estudio: las dos cartas que consultas |
+
+Imprimir los reversos es opcional (ninguno, cuatro, o uno por carta) y son de color sólido, que
+es harta tinta en una impresora de casa.
 
 | Mazo | Cartas |
 |---|---|

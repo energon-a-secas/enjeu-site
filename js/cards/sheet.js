@@ -15,7 +15,17 @@ import { cardFace, cardBack } from './face.js';
  * back at all. One mapping, imported twice, so the two cannot drift.
  */
 const FACE_KIND = { red: 'fire', blue: 'water', green: 'earth', grey: 'wind', white: 'extra', black: 'boss' };
-export const backKind = (c) => (c.deck === 'life' ? (c.element || FACE_KIND[c.face] || 'extra') : 'skill');
+/**
+ * Which back a card takes. Life cards take their own element, broken across the
+ * middle. Everything else takes its DECK's back, so the four face-down piles on
+ * a table are four different piles: RULES.md section 10 used to say they all
+ * shared one, and printed that way the skill pool, the Advantage deck, the
+ * biomes and the two aids were indistinguishable face down.
+ */
+const DECK_BACK = { advantage: 'advantage', mode: 'advantage', biome: 'biome', aid: 'aid' };
+export const backKind = (c) => (c.deck === 'life'
+  ? (c.element || FACE_KIND[c.face] || 'extra')
+  : DECK_BACK[c.deck] || 'skill');
 
 /**
  * @param {object[]} physical  cards with copies already expanded (data/cards.js)
