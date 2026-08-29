@@ -22,7 +22,7 @@
 // The board's viewport claim lives in css/play.css, hung off the
 // html[data-view="play"] attribute that render.js sets.
 
-import { secondWindDefault } from '../state.js';
+import { secondWindDefault, simpleDefault } from '../state.js';
 import { t } from '../strings.js';
 import { showToast } from '../utils.js';
 import {
@@ -123,7 +123,7 @@ export function onPlayAction(s, act, el, e) {
       // friction. The settings slide (die, mode, Second Wind) keeps its Next,
       // because three controls share it and a jump on the first click would
       // yank the other two away.
-      case 'kind': s.runKind = d.kind; s.secondWind = secondWindDefault(d.kind); s.setupStep = 1; return true;
+      case 'kind': s.runKind = d.kind; s.secondWind = secondWindDefault(d.kind); s.simple = simpleDefault(d.kind); s.setupStep = 1; return true;
       case 'second-wind': s.secondWind = el.checked !== undefined ? !!el.checked : !s.secondWind; return true;
       case 'simple': s.simple = el.checked !== undefined ? !!el.checked : !s.simple; return true;
       case 'element': s.element = d.element; s.setupStep = 2; return true;

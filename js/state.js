@@ -33,7 +33,7 @@ export const state = {
   element: 'fire',
   runKind: 'first',
   secondWind: true,     // the gentle-mode card in play; default follows runKind
-  simple: false,        // plain table: no biomes, no signature moves
+  simple: true,         // plain table: no biomes, no signatures; default follows runKind
   run: null,            // see game/engine.js newRun()
   // Board preferences. NOT in run.ui: game/run.js resets that object every
   // level, and a preference that resets every level is not a preference.
@@ -48,6 +48,8 @@ export const state = {
  * toggle either way, so this only decides where that toggle starts.
  */
 export const secondWindDefault = (kind) => kind === 'first';
+/** The First Game IS the try-out, so it starts on the plain table. */
+export const simpleDefault = (kind) => kind === 'first';
 
 const PERSIST = ['lang', 'learnStep', 'deckFilter', 'browse', 'paper', 'printScope', 'withBacks', 'die', 'mode', 'element', 'runKind', 'secondWind', 'simple', 'run', 'play', 'balance'];
 

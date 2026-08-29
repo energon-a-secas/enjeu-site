@@ -310,6 +310,15 @@ test('the throw stage is the site die: one numeral, landing on the engine roll',
   assert.ok(after.includes('is-tossed'), 'the toss class fires on that render');
 });
 
+test('the First Game defaults to the simple table; picking the full run re-arms both dials', () => {
+  const s = { cards: data, runKind: 'full', secondWind: false, simple: false };
+  onPlayAction(s, 'kind', { dataset: { kind: 'first' } }, null);
+  assert.equal(s.simple, true, 'the First Game IS the try-out: plain table by default');
+  assert.equal(s.secondWind, true, 'and the safety net comes with it');
+  onPlayAction(s, 'kind', { dataset: { kind: 'full' } }, null);
+  assert.equal(s.simple, false, 'the full run brings the extras back');
+});
+
 test('the simple table strips biomes and signatures, and nothing else', () => {
   const run = newRun(data, { kind: 'full', element: 'fire', die: 'd20', mode: 'standard', simple: true });
   startLevel(run, data);
