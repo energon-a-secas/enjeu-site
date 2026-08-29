@@ -557,7 +557,7 @@ function renderTurn(s, run, f, ui) {
       </div>
     </div>
     <div class="band band--plan">${planLane(s, f, ui, plan, wait)}</div>
-    <div class="band band--go" data-tour="go">${ui.resolveOpen || plan.length ? '' : planBar(f, ui, plan)}${ui.resolveOpen ? '' : verdict(ui)}</div>
+    <div class="band band--go" data-tour="go">${ui.resolveOpen || plan.length ? '' : planBar(f, ui, plan)}</div>
     ${ui.resolveOpen ? resolveModal(f, ui, plan, wait) : ''}`;
 }
 
@@ -620,7 +620,7 @@ function planBar(f, ui, plan) {
   // buttons on the lane's line (planLane). With nothing queued the one thing
   // left to do is hand the turn over, so Skip is the primary and Enter takes it.
   return `<div class="row plan-bar">
-    <button class="btn btn--primary" data-action="play-end-turn">${escHtml(t('play.skipTurn'))} ${glyphSvg('skip', '', 16)}</button>
+    <button class="btn btn--primary" data-action="play-end-turn">${escHtml(t(f.actionsLeft <= 0 ? 'play.endTurn' : 'play.skipTurn'))} ${glyphSvg('skip', '', 16)}</button>
   </div>`;
 }
 
@@ -717,11 +717,3 @@ function dieThrow(f, ui, roll = null) {
   </div>`;
 }
 
-function verdict(ui) {
-  if (!ui.last) return '';
-  const l = ui.last;
-  return `<div class="row verdict-row">
-    ${l.roll !== null && l.roll !== undefined ? `<div class="die-face is-rolling">${l.roll}</div>` : ''}
-    <div class="verdict ${l.hit ? 'hit' : 'miss'}">${escHtml(l.name)}: ${l.auto ? 'lands' : l.hit ? escHtml(t('play.hit')) : escHtml(t('play.miss'))}${l.dealt ? `, ${l.dealt} damage` : ''}</div>
-  </div>`;
-}

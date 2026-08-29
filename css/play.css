@@ -447,9 +447,6 @@ button.tbl-slot { cursor: zoom-in; }
 .roll-now { padding: 6px 8px; display: flex; flex-direction: column; gap: 5px; }
 .roll-now .row { flex-wrap: wrap; gap: var(--space-3); }
 .typed-roll { width: 68px; min-height: 34px; padding: 0 8px; border: 2px solid var(--border-strong); border-radius: 8px; font: inherit; }
-.verdict-row { gap: var(--space-3); align-items: center; }
-.verdict { font-weight: 900; font-size: var(--text-base); }
-.verdict.hit { color: var(--ok); } .verdict.miss { color: var(--danger); }
 
 /* ── Log and banners ───────────────────────────────────────── */
 .log { list-style: none; display: flex; flex-direction: column; gap: 3px; font-size: 11px; margin: 0; padding: 0; }
@@ -644,14 +641,6 @@ button.tbl-slot { cursor: zoom-in; }
   70% { background: var(--gold-deep); transform: scaleY(1); }
   100% { background: transparent; transform: scaleY(0); }
 }
-.verdict { animation: verdict-late 700ms var(--ease-out); }
-.verdict-row .die-face.is-rolling { animation: die-tumble 550ms var(--ease-out); }
-@keyframes die-tumble {
-  0% { transform: rotate(-100deg) scale(0.55); opacity: 0; }
-  55% { transform: rotate(14deg) scale(1.12); opacity: 1; }
-  100% { transform: rotate(0) scale(1); }
-}
-@keyframes verdict-late { 0% { opacity: 0; } 65% { opacity: 0; } 100% { opacity: 1; } }
 
 /* ── The boss's d6 in the child's hand ─────────────────────── */
 .boss-ask { margin-top: var(--space-3); }
