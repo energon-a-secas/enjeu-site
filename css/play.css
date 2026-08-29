@@ -780,32 +780,6 @@ button.tbl-slot { cursor: zoom-in; }
 }
 .rm-roll--auto { border-color: var(--border); color: var(--text-muted); }
 
-/* The die on its stage: a pseudo-3D tumble. The glyph spins through a
-   perspective transform with a squash-and-stretch landing, and the number is
-   revealed only at the end, so the animation can never contradict the engine's
-   roll. Reduced motion: the number is simply there. */
-.die-stage { display: grid; place-items: center; min-height: 108px; perspective: 420px; }
-.die-3d { position: relative; display: grid; place-items: center; width: 92px; height: 92px; }
-.die-3d__glyph { width: 92px; height: 92px; color: var(--gold-deep); }
-.die-3d__n {
-  position: absolute; inset: 0; display: grid; place-items: center;
-  font-weight: 900; font-size: 30px; color: var(--text-primary);
-  text-shadow: 0 1px 0 #fffdf7;
-}
-.die-3d.is-thrown { animation: die-throw 700ms var(--ease-out); }
-.die-3d.is-thrown .die-3d__n { animation: die-land 700ms var(--ease-out); }
-@keyframes die-throw {
-  0%   { transform: translateY(-46px) rotateX(0turn) rotateZ(-0.2turn) scale(0.7); }
-  55%  { transform: translateY(6px) rotateX(0.75turn) rotateZ(0.15turn) scale(1.08); }
-  72%  { transform: translateY(-10px) rotateX(1turn) rotateZ(-0.04turn) scale(0.96); }
-  86%  { transform: translateY(2px) rotateX(1turn) rotateZ(0.01turn) scaleY(0.92) scaleX(1.06); }
-  100% { transform: none; }
-}
-@keyframes die-land {
-  0%, 62% { opacity: 0; }
-  78% { opacity: 1; transform: scale(1.35); }
-  100% { opacity: 1; transform: none; }
-}
 @media (max-width: 900px) {
   .rm { width: calc(100vw - 16px); padding: 12px; }
   .rm-row .btn { min-height: 48px; }

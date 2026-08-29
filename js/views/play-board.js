@@ -690,9 +690,30 @@ function ledger(ui, done) {
  */
 function dieThrow(f, ui, roll = null) {
   const n = roll ?? (ui.last && ui.last.roll !== null && ui.last.roll !== undefined ? ui.last.roll : null);
+  const m = /^(\d*)d(\d+)$/.exec(f.die) || [null, '', '20'];
+  const count = Number(m[1] || 1);
+  const sides = Number(m[2]);
+  const thrown = n !== null ? 'is-thrown' : '';
+  const faces = (landed) => Array.from({ length: sides }, (_, k) => `<b>${k + 1}</b>`).join('');
+  const one = (landed, extra = '') => `<div class="die3d die--d${sides} ${thrown} ${extra}" ${landed !== null ? `data-face="${landed}"` : ''}>${faces(landed)}</div>`;
+  let dice;
+  if (count <= 1) {
+    dice = one(n);
+  } else {
+    // The engine hands back the SUM; the split shown is theatre and must be
+    // deterministic (render() replaces wholesale, and a random split would
+    // reshuffle on every unrelated repaint). Greedy from the ceiling keeps
+    // every companion die legal for any total.
+    const split = [];
+    let left = n;
+    for (let k = count; k >= 1; k--) {
+      const v = n === null ? null : Math.max(1, Math.min(sides, left - (k - 1)));
+      split.push(v); if (v !== null) left -= v;
+    }
+    dice = `<div class="duo">${split.map((v, k) => one(v, k === 1 ? 'die3d--b' : k === 2 ? 'die3d--c' : '')).join('')}</div>`;
+  }
   return `<div class="die-stage ${n !== null ? 'has-rolled' : ''}">
-    <div class="die-3d ${n !== null ? 'is-thrown' : ''}">${artGlyphSvg(`die-${f.die.replace(/^\d+/, '')}`, 'die-3d__glyph', 64)}
-      <span class="die-3d__n">${n !== null ? n : ''}</span></div>
+    <div class="die-tilt">${dice}</div>
   </div>`;
 }
 
