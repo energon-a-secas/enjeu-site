@@ -78,7 +78,8 @@ Collection: https://thenounproject.com/browse/collection-icon/role-playing-game-
 | [skill magic stream](https://thenounproject.com/icon/skill-magic-stream-2360191/) | Skill: Torrent | Maxicons | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) |
 | [`skill-tremor`](https://thenounproject.com/icon/earthquake-5554272/) | Skill: Tremor (earth t0) | WARHAMMER | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) |
 | [element normal](https://thenounproject.com/icon/element-fist-2360069/) | Strike (attack card) | Maxicons | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) |
+| [`taunt`](https://thenounproject.com/icon/dancing-2717983/) | Skill: Taunt (Knight) | Vectors Point | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) |
 | [element water](https://thenounproject.com/icon/element-stream-2360063/) | Water element sigil | Maxicons | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) |
 | [element wind](https://thenounproject.com/icon/element-wind-2360065/) | Wind element sigil | Maxicons | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) |
 
-69 icons.
+70 icons.

@@ -708,10 +708,10 @@
   {
    "id": "taunt",
    "use": "Skill: Taunt (Knight)",
-   "source": null,
-   "creator": null,
-   "licence": null,
-   "note": "v1.2 card; in-house glyph until an icon is chosen"
+   "source": "https://thenounproject.com/icon/dancing-2717983/",
+   "creator": "Vectors Point",
+   "licence": "CC BY 3.0",
+   "note": "v1.2 card; a taunting dance"
   },
   {
    "id": "sidekick",
