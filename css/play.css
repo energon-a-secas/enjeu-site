@@ -510,3 +510,148 @@ button.tbl-slot { cursor: zoom-in; }
   .duel { overflow: visible; container-type: normal; --fig: 60px; }
   .wall { --wall-card: clamp(20px, calc((100% - (var(--wall-cols) - 1) * 4px) / var(--wall-cols)), 64px); }
 }
+
+/* ══ Iteration 1: the fight gets a heartbeat ═══════════════════
+   Every rule below is a one-render CSS effect keyed off ui.fx (cleared at the
+   top of the next action) or a static state class. Nothing here survives
+   prefers-reduced-motion except the static tints, which is the deal law 5
+   demands: motion is emphasis, never information. */
+
+/* ── Damage has weight classes ─────────────────────────────── */
+.duel .figure.is-hit svg { animation: shake 400ms var(--ease-out); }
+.duel .figure.is-hit.hit-big svg { animation: shake-big 500ms var(--ease-out); }
+.duel .figure.is-hit.hit-xl svg { animation: shake-xl 650ms var(--ease-out); }
+.fx-num.hit-big { font-size: var(--text-xl); }
+.fx-num.hit-xl { font-size: var(--text-2xl); font-weight: 900; }
+@keyframes shake-big {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  20% { transform: translate(-7px, 2px) rotate(-3deg); }
+  45% { transform: translate(6px, -2px) rotate(2.5deg); }
+  70% { transform: translate(-4px, 1px) rotate(-1.5deg); }
+}
+@keyframes shake-xl {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  15% { transform: translate(-12px, 4px) rotate(-5deg); }
+  35% { transform: translate(10px, -4px) rotate(4deg); }
+  55% { transform: translate(-7px, 2px) rotate(-2.5deg); }
+  80% { transform: translate(4px, -1px) rotate(1deg); }
+}
+
+/* ── The wall loses its card, visibly ──────────────────────── */
+.wall .lc-falls { display: inline-block; width: var(--wall-card); animation: wall-fall 700ms var(--ease-out) forwards; }
+.wall .lc-falls .lc { width: 100%; }
+@keyframes wall-fall {
+  0% { transform: none; opacity: 1; }
+  30% { transform: rotate(9deg); opacity: 1; }
+  100% { transform: translateY(140%) rotate(24deg); opacity: 0; }
+}
+/* Reduced motion zeroes the keyframe; `forwards` then holds the 100% frame, so
+   the card is invisible instantly: exactly the old card-is-just-gone render. */
+
+/* ── Rage changes the room ─────────────────────────────────── */
+.duel.is-raging {
+  background: #efe0da;
+  border-color: var(--danger);
+}
+.duel.is-raging .wall-count b { color: var(--danger); }
+.duel.rage-in { animation: rage-in 700ms var(--ease-out); }
+@keyframes rage-in {
+  0% { background: var(--surface-2); }
+  30% { background: #e8c9bf; border-color: var(--danger); }
+  100% { background: #efe0da; }
+}
+.round-chip { display: inline-block; }
+.round-chip.round-warn { color: var(--danger); font-weight: 800; }
+.round-chip.round-rage { color: var(--danger); font-weight: 900; }
+.round-chip.round-pop { animation: round-pop 500ms var(--ease-out); }
+@keyframes round-pop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
+
+/* ── The room takes the biome's temperature ────────────────────
+   Low-saturation washes so the picture stays the loud thing. Rage wins: its
+   rule sits later with the same specificity, and the klaxon overrides the
+   weather wherever both apply, which is the declared precedence. */
+.duel.duel--volcano { background: #f3e6dd; }
+.duel.duel--river { background: #e3ebf0; }
+.duel.duel--mountain { background: #e9ece4; }
+.duel.duel--desert { background: #f3ecdb; }
+.duel.duel--forest { background: #e5ecdf; }
+.duel.duel--village { background: #f1e9dc; }
+.duel.duel--castle { background: #eae6ee; }
+.duel.is-raging { background: #efe0da; }
+
+/* ── The endings land ──────────────────────────────────────── */
+.duel .figure.is-felled svg { transform: rotate(78deg) translateY(-8%); transform-origin: 50% 88%; }
+.duel .figure.is-felled b { opacity: 0.55; }
+
+/* ── The roll gets a breath of doubt ───────────────────────────
+   The cover is transparent at rest and only the keyframe paints it, so a
+   reduced-motion player sees the number instantly: anticipation is emphasis. */
+.die-cell .die-face { background: #fffdf7; border-color: var(--gold-deep); color: var(--text-primary); box-shadow: 0 2px 0 rgba(120, 85, 15, 0.35); position: relative; }
+.die-cell .die-face.is-rolling::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: transparent; pointer-events: none;
+  animation: die-cover 480ms var(--ease-out);
+}
+@keyframes die-cover {
+  0% { background: var(--gold-deep); transform: scaleY(1); }
+  70% { background: var(--gold-deep); transform: scaleY(1); }
+  100% { background: transparent; transform: scaleY(0); }
+}
+.verdict { animation: verdict-late 700ms var(--ease-out); }
+@keyframes verdict-late { 0% { opacity: 0; } 65% { opacity: 0; } 100% { opacity: 1; } }
+
+/* ── The boss's d6 in the child's hand ─────────────────────── */
+.boss-ask { margin-top: var(--space-3); }
+.die-chips { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.die-chip {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  min-width: 64px; padding: 6px 8px; cursor: pointer; font: inherit;
+  background: #fffdf7; border: 2px solid var(--border-strong); border-radius: 10px;
+}
+.die-chip:hover { border-color: var(--gold-deep); }
+.die-chip__n { font-size: var(--text-lg); font-weight: 900; line-height: 1; }
+.die-chip small { color: var(--text-muted); font-size: var(--text-xs); }
+
+/* ── The plan's visible Undo, and the settle-in ────────────── */
+.band--plan { display: flex; align-items: center; gap: var(--space-3); }
+.band--plan > :first-child { flex: 1; min-width: 0; }
+.plan-undo { flex: none; }
+.plan-step.just-queued { animation: queue-settle 350ms var(--ease-out); }
+@keyframes queue-settle { 0% { transform: translateY(-8px); opacity: 0.4; } 100% { transform: none; opacity: 1; } }
+
+/* ── The picks confirm before they commit ──────────────────── */
+.action-card.is-picked { outline: 3px solid var(--gold-deep); outline-offset: 3px; border-radius: 10px; }
+.confirm-bar { min-height: 52px; }
+
+/* ── The bubble's event tone ───────────────────────────────── */
+.bubble.is-event { border-color: var(--gold-deep); background: #fdf6e0; }
+
+/* ── Setup as slides ───────────────────────────────────────── */
+.setup-steps { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.setup-step {
+  display: flex; align-items: center; gap: 8px; padding: 8px 14px; cursor: pointer;
+  font: inherit; background: var(--surface-1); border: 2px solid var(--border); border-radius: 999px;
+}
+.setup-step span { font-weight: 900; }
+.setup-step.is-here { border-color: var(--gold-deep); background: #fdf6e0; }
+.setup-step.is-done { opacity: 0.75; }
+.fast-lane { border-color: var(--gold-deep); gap: var(--space-3); }
+.table-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+.table-steps li { display: flex; align-items: center; gap: var(--space-4); font-size: var(--text-base); }
+.table-steps__art { display: inline-flex; gap: 3px; --mini-w: 34px; flex: none; }
+.table-steps__art .lc { width: 34px; }
+.setup-nav { margin-top: var(--space-2); }
+
+/* ── Small fingers ─────────────────────────────────────────── */
+@media (pointer: coarse) {
+  .die-chip { min-width: 72px; min-height: 56px; }
+  .action-card, .btn, .tbl-slot, .setup-step { min-height: 44px; }
+  .plan-undo { min-height: 44px; }
+}
+
+/* ── The phone column leads with the fight ─────────────────── */
+@media (max-width: 900px) {
+  .fight-main { order: 1; }
+  .fight-table { order: 2; }
+  .fight-side { order: 3; }
+}

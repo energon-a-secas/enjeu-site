@@ -27,7 +27,7 @@ import { t } from '../strings.js';
 import { showToast } from '../utils.js';
 import {
   reroll, hide, endTurn, bossRoll, resolveBoss, playAdvantage,
-  attemptRevive, reviveStep,
+  attemptRevive, reviveStep, raging,
 } from '../game/engine.js';
 import { rollDie, dieMax } from '../game/rules.js';
 import { newRun, startLevel, levelWon, levelLost, chooseClass, revealDraft, takeSkill, drawAdvantage, nextLevel } from '../game/run.js';
@@ -56,10 +56,25 @@ function resetPlan(ui) {
 
 /** Walk the lane, then keep the board honest about what is left. */
 function step(run, f, ui, roll) {
+  // The story beats are computed here, where before-and-after both exist. The
+  // wall's card count before the hit is unrecoverable one line later, and the
+  // bubble's event line depends on which boundary this exact hit crossed.
+  const per = f.boss.perCard || 100;
+  const cardsOf = (body) => Math.ceil(Math.max(0, body) / per);
+  const b0 = f.boss.body;
   const r = advancePlan(f, ui, roll);
   ui.typed = null;
   if (r.error) { showToast(reasonText(r.error)); return true; }
-  if (ui.last) { ui.fx = ui.last.hit ? 'hit' : 'miss'; ui.dealt = ui.last.dealt || 0; }
+  if (ui.last) {
+    ui.fx = ui.last.hit ? 'hit' : 'miss';
+    ui.dealt = ui.last.dealt || 0;
+    ui.wallFell = Math.max(0, cardsOf(b0) - cardsOf(f.boss.body));
+    const bet = ui.plan?.[ui.last.i]?.bet || 0;
+    if (f.phase === 'won') { ui.event = 'killingBlow'; ui.fx = 'boss-felled'; }
+    else if (ui.last.hit && ui.dealt >= 200) ui.event = 'bigHit';
+    else if (ui.last.hit && b0 === f.boss.maxHp && f.boss.body < b0) ui.event = 'firstBlood';
+    else if (!ui.last.hit && bet > 0) ui.event = 'whiff';
+  }
   if (r.done) {
     // The lane is spent; leave the turn open (Hide, a reroll, a second thought).
     resetPlan(ui);
@@ -79,7 +94,8 @@ export function onPlayAction(s, act, el, e) {
   // wholesale, so an effect left in ui.fx would replay on the next unrelated
   // click. Clearing it HERE, before the case that may set it, means each effect
   // plays exactly once: on the render caused by the action that earned it.
-  if (ui) ui.fx = null;
+  if (ui) { ui.fx = null; ui.wallFell = 0; ui.event = null; ui.roundNew = false; ui.rageIn = false;
+    if (act !== 'abandon') ui.confirmAbandon = false; }
   try {
     switch (act) {
       // Switching run kind re-arms the safety net at that kind's default: on for
@@ -91,12 +107,26 @@ export function onPlayAction(s, act, el, e) {
       case 'die': s.die = d.die; return true;
       case 'mode': s.mode = d.mode; return true;
       case 'start': {
+        // Remember the table so a returning family gets a one-tap fast lane.
+        s.playLast = { kind: s.runKind || 'first', element: s.element, die: s.die, mode: s.mode, secondWind: s.secondWind };
+        s.setupStep = 0;
+        s.run = newRun(s.cards, s.playLast);
+        startLevel(s.run, s.cards);
+        return true;
+      }
+      case 'setup-step': { s.setupStep = Math.max(0, Math.min(3, Number(d.step))); return true; }
+      case 'setup-again': {
+        const L = s.playLast;
+        if (L) { s.runKind = L.kind; s.element = L.element; s.die = L.die; s.mode = L.mode; s.secondWind = L.secondWind; }
         s.run = newRun(s.cards, { kind: s.runKind || 'first', element: s.element, die: s.die, mode: s.mode, secondWind: s.secondWind });
         startLevel(s.run, s.cards);
         return true;
       }
       case 'resume': return true;
-      case 'abandon': s.run = null; showToast('Run abandoned'); return true;
+      case 'abandon': {
+        if (ui && !ui.confirmAbandon) { ui.confirmAbandon = true; return true; }
+        s.run = null; showToast('Run abandoned'); return true;
+      }
       case 'new-run': s.run = null; return true;
       case 'go-full': s.runKind = 'full'; s.run = null; return true;
 
@@ -111,7 +141,7 @@ export function onPlayAction(s, act, el, e) {
           showToast(`${a ? a.name : d.id}: ${reasonText(r.reason)}`);
           return false;
         }
-        ui.plan = r.plan; ui.error = null;
+        ui.plan = r.plan; ui.error = null; ui.fx = 'queued';
         return true;
       }
       case 'unqueue': {
@@ -121,6 +151,7 @@ export function onPlayAction(s, act, el, e) {
         return true;
       }
       case 'clear-plan': resetPlan(ui); return true;
+      case 'undo-last': { ui.plan = unqueueStep(ui.plan || [], (ui.plan || []).length - 1); return true; }
       case 'step-bet': {
         const r = setStepBet(f, ui.plan || [], Number(d.i), Number(d.bet));
         if (!r.ok) { showToast(reasonText(r.reason)); return false; }
@@ -179,6 +210,11 @@ export function onPlayAction(s, act, el, e) {
         return true;
       }
       case 'boss-roll': { ui.bossSaid = null; bossRoll(f, 1 + Math.floor(Math.random() * 6)); return true; }
+      // The typed path for the boss's die. Hero rolls always accepted the real
+      // die; the boss's was the one screen-only roll in the game, which broke
+      // the project's own invariant in spirit and wasted the single best job a
+      // small child can be given: throw the d6, tap the face it shows.
+      case 'boss-face': { ui.bossSaid = null; bossRoll(f, Math.max(1, Math.min(6, Number(d.face)))); return true; }
       case 'resolve': {
         const p = f.pending;
         const hadAlly = !!f.hero.ally;
@@ -201,6 +237,8 @@ export function onPlayAction(s, act, el, e) {
         if (r === 'again') showToast('Castle: the boss acts again');
         if (f.phase === 'lost' || f.phase === 'stall') levelLost(run);
         if (f.phase === 'act') resetPlan(ui);
+        ui.roundNew = true;
+        if (raging(f) && !ui.rageAnnounced) { ui.rageIn = true; ui.rageAnnounced = true; }
         return true;
       }
 
@@ -216,6 +254,7 @@ export function onPlayAction(s, act, el, e) {
         // step returned, so a Castle round-1 comeback still owes a second act.
         if (r.ok) {
           resetPlan(ui);
+          ui.event = 'revived';
           showToast(r.resumed === 'again' ? 'Castle: the boss acts again' : t('play.reviveTry'));
         }
         else levelLost(run);
@@ -235,8 +274,18 @@ export function onPlayAction(s, act, el, e) {
         if (run.stage === 'draft') revealDraft(run, s.cards);
         return true;
       }
-      case 'class': chooseClass(run, d.id); revealDraft(run, s.cards); return true;
-      case 'draft': takeSkill(run, d.id); ui.drawn = drawAdvantage(run, 1); return true;
+      // Class and draft are the run's two irreversible picks, and a small
+      // finger taps the wrong card constantly. Select first, confirm second.
+      case 'class': ui.pickClass = ui.pickClass === d.id ? null : d.id; return true;
+      case 'class-confirm': {
+        if (!ui.pickClass) return false;
+        chooseClass(run, ui.pickClass); ui.pickClass = null; revealDraft(run, s.cards); return true;
+      }
+      case 'draft': ui.pickSkill = ui.pickSkill === d.id ? null : d.id; return true;
+      case 'draft-confirm': {
+        if (!ui.pickSkill) return false;
+        takeSkill(run, ui.pickSkill); ui.pickSkill = null; ui.drawn = drawAdvantage(run, 1); return true;
+      }
       case 'next-level': nextLevel(run, s.cards); return true;
       case 'lost': s.run = null; return true;
       default: return false;

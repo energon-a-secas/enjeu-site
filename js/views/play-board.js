@@ -32,7 +32,7 @@ import { glyphSvg } from '../cards/glyphs.js';
 import { figureSvg } from '../game/figures.js';
 import { heroFor, MINION } from '../data/placeholders.js';
 import { legalAttacks, ready, spent, broken, alive, bossHp, raging, effectiveStep, attackDamage, reviveStep, ALLY_DEF } from '../game/engine.js';
-import { targetFor, dieMax, stepOdds } from '../game/rules.js';
+import { targetFor, dieMax, stepOdds, reactionFor } from '../game/rules.js';
 import { validatePlan, planActions, attackFor, betFor, readyAt, runeSpare, pickable, awaitingStep } from './play-plan.js';
 
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
@@ -43,6 +43,13 @@ const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
  * the board, the printed aid and the rulebook all say the same word. Before
  * this the board said "Brace" while the Spanish rulebook said "Aguante".
  */
+/**
+ * How hard a hit reads. Every hit used to shake the boss the same 6px, so a
+ * 300-damage All In landed with the weight of a 25 Strike. Three classes keyed
+ * off the number the player already watched being computed.
+ */
+const hitWeight = (dealt) => (dealt >= 300 ? 'hit-xl' : dealt >= 100 ? 'hit-big' : '');
+
 const reactionName = (p) => (p?.kind ? t(`play.reactionName.${p.kind}`) : p?.name || '');
 
 /**
@@ -79,18 +86,24 @@ export function wallShape(cards, narrow = false) {
   return { cols, rows: Math.ceil(cards / cols) };
 }
 
-function bossWall(f) {
+function bossWall(f, ui = {}) {
   const per = f.boss.perCard || 100;
   const whole = Math.floor(f.boss.body / per);
   const part = f.boss.body - whole * per;                 // 0, 25, 50 or 75
   const cards = whole + (part > 0 ? 1 : 0);
-  const { cols, rows } = wallShape(cards);
+  const { cols, rows } = wallShape(cards + (ui.wallFell || 0));
   const lead = part > 0
     ? `<span class="lc-part" style="--frac:${(part / per).toFixed(2)}" aria-hidden="true">${lifeMini('boss')}</span>`
     : '';
+  // The cards this exact hit knocked off, rendered one more frame so the child
+  // sees a brick fall out of the wall instead of noticing, a beat later, that
+  // the wall is shorter. They keep their grid cell for the frame; reduced
+  // motion zeroes the keyframe and they are simply gone, which is the old
+  // behaviour exactly.
+  const falling = `<span class="lc-falls" aria-hidden="true">${lifeMini('boss')}</span>`.repeat(ui.fx === 'hit' || ui.fx === 'boss-felled' ? (ui.wallFell || 0) : 0);
   return `<div class="wall" style="--wall-cols:${cols};--wall-rows:${rows}"
     role="img" aria-label="${escHtml(t('play.bossLife'))}: ${f.boss.body} / ${f.boss.maxHp}"
-    >${lead}${lifeMini('boss').repeat(whole)}</div>`;
+    >${falling}${lead}${lifeMini('boss').repeat(whole)}</div>`;
 }
 
 /** A face-down pile as a small offset stack, never a spread: the fit is the point. */
@@ -162,6 +175,13 @@ function bubble(f, ui) {
     return `<p class="bubble ${p.rage || p.kind === 'ruin' ? 'is-alarm' : 'is-alert'}" role="status">
       <b>${escHtml(reactionName(p))}</b><span>${what}</span></p>`;
   }
+  const say = bossLines() || {};
+  // The endings own the bubble outright: on a win the figure is felled and the
+  // old idle lines ('It is not standing straight any more') read as a boss that
+  // is still up, which was a verified incoherence next to the victory banner.
+  if (f.phase === 'won') return `<p class="bubble is-said" role="status">${escHtml((say.win || [])[f.level % (say.win?.length || 1)] || '')}</p>`;
+  if (f.phase === 'lost' || f.phase === 'stall') return `<p class="bubble is-said" role="status">${escHtml((say.loss || [])[f.level % (say.loss?.length || 1)] || '')}</p>`;
+  if (ui.event && say.events?.[ui.event]) return `<p class="bubble is-event" role="status">${escHtml(say.events[ui.event])}</p>`;
   if (ui.bossSaid) return `<p class="bubble is-said" role="status">${escHtml(ui.bossSaid)}</p>`;
   if (raging(f)) return `<p class="bubble is-alarm" role="status"><b>${escHtml(t('play.rage'))}</b></p>`;
   if (f.round === f.boss.rage - 1) return `<p class="bubble is-alert" role="status">${escHtml(t('play.rageSoon'))}</p>`;
@@ -184,9 +204,16 @@ function bossIdle(f) {
   if (f.hero.hidden) return say.hidden;
   if (f.boss.braced) return say.braced;
   if (f.boss.minions.length) return say.minions;
+  if (f.hero.ally) return say.allyNear;
   if (bossHp(f) <= f.boss.maxHp * 0.34) return say.bossHurt;
   if (alive(f) <= 1) return say.heroHurt;
-  const idle = say.idle || [];
+  // Each boss gets its own two lines INTERLEAVED into the shared rotation, not
+  // appended: the level 1 boss rages from round 4, so lines parked at the tail
+  // of a six-line rotation would never be reachable before the bubble switches
+  // to the Rage alarm. Round 1 still opens on 'The boss watches you.'
+  const base = say.idle || [];
+  const own = say.bossIdle?.[f.boss.id] || [];
+  const idle = base.flatMap((l, i) => (own[i] ? [l, own[i]] : [l]));
   // Rounds start at 1, so without the offset the first thing a player ever
   // sees is the second line and 'The boss watches you.' never opens a fight.
   return idle.length ? idle[(f.round - 1) % idle.length] : t('play.bossWatch');
@@ -297,16 +324,16 @@ export function renderFight(s, run) {
     <div class="fight-bar">
       <div class="fight-bar__who">
         <b>${escHtml(roster.name || f.boss.name)}</b>
-        <span class="muted small">${f.boss.size}${roster.element ? ` · ${escHtml(cap(roster.element))}` : ''} · ${escHtml(t('play.level'))} ${f.level} · ${escHtml(t('play.round'))} ${f.round} · ${escHtml(biome?.name || '')}${biome?.rule ? ` (${escHtml(biome.rule)})` : ''}</span>
+        <span class="muted small">${f.boss.size}${roster.element ? ` · ${escHtml(cap(roster.element))}` : ''} · ${escHtml(t('play.level'))} ${f.level} · <span class="round-chip ${ui.roundNew ? 'round-pop' : ''} ${f.round === f.boss.rage - 1 ? 'round-warn' : ''} ${raging(f) ? 'round-rage' : ''}">${escHtml(t('play.round'))} ${f.round}</span> · ${escHtml(biome?.name || '')}${biome?.rule ? ` (${escHtml(biome.rule)})` : ''}</span>
       </div>
       <div class="row"><span class="chip" aria-pressed="false">${f.die} · ${escHtml(t(`play.${f.mode}`))}</span>
         <button class="btn btn--ghost btn--sm" data-action="play-log" aria-pressed="${logOpen}">${glyphSvg('book', '', 16)} ${escHtml(t(logOpen ? 'play.logHide' : 'play.logShow'))}</button>
-        <button class="btn btn--ghost btn--sm" data-action="play-abandon">${escHtml(t('play.abandon'))}</button></div>
+        <button class="btn btn--ghost btn--sm ${ui.confirmAbandon ? 'btn--danger' : ''}" data-action="play-abandon">${escHtml(t(ui.confirmAbandon ? 'play.abandonSure' : 'play.abandon'))}</button></div>
     </div>
     <div class="fight-grid" data-log="${logOpen ? 'open' : 'closed'}">
       ${tablePanel(s, run, f)}
       <div class="fight-main">
-        <div class="duel">
+        <div class="duel ${raging(f) ? 'is-raging' : ''} ${ui.rageIn ? 'rage-in' : ''} duel--${escHtml(biome?.id || 'plain')}">
           <div class="duel__hero">
             <div class="figure ${fx === 'hurt' ? 'is-hit' : ''}">
               ${figureSvg({ ...hero, klass: run.klass })}<b>${escHtml(hero.name)}</b>
@@ -318,13 +345,13 @@ export function renderFight(s, run) {
           </div>
           <div class="duel__wall">
             <div class="wall-count"><b>${bossHp(f)}</b><span class="muted small">/ ${f.boss.maxHp}</span>${f.boss.braced ? '<span class="chip">Braced</span>' : ''}</div>
-            ${bossWall(f)}
+            ${bossWall(f, ui)}
           </div>
           <div class="duel__boss ${bossRing}">
             ${bubble(f, ui)}
-            <div class="figure ${fx === 'hit' ? 'is-hit' : ''} ${fx === 'miss' ? 'is-missed' : ''}">
+            <div class="figure ${fx === 'hit' || fx === 'boss-felled' ? `is-hit ${hitWeight(ui.dealt)}` : ''} ${fx === 'miss' ? 'is-missed' : ''} ${f.phase === 'won' ? 'is-felled' : ''}">
               ${figureSvg(roster)}<b>${escHtml(roster.name || '')}</b>
-              ${fx === 'hit' && ui.dealt ? `<span class="fx-num fx-num--bad">-${ui.dealt}</span>` : ''}
+              ${(fx === 'hit' || fx === 'boss-felled') && ui.dealt ? `<span class="fx-num fx-num--bad ${hitWeight(ui.dealt)}">-${ui.dealt}</span>` : ''}
               ${fx === 'miss' ? `<span class="fx-num">${escHtml(t('play.miss'))}</span>` : ''}
             </div>
             ${targets(f, ui, roster)}
@@ -379,8 +406,22 @@ function renderDown(s, f, ui) {
 function renderBoss(s, f, ui) {
   const p = f.pending;
   if (!p) {
+    // The child throws the REAL d6 and taps the face it shows. Hero rolls
+    // always accepted the physical die; the boss's was the one screen-only
+    // roll in the game, and it is also the single best job to hand a small
+    // child. Each chip teaches its consequence underneath, in the reaction's
+    // own name. The auto-roll stays as the primary so Enter still works and a
+    // table with no d6 loses nothing.
+    const faces = [1, 2, 3, 4, 5, 6].map((n) => {
+      const rx = f.data ? reactionFor(f.data, n) : null;
+      const label = rx?.id ? t(`play.reactionName.${rx.id}`) : '';
+      return `<button class="die-chip" data-action="play-boss-face" data-face="${n}" aria-label="${n}: ${escHtml(label)}">
+        <span class="die-chip__n">${n}</span><small>${escHtml(label)}</small></button>`;
+    }).join('');
     return `<div class="row row--between"><b>${escHtml(t('play.bossTurn'))}</b>
-      <button class="btn btn--primary btn--lg" data-action="play-boss-roll">${glyphSvg('dice', '', 18)} ${escHtml(t('play.bossRoll'))}</button></div>`;
+      <button class="btn btn--primary btn--lg" data-action="play-boss-roll">${glyphSvg('dice', '', 18)} ${escHtml(t('play.bossRollFor'))}</button></div>
+      <div class="boss-ask"><span class="pile-label">${escHtml(t('play.bossAsk'))}</span>
+      <div class="die-chips">${faces}</div></div>`;
   }
   const hasBarrier = f.hero.advantage.includes('barrier');
   const parked = ui.reaction === 'barrier' && hasBarrier;
@@ -470,14 +511,16 @@ function renderTurn(s, run, f, ui) {
         ${adv ? `<div class="adv-hand"><span class="pile-label">${escHtml(t('play.advHand'))}</span><div class="action-cards">${adv}</div></div>` : ''}
       </div>
     </div>
-    <div class="band band--plan">${planLane(s, f, ui, plan)}</div>
+    <div class="band band--plan">${planLane(s, f, ui, plan)}${plan.length ? `<button class="btn btn--ghost btn--sm plan-undo" data-action="play-undo-last">${escHtml(t('play.undoLast'))}</button>` : ''}</div>
     <div class="band band--go">${wait ? rollPanel(f, ui, wait) : planBar(f, ui, plan)}${verdict(ui)}</div>`;
 }
 
 function planLane(s, f, ui, plan) {
+  const justQueued = ui.fx === 'queued' ? plan.length - 1 : -1;
   const at = ui.at || 0;
   const hasBarrier = f.hero.advantage.includes('barrier') || ui.reaction === 'barrier';
   const steps = plan.map((st, i) => {
+    const settled = i === justQueued ? ' just-queued' : '';
     const a = attackFor(f, st.id);
     if (!a) return '';
     const step = effectiveStep(f, a);
@@ -490,7 +533,7 @@ function planLane(s, f, ui, plan) {
       ? `<button class="plan-rune" data-action="play-rune-step" data-i="${i}" aria-pressed="${!!st.rune}" title="${escHtml(t('play.attachTo'))} ${i + 1}">${glyphSvg('adv-rune', '', 15)}</button>` : '';
     const tgt = f.boss.minions.length
       ? `<button class="plan-tgt" data-action="play-step-target" data-i="${i}">${escHtml(typeof st.target === 'number' ? `${MINION.name} ${st.target + 1}` : t('play.body'))}</button>` : '';
-    return `<li class="plan-step ${ui.awaiting === i ? 'is-now' : ''} ${i < at ? 'is-done' : ''}">
+    return `<li class="plan-step ${ui.awaiting === i ? 'is-now' : ''} ${i < at ? 'is-done' : ''}${settled}">
       <button class="plan-num" data-action="play-unqueue" data-i="${i}" aria-label="${escHtml(t('play.planStep'))} ${i + 1}" title="${escHtml(t('play.planStep'))} ${i + 1}">${i + 1}</button>
       ${cardFace(a, { size: 'mini' })}
       <span class="plan-what"><b>${escHtml(cardName(a))}</b><small>${bet ? `${escHtml(t('play.bet'))} ${bet}` : ''}${step ? ` ${riskDots(step)}` : ''}${st.rune ? ' auto' : ''}</small></span>

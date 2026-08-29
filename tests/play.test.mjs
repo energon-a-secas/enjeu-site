@@ -289,11 +289,19 @@ test('the board renders the hooks onPlayKey clicks: play-pick, play-unqueue, one
 });
 
 test('the Second Wind toggle is on the setup screen, wired without an inline handler', () => {
+  // Setup became four slides; the toggle lives on slide 3 ("How kind the game
+  // is") and the stepper is how you reach it, so this walks there like a player.
   const s = { cards: data, run: null, runKind: 'first', secondWind: true, die: 'd20', mode: 'standard', element: 'fire', view: 'play' };
+  const slide1 = renderPlay(s);
+  assert.ok(slide1.includes('data-action="play-setup-step"'), 'the stepper is on screen');
+  assert.ok(!slide1.includes('data-action="play-start"'), 'Start waits on the last slide');
+  onPlayAction(s, 'setup-step', { dataset: { step: '2' } }, null);
   const html = renderPlay(s);
   assert.ok(html.includes('data-change="play-second-wind"'));
   assert.ok(html.includes('Second Wind'));
   assert.ok(html.includes('checked'), 'and it starts armed for a First Game');
+  onPlayAction(s, 'setup-step', { dataset: { step: '3' } }, null);
+  assert.ok(renderPlay(s).includes('data-action="play-start"'), 'the table slide carries Start');
   onPlayAction(s, 'second-wind', { checked: false, dataset: {} }, null);
   assert.equal(s.secondWind, false);
   onPlayAction(s, 'kind', { dataset: { kind: 'full' } }, null);
@@ -390,6 +398,92 @@ test('the target strip always offers the boss, and the ring follows what you pre
   assert.match(html, /data-target="0"[^>]*aria-pressed="true"/);
   assert.ok(!/data-target="body"[^>]*aria-pressed="true"/.test(html), 'and only one is pressed');
 });
+
+// ── 6. Iteration 1: the fight's heartbeat ────────────────────
+test('the boss d6 accepts the face the child actually threw', () => {
+  const s = session(fight());
+  click(s, 'end-turn');
+  const html = renderPlay(s);
+  assert.ok(html.includes('data-action="play-boss-face"'), 'six face chips are offered');
+  assert.ok((html.match(/play-boss-face/g) || []).length >= 6, 'all six faces');
+  click(s, 'boss-face', { face: '4' });
+  assert.equal(s.run.fight.pending.roll, 4, 'the typed face reaches bossRoll, no screen random');
+  assert.equal(s.run.fight.pending.name, 'Summon');
+});
+
+test('abandon is two-tap: the first arms it, anything else disarms it', () => {
+  const s = session(fight());
+  click(s, 'abandon');
+  assert.ok(s.run, 'one tap must not end a run');
+  assert.equal(s.run.ui.confirmAbandon, true);
+  click(s, 'pick', { id: 'strike' });
+  assert.equal(s.run.ui.confirmAbandon, false, 'any other action stands down');
+  click(s, 'abandon'); click(s, 'abandon');
+  assert.equal(s.run, null, 'two taps in a row do abandon');
+});
+
+test('the wall renders the card this hit knocked off, weighted by the damage', () => {
+  const s = session(fight());
+  for (const id of ['all-in']) click(s, 'pick', { id });
+  click(s, 'step-bet', { i: '0', bet: '3' });
+  click(s, 'resolve-plan');
+  click(s, 'go-typed');            // needs a roll; use typed path
+  s.run.ui.typed = 20; click(s, 'go-typed');
+  const ui = s.run.ui;
+  if (ui.last?.hit) {
+    assert.ok(ui.dealt >= 300, `a 3-card All In deals 300+, got ${ui.dealt}`);
+    assert.ok(ui.wallFell >= 3, `300 damage fells 3 wall cards, got ${ui.wallFell}`);
+    const html = renderPlay(s);
+    assert.ok(html.includes('hit-xl'), 'a 300+ hit carries the xl weight class');
+    assert.ok((html.match(/lc-falls/g) || []).length === ui.wallFell, 'each felled card renders once, falling');
+  } else {
+    assert.equal(ui.event, 'whiff', 'a missed bet is the whiff event');
+  }
+});
+
+test('the endings own the bubble: win fells the figure, loss stays kind', () => {
+  const s = session(fight());
+  const f = s.run.fight;
+  f.boss.body = 25;
+  click(s, 'pick', { id: 'strike' });
+  click(s, 'resolve-plan');
+  assert.equal(f.phase, 'won');
+  const html = renderPlay(s);
+  assert.ok(html.includes('is-felled'), 'the boss figure falls over');
+  assert.ok(html.includes('one brick at a time') || html.includes('The wall is gone'), 'a win line, not an idle line');
+  const g = session(fight());
+  g.run.fight.phase = 'lost';
+  const lost = renderPlay(g);
+  assert.ok(lost.includes('it will wait') || lost.includes('rematch'), 'losing lands gently');
+});
+
+test('the boss notices the Ally, and each boss has its own idle lines', () => {
+  const s = session(fight());
+  s.run.fight.hero.ally = { def: 50 };
+  assert.ok(renderPlay(s).includes('the small one beside you'), 'the allyNear line finally fires');
+  s.run.fight.hero.ally = null;
+  s.run.fight.round = 2;          // the interleave puts the boss's own line second
+  const html = renderPlay(s);
+  assert.ok(html.includes('clicks its shell') || html.includes('sure of itself'), 'the level 1 boss speaks as the Beetle');
+});
+
+test('draft and class picks need a confirm; undo-last is a visible button', () => {
+  const run = newRun(data, { kind: 'full', element: 'fire', die: 'd20', mode: 'standard', secondWind: false });
+  startLevel(run, data);
+  const s = { cards: data, run, view: 'play' };
+  run.stage = 'class'; run.ui = {};
+  click(s, 'class', { id: 'knight' });
+  assert.ok(!run.klass, 'one tap must not commit a class');
+  assert.equal(run.ui.pickClass, 'knight');
+  click(s, 'class-confirm');
+  assert.equal(run.klass, 'knight', 'the confirm commits it');
+  const t2 = session(fight());
+  click(t2, 'pick', { id: 'strike' }); click(t2, 'pick', { id: 'focus' });
+  assert.ok(renderPlay(t2).includes('data-action="play-undo-last"'), 'undo is visible, not hover-only');
+  click(t2, 'undo-last');
+  assert.deepEqual(ids(t2.run.ui.plan), ['strike']);
+});
+
 
 for (const [name, fn] of queue) {
   try { await fn(); passed++; console.log(`  ok   ${name}`); }
