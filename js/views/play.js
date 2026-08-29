@@ -54,6 +54,22 @@ function resetPlan(ui) {
   ui.plan = []; ui.at = 0; ui.awaiting = null; ui.error = null; ui.typed = null;
 }
 
+/**
+ * Grudge (RULES.md 8b): a lost level leaves a Grudge under that boss, capped at
+ * 2, and the next attempt at THAT level starts with them as auto-successes.
+ * They live on device state, not on the run: the run dies with the loss, the
+ * grudge is the part that survives, which is the whole card.
+ */
+function noteLoss(s, run) {
+  if (!run?.fight) return;
+  const g = (s.grudges ||= {});
+  g[run.level] = Math.min(2, (g[run.level] || 0) + 1);
+}
+function applyGrudges(s, run) {
+  const g = s.grudges?.[run.level] || 0;
+  if (g && run.fight) run.fight.hero.rune += g;
+}
+
 /** Walk the lane, then keep the board honest about what is left. */
 function step(run, f, ui, roll) {
   // The story beats are computed here, where before-and-after both exist. The
@@ -78,7 +94,7 @@ function step(run, f, ui, roll) {
   if (r.done) {
     // The lane is spent; leave the turn open (Hide, a reroll, a second thought).
     resetPlan(ui);
-    if (f.phase === 'lost') levelLost(run);
+    if (f.phase === 'lost') { levelLost(run); noteLoss(s, run); }
   }
   return true;
 }
@@ -112,6 +128,7 @@ export function onPlayAction(s, act, el, e) {
         s.setupStep = 0;
         s.run = newRun(s.cards, s.playLast);
         startLevel(s.run, s.cards);
+        applyGrudges(s, s.run);
         return true;
       }
       case 'setup-step': { s.setupStep = Math.max(0, Math.min(3, Number(d.step))); return true; }
@@ -120,6 +137,7 @@ export function onPlayAction(s, act, el, e) {
         if (L) { s.runKind = L.kind; s.element = L.element; s.die = L.die; s.mode = L.mode; s.secondWind = L.secondWind; }
         s.run = newRun(s.cards, { kind: s.runKind || 'first', element: s.element, die: s.die, mode: s.mode, secondWind: s.secondWind });
         startLevel(s.run, s.cards);
+        applyGrudges(s, s.run);
         return true;
       }
       case 'resume': return true;
@@ -206,7 +224,7 @@ export function onPlayAction(s, act, el, e) {
       case 'end-turn': {
         resetPlan(ui); ui.last = null; ui.bossSaid = null;
         endTurn(f);                                // a minion in here can fell you
-        if (f.phase === 'lost') levelLost(run);
+        if (f.phase === 'lost') { levelLost(run); noteLoss(s, run); }
         return true;
       }
       case 'boss-roll': { ui.bossSaid = null; bossRoll(f, 1 + Math.floor(Math.random() * 6)); return true; }
@@ -215,6 +233,14 @@ export function onPlayAction(s, act, el, e) {
       // the project's own invariant in spirit and wasted the single best job a
       // small child can be given: throw the d6, tap the face it shows.
       case 'boss-face': { ui.bossSaid = null; bossRoll(f, Math.max(1, Math.min(6, Number(d.face)))); return true; }
+      // Taunt, human path: the plan played the card without a face, and the
+      // fight is waiting for the table to say what the real d6 showed.
+      case 'foretell-face': {
+        f.foretold = Math.max(1, Math.min(6, Number(d.face)));
+        f.awaitForetell = false;
+        showToast(`Taunt: ${f.foretold}`);
+        return true;
+      }
       case 'resolve': {
         const p = f.pending;
         const hadAlly = !!f.hero.ally;
@@ -235,7 +261,7 @@ export function onPlayAction(s, act, el, e) {
         else if (atAlly) ui.fx = 'ally-hit';
         else if (p?.dmg > 0 && !useBarrier) { ui.fx = 'hurt'; ui.took = hadShield ? 0 : p.dmg; }
         if (r === 'again') showToast('Castle: the boss acts again');
-        if (f.phase === 'lost' || f.phase === 'stall') levelLost(run);
+        if (f.phase === 'lost' || f.phase === 'stall') { levelLost(run); noteLoss(s, run); }
         if (f.phase === 'act') resetPlan(ui);
         ui.roundNew = true;
         if (raging(f) && !ui.rageAnnounced) { ui.rageIn = true; ui.rageAnnounced = true; }
@@ -257,19 +283,20 @@ export function onPlayAction(s, act, el, e) {
           ui.event = 'revived';
           showToast(r.resumed === 'again' ? 'Castle: the boss acts again' : t('play.reviveTry'));
         }
-        else levelLost(run);
+        else { levelLost(run); noteLoss(s, run); }
         return true;
       }
       case 'give-up': {
         // No engine call: declining is not a failed roll, and inventing one
         // would put a die that was never thrown into the log.
         f.phase = 'lost';
-        levelLost(run);
+        levelLost(run); noteLoss(s, run);
         return true;
       }
 
       // ── Level end ──────────────────────────────────────────
       case 'continue': {
+        if (s.grudges) delete s.grudges[run.level];   // the boss is beaten; its Grudges go back in the box
         levelWon(run);
         if (run.stage === 'draft') revealDraft(run, s.cards);
         return true;
@@ -286,7 +313,7 @@ export function onPlayAction(s, act, el, e) {
         if (!ui.pickSkill) return false;
         takeSkill(run, ui.pickSkill); ui.pickSkill = null; ui.drawn = drawAdvantage(run, 1); return true;
       }
-      case 'next-level': nextLevel(run, s.cards); return true;
+      case 'next-level': nextLevel(run, s.cards); applyGrudges(s, run); return true;
       case 'lost': s.run = null; return true;
       default: return false;
     }

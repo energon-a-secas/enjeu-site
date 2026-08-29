@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { useCards } from '../js/data/cards.js';
-import { newFight, legalAttacks, attack, reroll, hide, endTurn, bossRoll, resolveBoss, take, playAdvantage, ready, spent, broken, bossHp, bossDown, effectiveStep, reviveStep, attemptRevive, canRevive, MAX_ROUNDS } from '../js/game/engine.js';
+import { newFight, legalAttacks, attack, reroll, hide, endTurn, bossRoll, resolveBoss, take, playAdvantage, ready, spent, broken, bossHp, bossDown, effectiveStep, reviveStep, attemptRevive, canRevive, bossFaceDamage, MAX_ROUNDS } from '../js/game/engine.js';
 import { affordable, choose, pKill, wantsBarrier, STYLES } from '../js/game/strategies.js';
 import { runCell, levels, STRIKE, FOCUS, ALL_IN, TIER } from '../js/game/sim.js';
 import { reattach } from '../js/game/run.js';
@@ -82,8 +82,10 @@ test('affinity: a Fire attack on a Wind boss adds 25, and the biome adds 25 more
 });
 
 test('Brace halves the next turn in rulebook mode, never in legacy mode', () => {
+  // The level 1 boss's signature owns roll 1 (Skitter) since v1.2, so the plain
+  // Brace is exercised on the level 4 boss, whose signature sits on roll 6.
   for (const legacy of [false, true]) {
-    const f = basic({ legacy });
+    const f = basic({ legacy, boss: data.byId['boss-xl'] });
     endTurn(f); bossRoll(f, 1); resolveBoss(f);     // Brace at the end of round 1
     assert.equal(f.round, 2);
     const focus = legalAttacks(f).find((a) => a.id === 'focus');
@@ -568,6 +570,85 @@ test('rulebook mode keeps the shape: adaptive beats safe beats turtle, turtle is
     if (L.level >= 3) assert.ok(t <= 1, `L${L.level}: turtle should be ~0, got ${t}`);
   }
   console.log(out.map((g) => `       ${g}`).join('\n'));
+});
+
+// ── v1.2: signature moves ────────────────────────────────────
+test('each boss overrides exactly its one signature row; legacy mode never does', () => {
+  // Skitter (L1, roll 1): no damage, off balance, next landed hit +25.
+  const f = basic();
+  endTurn(f); bossRoll(f, 1);
+  assert.equal(f.pending.sig, 'skitter'); resolveBoss(f);
+  assert.deepEqual([ready(f), broken(f)], [4, 0], 'Skitter deals nothing');
+  const r = attack(f, legalAttacks(f).find((a) => a.id === 'focus'), { roll: 20 });
+  assert.equal(r.dealt, 100, 'off balance pays +25 on the next landed hit');
+  const r2 = attack(f, legalAttacks(f).find((a) => a.id === 'strike'), {});
+  assert.equal(r2.dealt, 25, 'and only once');
+  const g = basic({ legacy: true });
+  endTurn(g); bossRoll(g, 1);
+  assert.equal(g.pending.sig, undefined, 'legacy mode has never heard of signatures');
+});
+
+test('Coil summons a minion that strikes at once; Bedrock repairs 25 of the wall', () => {
+  const c = basic({ boss: data.byId['boss-l'] });
+  endTurn(c); bossRoll(c, 4); resolveBoss(c);
+  assert.equal(c.boss.minions.length, 1);
+  assert.ok(c.log.some((l) => /strikes at once/.test(l.text)), 'the immediate strike is said');
+  const b = basic({ boss: data.byId['boss-l2'] });
+  b.boss.body = 900;
+  endTurn(b); bossRoll(b, 1); resolveBoss(b);
+  assert.equal(b.boss.body, 925, 'Bedrock grinds 25 back into the wall');
+  assert.equal(b.boss.braced, true, 'and it is a Brace');
+});
+
+test('Stormbreak Ruins the unguarded twice; Hoard steals, or Roars at an empty table', () => {
+  // Guarded: one Ruin, no more. The Bubble makes both halves observable
+  // without felling the small test hero.
+  const x = basic({ boss: data.byId['boss-xl'] });
+  x.hero.shield = 300;
+  endTurn(x); bossRoll(x, 6);
+  assert.equal(x.pending.dmg, 200, 'a Ruin: twice Damage 100, pre-Rage');
+  resolveBoss(x);
+  // The shield is 0 either way (an unused Bubble pops at round start), so the
+  // observables are the break count and the log.
+  assert.equal(broken(x), 0, 'one Ruin of 200, absorbed whole');
+  assert.ok(!x.log.some((l) => /Ruins AGAIN/.test(l.text)), 'a guarded hero is never doubled');
+  // Naked: every card spent, so the storm Ruins again. 200 into the shield,
+  // then 100 more breaking four spent cards proves the second take landed.
+  const n = basic({ boss: data.byId['boss-xl'] });
+  n.hero.shield = 300;
+  for (const c of n.hero.pool) c.st = 'spent';
+  endTurn(n); bossRoll(n, 6); resolveBoss(n);
+  assert.equal(broken(n), 4, 'the second Ruin got past the shield and broke the spent cards');
+  assert.ok(n.log.some((l) => /Ruins AGAIN/.test(l.text)), 'the double is said out loud');
+  // Hoard with a card standing: steals INSTEAD of dealing.
+  const u = basic({ boss: data.byId['boss-um'] });
+  u.boss.body = 1900;
+  endTurn(u); bossRoll(u, 5); resolveBoss(u);
+  assert.equal(u.hero.pool.length, 3, 'one card is GONE, not broken');
+  assert.equal(u.boss.body, 1925, 'and its 25 joined the wall');
+  assert.equal(broken(u), 0, 'and no damage came with it');
+  // Hoard with nothing standing: a plain Roar, penalty and all.
+  const v = basic({ boss: data.byId['boss-um'] });
+  for (const c of v.hero.pool) c.st = 'spent';
+  endTurn(v); bossRoll(v, 5); resolveBoss(v);
+  assert.equal(v.hero.pool.length, 4, 'nothing to steal, nothing stolen');
+  assert.equal(broken(v), 4, 'the Roar lands as damage instead');
+  assert.equal(v.hero.penalty, true, 'with the usual Roar penalty');
+});
+
+test('Taunt: the foretold die binds bossRoll, and choose() spends the knowledge', () => {
+  const f = basic({ hero: { element: 'fire', klass: 'knight', pool: ['fire', 'fire', 'fire', 'fire'], attacks: [...data.attack, data.byId.taunt] } });
+  const taunt = legalAttacks(f).find((a) => a.foretells);
+  assert.ok(taunt, 'the Knight is dealt Taunt');
+  const r = attack(f, taunt, { roll: 1 });
+  assert.equal(r.roll, 1); assert.equal(f.foretold, 1);
+  assert.equal(f.actionsLeft, 2, 'information costs an action');
+  assert.equal(bossFaceDamage(f, 1), 0, 'a foretold signature is priced too');
+  const combo = choose(f, 'safe');
+  assert.ok(combo.reduce((a, x) => a + (x.betN || 0), 0) >= 2, 'safe stops reserving against a hit it knows is nothing');
+  endTurn(f); bossRoll(f, 6);
+  assert.equal(f.pending.roll, 1, 'the boss is bound by the die everyone saw');
+  assert.equal(f.foretold, null, 'and the foretelling is spent');
 });
 
 console.log(`\n${passed} passed, ${failed} failed`);

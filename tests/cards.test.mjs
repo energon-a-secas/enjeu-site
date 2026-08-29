@@ -28,14 +28,13 @@ let passed = 0, failed = 0;
 const queue = [];
 const test = (name, fn) => queue.push([name, fn]);
 
-test('105 physical cards, matching the component table in RULES.md section 10', () => {
-  // 90, then Bubble and Second Wind after the first playtest, then the Boss
-  // Reactions and Damage Track aids after the second (all 2026-08-27). Then, on
-  // 2026-08-28, Run, and ten more boss life cards: making every boss card worth
-  // 100 took the level 5 pile from 10 cards to 20.
-  assert.equal(data.physical.length, 105);
+test('110 physical cards, matching the component table in RULES.md section 10', () => {
+  // 90; +Bubble and Second Wind (first playtest); +two aids; +Run and ten boss
+  // life cards (uniform 100); then v1.2: +Invention, +Taunt, +Sidekick,
+  // +Grudge x2, which is the 13th sheet the owner approved.
+  assert.equal(data.physical.length, 110);
   const per = Object.fromEntries(DECKS.map((d) => [d, (data[d] || []).reduce((a, c) => a + (c.copies || 1), 0)]));
-  assert.deepEqual(per, { attack: 5, skill: 25, class: 4, advantage: 12, boss: 6, biome: 7, life: 41, mode: 1, aid: 4 });
+  assert.deepEqual(per, { attack: 6, skill: 26, class: 4, advantage: 12, boss: 6, biome: 7, life: 41, mode: 4, aid: 4 });
   // The printed pile has to be able to hold the biggest boss, or level 5 runs
   // out of cards halfway through the fight it is the climax of.
   const bossLife = data.life.find((c) => c.id === 'life-boss');

@@ -105,6 +105,7 @@ You have 3 actions per turn. You **may** repeat any action.
 | **All In** | 2 | any number of Ready cards | 4× what you bet | ●● Even |
 | **Bubble** | 1 | none | none: it absorbs 25 | none, it always works |
 | **Run** | 1 | none | none: you Hide | none, it always works |
+| **Invention** | 1 | 1 card | 350 | ●●●● Wild |
 
 Betting turns those cards sideways (Spent) **whether the attack lands or not**. A missed
 attack still costs you the life.
@@ -142,6 +143,13 @@ that can take a whole hit off the table.
 castle you built. The rules do not ask and do not care. Run is the one card whose effect you
 describe instead of counting, which is what the invented spells of the first version turned
 into: the game keeps the number, you keep the story.
+
+**Invention** is the spell you make up. Before you roll, say the spell out loud: what it
+is called, what it looks like, what it does to the room. Then bet one card and roll the
+Wild check. It lands for 350, which is the biggest single number in your deck, and it
+misses most of the time, which is what wild magic costs. The spell is yours: the game
+never asks what it was, only whether it landed. This is the invented-spells rule from the
+game's first version, finally wearing a number.
 
 Covering the **Ally** means breaking cover. You cannot be hidden and in front of your friend
 at the same time.
@@ -190,9 +198,9 @@ colourless cards, which are the ones that ask you what you are.
 | River | Water | none |
 | Mountain | Earth | none |
 | Desert | Wind | none |
-| Forest | none | Once a round, Run costs 0 actions. There is cover everywhere. |
+| Forest | none | Once a level, Hide costs nothing: no card, no action. There is cover everywhere. |
 | Village | none | You start the level with 1 extra Ready life card. |
-| Castle | none | The boss acts twice on round 1. |
+| Castle | none | The boss acts twice on round 1. You catch your breath between swings: Spent cards Recover. |
 
 ## 7. The boss
 
@@ -222,6 +230,23 @@ one row per point, until the roll runs out. The row you stop on is the boss's re
 a 14 on a d20 and you count 1-2-3-4-5-6-1-2-3-4-5-6-1-2, stopping on row 2, a Strike. This
 works on any die you own and needs no arithmetic, which is the point. The reaction table is
 the one place the game wants a flat six.
+
+### Signature moves
+
+From level 1, each boss overrides **one row** of the reaction table with a move of its
+own. The overridden row is listed here and on the level's page in the campaign table;
+everything else on the table stays as printed. One changed row per boss is the whole
+rule: five bosses stop sharing one brain without anyone learning five new tables.
+
+| Boss | Roll | Signature | What happens instead |
+|---|---|---|---|
+| Level 1 | 1 | **Skitter** | No damage, and it is left off balance: your next landed attack deals +25. |
+| Level 2 | 4 | **Coil** | Summon, and the new minion strikes at once. |
+| Level 3 | 1 | **Bedrock** | Brace, and it repairs 25: one point of its wall comes back. |
+| Level 4 | 6 | **Stormbreak** | Ruin. If none of your life cards is standing, it Ruins **again**: the storm finds the unguarded. |
+| Level 5 | 5 | **Hoard** | It steals 1 standing life card instead of dealing damage (gone for the level, its 25 joins the wall). Nothing standing to steal? It Roars at you instead. |
+
+The Minion never has a signature: it is not a boss.
 
 ### Minions
 
@@ -342,6 +367,12 @@ up and goes back for the rest of the run. A card locked to yours is a card only 
 | **Hunter** | Once per round, reroll one failed check. |
 | **Necromancer** | When a minion falls, take one of its life cards as a Ready life card of your own. It guards **25**, like every card in front of you, not the 100 printed on its face. That 100 is what it was worth as the boss's life; in your hands it is a life card, and every life card guards 25. |
 
+**Taunt** is the Knight's own Skill card (tier 1, Knight only, found in the draft like
+any other skill). One action, no bet, no check: shout the taunt, and the boss rolls its
+die NOW, face up. You take the rest of your turn already knowing what is coming. That is
+the whole card: information, bought with an action. It is the best card in the game the
+round before Rage and dead weight when you were going to guard everything anyway.
+
 ## 8b. Second Wind, the gentle game
 
 An optional card. Put it in play for a softer run, or leave it in the box.
@@ -364,6 +395,23 @@ round. Measured over 4,000 fights per level in the site's own engine, it lifts a
 player between 11 and 26 points per level, and a whole five-level run from 6.1% to 28.9%; it helps a
 reckless player most, which is the point of a safety net.
 
+### Playing with two: the Sidekick
+
+One card turns the solo game into a table for two. The second player is the **Sidekick**:
+they get their own figure, and they OWN two of your five attack cards: Strike and Run.
+On your three actions, any action taken with an owned card is theirs to choose, theirs
+to say out loud, and theirs to roll. The life cards stay one shared pool in front of both
+of you, so the maths of the fight does not change at all: what changes is whose turn it
+is to be brave. Swap which cards the Sidekick owns whenever you both agree.
+
+### Grudge
+
+When a boss defeats you, put a **Grudge** card under its boss card and leave it there.
+The next time you fight that boss, each Grudge under it works like a Rune: one check of
+your choice succeeds automatically, declared before rolling. A boss holds at most **2**
+Grudges; beat it and its Grudges go back in the box. Losing writes itself into the table,
+and the table remembers for you.
+
 ## 9. The campaign
 
 Five levels. These numbers come out of `tools/sim.py`; see
@@ -382,12 +430,13 @@ That is the whole of the boss's arithmetic, and it is why the wall of cards in f
 boss is also the health bar: you can see how much is left without counting anything. A
 Summon still moves two of those cards, so a minion is 200 wherever you meet it.
 
-You win the run by clearing level 5.
+You win the run by clearing level 5. A lost level is not erased: it hands you a Grudge
+(rule 8b), and the attempt after it starts stronger.
 
 ## 10. Components
 
-105 cards, poker size **63 × 88 mm**, on 300gsm card stock. Home printers: 9 per A4 sheet,
-so 12 sheets, the last one part empty. It was exactly 10 sheets until the first
+110 cards, poker size **63 × 88 mm**, on 300gsm card stock. Home printers: 9 per A4 sheet,
+so 13 sheets, the last one part empty. It was exactly 10 sheets until the first
 playtest on 2026-08-27 asked for two more cards, Bubble and Second Wind; the
 round number lost to cards a real player wanted. The same playtest asked for two more
 player aids, the boss's reaction table and the Damage Track, and 11 sheets absorbed both.
@@ -419,15 +468,15 @@ colour, which is a real amount of ink on a home printer.
 | Element life: 4 elements × 4 | 16 |
 | Extra life: white | 5 |
 | Boss life: 100 each | 20 |
-| Attack: Strike, Focus, All In, Bubble, Run | 5 |
+| Attack: Strike, Focus, All In, Bubble, Run, Invention | 6 |
 | Class | 4 |
-| Skill: 5 base + 4 tiers × 5 | 25 |
+| Skill: 5 base + 4 tiers × 5, plus Taunt | 26 |
 | Advantage: 6 kinds × 2 | 12 |
 | Boss: S, M, L, L, XL, UM | 6 |
 | Biome | 7 |
 | Player aid: checks, turn order, boss reactions, damage track | 4 |
-| Gentle mode: Second Wind | 1 |
-| **Total** | **105** |
+| Modes: Second Wind, Sidekick, Grudge × 2 | 4 |
+| **Total** | **110** |
 
 The two L cards are not a duplicate: levels 2 and 3 are both size L with different life
 and Damage, and the S card exists only as a summon. `tests/cards.test.mjs` parses this

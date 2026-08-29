@@ -141,13 +141,15 @@ def selftest() -> int:
         verb = "refused" if refused else "allowed"
         print(f"  [{'PASS' if ok else 'FAIL'}] {name:<32} -> {verb}")
 
-    # The real manifest must refuse today - it ships with no creators filled in.
+    # The real manifest must pass today. It refused until 2026-08-28, when the
+    # last creator and licence were filled in (66 credited, 9 in-house on
+    # purpose); a regression that blanks a credit must flip this back to FAIL.
     ready, incomplete, gaps = audit(load(MANIFEST))
-    live_refuses = bool(incomplete) or not ready
-    failures += not live_refuses
-    print(f"  [{'PASS' if live_refuses else 'FAIL'}] "
-          f"{'shipped manifest refuses':<32} -> "
-          f"{'refused' if live_refuses else 'allowed'} "
+    live_ok = ready and not incomplete
+    failures += not live_ok
+    print(f"  [{'PASS' if live_ok else 'FAIL'}] "
+          f"{'shipped manifest fully credited':<32} -> "
+          f"{'allowed' if live_ok else 'refused'} "
           f"({len(incomplete)} incomplete, {len(gaps)} gaps)")
 
     print(f"\n{5 - failures}/5 passed")

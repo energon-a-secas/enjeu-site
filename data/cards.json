@@ -1,6 +1,6 @@
 {
  "$schema-note": [
-  "Every card in Enjeu. 105 cards, poker size 63x88mm.",
+  "Every card in Enjeu. 110 cards, poker size 63x88mm.",
   "",
   "check:   null (always lands) | sure 75% | even 50% | hard 25% | wild 15%",
   "bet:     life cards staked, each worth 25",
@@ -111,6 +111,19 @@
    "class": null,
    "hides": true,
    "$note": "Costs an action and no card, like Bubble, so the two sit on the same axis: Bubble absorbs a certain 25, Run gambles for the whole hit. It sets the same Hidden state the Forest biome grants, which is why there is one rule and not two. It is also the only card whose effect the player narrates rather than computes: you say where you ran and what you hid behind."
+  },
+  {
+   "id": "invention",
+   "name": "Invention",
+   "icon": "invention",
+   "tier": 0,
+   "actions": 1,
+   "bet": 1,
+   "damage": 350,
+   "check": "wild",
+   "element": null,
+   "class": null,
+   "$note": "The invented-spells rule wearing a number. Say the spell out loud before rolling; the game keeps the number, you keep the story. Wild pays 350 on one card, which is 52.5 expected per card: inside tier 0's band, under Focus's reliability, over everything's ceiling. Dead weight whenever the Rage clock demands certainty, which is the cost of wild magic."
   }
  ],
  "skill": [
@@ -413,6 +426,20 @@
    "check": "even",
    "element": null,
    "class": "necromancer"
+  },
+  {
+   "id": "taunt",
+   "name": "Taunt",
+   "icon": "taunt",
+   "tier": 1,
+   "actions": 1,
+   "bet": 0,
+   "damage": 0,
+   "check": null,
+   "element": null,
+   "class": "knight",
+   "foretells": true,
+   "$note": "The Knight's active move: the boss rolls its d6 NOW, face up, and you play the rest of the turn knowing. Information for an action. bet 0 keeps it out of the efficiency-band lint on purpose: its value is knowledge, not damage."
   }
  ],
  "class": [
@@ -507,7 +534,12 @@
    "per_card": 100,
    "hp": 400,
    "damage": 50,
-   "rage": 4
+   "rage": 4,
+   "signature": {
+    "roll": 1,
+    "id": "skitter",
+    "name": "Skitter"
+   }
   },
   {
    "id": "boss-l",
@@ -518,7 +550,12 @@
    "per_card": 100,
    "hp": 700,
    "damage": 50,
-   "rage": 4
+   "rage": 4,
+   "signature": {
+    "roll": 4,
+    "id": "coil",
+    "name": "Coil"
+   }
   },
   {
    "id": "boss-l2",
@@ -529,7 +566,12 @@
    "per_card": 100,
    "hp": 1000,
    "damage": 75,
-   "rage": 4
+   "rage": 4,
+   "signature": {
+    "roll": 1,
+    "id": "bedrock",
+    "name": "Bedrock"
+   }
   },
   {
    "id": "boss-xl",
@@ -540,7 +582,12 @@
    "per_card": 100,
    "hp": 1200,
    "damage": 100,
-   "rage": 4
+   "rage": 4,
+   "signature": {
+    "roll": 6,
+    "id": "stormbreak",
+    "name": "Stormbreak"
+   }
   },
   {
    "id": "boss-um",
@@ -551,7 +598,12 @@
    "per_card": 100,
    "hp": 2000,
    "damage": 100,
-   "rage": 5
+   "rage": 5,
+   "signature": {
+    "roll": 5,
+    "id": "hoard",
+    "name": "Hoard"
+   }
   }
  ],
  "boss_reaction": [
@@ -623,7 +675,7 @@
    "name": "Forest",
    "icon": "biome-forest",
    "element": null,
-   "rule": "Hide costs 0 actions."
+   "rule": "Once a level, Hide costs nothing: no card, no action. There is cover everywhere."
   },
   {
    "id": "village",
@@ -637,7 +689,7 @@
    "name": "Castle",
    "icon": "biome-castle",
    "element": null,
-   "rule": "The boss acts twice on round 1."
+   "rule": "The boss acts twice on round 1. You catch your breath between swings: Spent cards Recover."
   }
  ],
  "life": [
@@ -707,6 +759,22 @@
    "returns": 2,
    "effect": "Optional. When you would go Down, come back instead. The first time each level is free. After that, roll: the check climbs one step every time you use it, Sure then Even then Hard then Wild, and stays Wild. Come back with 2 Broken cards returned to Ready. Fail the roll and the level ends as normal.",
    "$note": "The gentle-mode card, added 2026-08-27 so a child does not lose a 15 minute level to one bad round. It is deliberately NOT in the Advantage deck: a safety net you might never draw is not a safety net. Put it in play or leave it in the box."
+  },
+  {
+   "id": "sidekick",
+   "name": "Sidekick",
+   "icon": "sidekick",
+   "copies": 1,
+   "effect": "Two players, one table. The Sidekick owns Strike and Run: those actions are theirs to choose, say and roll. The life pool stays shared, so the maths never changes: only whose turn it is to be brave.",
+   "$note": "Pure table rules: the engine referees the shared pool exactly as in solo."
+  },
+  {
+   "id": "grudge",
+   "name": "Grudge",
+   "icon": "grudge",
+   "copies": 2,
+   "effect": "When a boss defeats you, slide a Grudge under its card. Next fight against it, each Grudge is one automatic success, declared before rolling. Max 2 per boss; beat it and they return to the box.",
+   "$note": "Campaign memory with no app state: the card under the boss card IS the save file."
   }
  ],
  "aid": [

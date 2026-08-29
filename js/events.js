@@ -203,6 +203,6 @@ export function bindEvents() {
   // Views that finish loading something (the rulebook) ask for a repaint this way
   // instead of importing render.js into a module render.js already imports.
   document.addEventListener('enjeu:rerender', () => render(state));
-  // After printing, empty the sheet so 105 SVGs do not sit in the DOM.
+  // After printing, empty the sheet so 110 SVGs do not sit in the DOM.
   window.addEventListener('afterprint', () => { const h = document.getElementById('printSheet'); if (h) h.innerHTML = ''; });
 }

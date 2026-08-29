@@ -243,6 +243,63 @@ compare them to the 17.90% above.**
 - **A human being.** The adaptive strategy is a heuristic with perfect arithmetic and no
   nerve. Real players misjudge the guard line, and that is where the drama lives.
 
+## v1.2: the four cards and five signatures, measured (2026-08-29)
+
+Everything in this section ran on the JS engine (rulebook rules, adaptive unless
+stated), 6,000-8,000 fights per cell. The harnesses live in `tools/checks/` and each
+prints the table below it.
+
+### Signature moves (`signature-moves.mjs`)
+
+One overridden reaction row per boss. Two of the five had to be redesigned under
+measurement, and both landed on the same shape: **conditional on greed**.
+
+- A flat Stormbreak (x3 or x4 Damage) taxed *careful* play hardest: a pre-Rage 300+
+  into any pool is mass breakage, and level 4 adaptive fell 4.4 points while gamble
+  did not move. Shipped: Ruin, and it Ruins **again** only if no life card is standing.
+- Hoard as steal-plus-Roar collapsed level 5 by 12.6 points; steal-instead-of-damage
+  handed gamble +13.5, because a no-damage face is a gift to whoever kept nothing
+  back. Shipped: it steals a standing card if you have one, Roars at you if you do not.
+
+Final deltas (signed minus plain): L1 +9.0/+5.5 (Skitter is a tutorial boss being
+generous), L2 +1.5/-0.5, L3 -2.7/-1.2, L4 +0.0/+0.0, L5 -3.0/-0.0
+(adaptive/gamble). No level inverts: careful play beats reckless play everywhere.
+
+### Taunt (`taunt.mjs`)
+
+Information costs an action, and the action is worth more than the knowledge until
+the final boss: played every turn, Taunt costs 5 to 39 points at levels 1-4 and pays
+**+15.7 adaptive / +10.1 safe at level 5**, where the fight is long enough to
+amortize it and a foretold Hoard is worth dodging. The bot strategies only reach for
+it there, and a human should treat it the same way: it is a trap on level 1 and a
+weapon on level 5.
+
+### Grudge (`grudge.mjs`)
+
+Retry aid, cap 2, earned by losing the level. Each held Grudge is worth +3 to +15
+points depending on depth; the chance of clearing a level within 3 tries moves from
+80.7% to 93.3% at level 5 with both. That is the intended shape for a consolation
+mechanic: it compounds where the wall is highest.
+
+### Biomes (`biome-spread.mjs`)
+
+The harness that had never existed, and the one that found the most.
+
+- **The element biomes are exactly rule 6**: nothing for an unmatched hero, +17 to
+  +24 points for a matched one (a Fire hero in the Volcano). That is the printed
+  element rule doing its work, not a biome imbalance.
+- **Forest** granted its free hide every round as first implemented, which measured
+  85-96% at every level: a permanent half-damage aura, not a biome. Shipped: once
+  per **level**, worth a sane +5 to +10.
+- **Castle** ("the boss acts twice on round 1") measured 0.0% at level 3 once the
+  double swing was made deterministic, because the second act broke the guards the
+  first act spent: Recover only fires at round start. Shipped amendment: **Spent
+  cards Recover between the two swings**. Castle now sits 6 to 7 points under plain
+  at every level, which is what a "hard biome" should cost.
+- **Village** (+4 at level 1, up to +24 at level 3) is the kind one, and stays as
+  printed: an extra life card compounds where fights are dangerous, and the game is
+  allowed one biome that is simply on your side.
+
 ## Playtest checklist
 
 The simulator cannot answer any of these. Log them in [PLAYTEST.md](PLAYTEST.md).

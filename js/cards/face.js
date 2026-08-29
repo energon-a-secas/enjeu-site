@@ -496,6 +496,11 @@ function modeCard(c) {
   out += `<ellipse cx="315" cy="370" rx="212" ry="212" fill="#fdf3d3"/>`;
   out += `<ellipse cx="315" cy="370" rx="212" ry="212" fill="none" stroke="${FACE.gold}" stroke-width="11"/>`;
   out += glyphAt(c.icon, 315 - 155, 370 - 155, 310, { stroke: '#78350f', width: 2.5 });
+  // The comeback ladder is Second Wind's alone: Sidekick and Grudge are mode
+  // cards too now, and drawing another card's ladder on them would print a
+  // rule they do not have. They carry only their picture, which is the deck's
+  // grammar working as designed.
+  if (c.id !== 'second-wind') return out;
   // The comeback ladder, in the same traffic light every check on every other
   // card uses: free, then Sure, Even, Hard, Wild. Learn it once, read it here.
   // Five rungs laid left to right, each sized to its own pip count so the four
@@ -607,7 +612,7 @@ function brickEmblem(ink, dark) {
  * so it gets the same studded field with an emblem and NO break. Printing the
  * broken back on a draft pile would say the wrong thing entirely.
  *
- * Both are a solid field, which is deliberate but not free: 105 of these is real
+ * Both are a solid field, which is deliberate but not free: 110 of these is real
  * ink on a home printer. `light` swaps to a paper field with a coloured border
  * for anyone who would rather keep their cartridge.
  */

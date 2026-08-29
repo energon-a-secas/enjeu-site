@@ -30,7 +30,7 @@ Print-and-play boss-rush card game for one player, one die, and the bricks you a
 
 ## Overview
 
-Enjeu is a solo boss rush played with 105 printed cards, one die, and whatever
+Enjeu is a solo boss rush played with 110 printed cards, one die, and whatever
 construction-toy figures and bricks are already on the table. You build the boss out of
 bricks; the cards handle the damage; you handle the story. The site teaches the game with a
 visual walkthrough, prints every card at true size, and runs it on screen with stand-in
@@ -60,8 +60,8 @@ doubles and ignores your guard, so hoarding just changes how you lose.
 ## Features
 
 - **Learn**: a twelve-slide deck in two chapters: Basics is everything a first fight needs (one rule, five cards, a turn, the check, the boss, keeping count, what you need to own) and Advanced is the depth after it (elements and biomes, the five-level run, every die, and the complete rulebook as the last slide). Arrow keys, swipe, or the numbered rail
-- **Cards**: all 105 faces, browsable by deck; tap one for its name and what it does, because the face never says
-- **Print**: 63 x 88 mm poker cards, 9 per A4 sheet, 12 sheets, crop ticks, optional Letter paging and card backs
+- **Cards**: all 110 faces, browsable by deck; tap one for its name and what it does, because the face never says
+- **Print**: 63 x 88 mm poker cards, 9 per A4 sheet, 13 sheets, crop ticks, optional Letter paging and card backs
 - **Play**: a First Game (level 1, with Strike, Focus, All In, Bubble and Run) or a five-level run: classes, skill drafts, Advantage cards, any die from d4 to 3d6, Story / Standard / Nightmare dial, stand-in heroes and bosses built from bricks
 - **Balance**: the same engine run thousands of times by four play styles, in a Worker, beside the published table
 - **Any die you own**: the four-step ladder has a target for d20, d12, d10, d8, d6, d4, 2d6 and 3d6; three d6 track a d20 within 1.2 points
@@ -78,7 +78,7 @@ doubles and ignores your guard, so hoarding just changes how you lose.
 | **[docs/DICE-BRIDGE.md](docs/DICE-BRIDGE.md)** | *"I don't have a d20, what do I throw?"* Three d6. Here is why, and every other die. |
 | **[docs/BALANCE.md](docs/BALANCE.md)** | What was measured, and what has not been. |
 | **[docs/CARD-LAYOUT.md](docs/CARD-LAYOUT.md)** | The four-corner grammar. No body text on any card. |
-| **[data/cards.json](data/cards.json)** | All 105 cards as data. |
+| **[data/cards.json](data/cards.json)** | All 110 cards as data. |
 
 ## Any die you own
 
@@ -158,7 +158,7 @@ enjeu-site/
 │   ├── data/               # cards.js (loader) · placeholders.js · walkthrough.js · published.js
 │   └── views/              # 8 files: learn · cards · balance · about · play · play-plan · play-board · play-screens
 ├── data/
-│   ├── cards.json          # all 105 cards, the one source
+│   ├── cards.json          # all 110 cards, the one source
 │   └── art-manifest.json   # 61 art slots with creator + licence per slot
 ├── tools/                  # sim.py · lint_cards.py · dice_bridge.py · credits.py
 ├── tests/                  # 8 suites: browse · cards · content · dice · engine (BALANCE.md parity) · learn · play · seam

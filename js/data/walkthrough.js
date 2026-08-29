@@ -115,7 +115,7 @@ export const STEPS = bilingual([
     // Five, and derived: data.attack is Strike, Focus, All In, Bubble and Run,
     // and js/game/run.js deals every entry of it. A hardcoded trio in the copy
     // is how Bubble and then Run went missing from the teaching for a while.
-    title: { en: 'Your first fight is five cards', es: 'Tu primera pelea son cinco cartas' },
+    title: { en: 'Your first fight is six cards', es: 'Tu primera pelea son seis cartas' },
     body: {
       en: [
         'Strike always lands for 25. Focus bets one card for 75 on a Sure roll.',
@@ -207,11 +207,11 @@ export const STEPS = bilingual([
       // grid beside this copy counts for itself. Two numbers on one slide that
       // disagree teach the reader to trust neither.
       en: [
-        'A hundred and five printed cards, one die, and the bricks and figures already on the table. The game ships no dice and no figures on purpose.',
+        'A hundred and ten printed cards, one die, and the bricks and figures already on the table. The game ships no dice and no figures on purpose.',
         'Play it on screen first if you like: the Play tab runs the same cards with a stand-in hero and stand-in bosses.',
       ],
       es: [
-        'Ciento cinco cartas impresas, un dado, y los bloques y las figuras que ya están en la mesa. El juego no trae dados ni figuras, y es a propósito.',
+        'Ciento diez cartas impresas, un dado, y los bloques y las figuras que ya están en la mesa. El juego no trae dados ni figuras, y es a propósito.',
         'Si quieres, primero juégalo en pantalla: la pestaña Jugar usa las mismas cartas con un héroe y unos jefes provisorios.',
       ],
     },
@@ -221,7 +221,7 @@ export const STEPS = bilingual([
     id: 'elements', rule: '6', chapter: 'advanced',
     title: { en: 'Elements and biomes', es: 'Elementos y biomas' },
     body: {
-      // Most, not every: the five Attack cards and five of the skills carry no
+      // Most, not every: the six Attack cards and five of the skills carry no
       // element in cards.json, and engine.js attackElement falls back to the
       // hero's. A slide that says "every" sends the reader looking for a
       // corner that is not printed.

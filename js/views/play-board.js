@@ -28,7 +28,7 @@
 import { t, cardName, bossLines } from '../strings.js';
 import { escHtml } from '../utils.js';
 import { cardFace, cardBack, lifeMini, riskDots } from '../cards/face.js';
-import { glyphSvg } from '../cards/glyphs.js';
+import { glyphSvg, artGlyphSvg } from '../cards/glyphs.js';
 import { figureSvg } from '../game/figures.js';
 import { heroFor, MINION } from '../data/placeholders.js';
 import { legalAttacks, ready, spent, broken, alive, bossHp, raging, effectiveStep, attackDamage, reviveStep, ALLY_DEF } from '../game/engine.js';
@@ -50,7 +50,8 @@ const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
  */
 const hitWeight = (dealt) => (dealt >= 300 ? 'hit-xl' : dealt >= 100 ? 'hit-big' : '');
 
-const reactionName = (p) => (p?.kind ? t(`play.reactionName.${p.kind}`) : p?.name || '');
+const reactionName = (p) => (p?.sig ? t(`play.signatureName.${p.sig}`)
+  : p?.kind ? t(`play.reactionName.${p.kind}`) : p?.name || '');
 
 /**
  * A refusal from play-plan.js as a sentence. Mapped rather than interpolated:
@@ -229,6 +230,7 @@ function dieCell(f, ui) {
   const wait = f.phase === 'act' ? awaitingStep(f, ui) : null;
   let big, note, cls = '';
   if (f.pending) { big = f.pending.roll; note = `d6 · ${reactionName(f.pending)}`; cls = 'is-rolling'; }
+  else if (f.foretold) { big = f.foretold; note = `d6 · ${escHtml(cardName({ id: 'taunt', name: 'Taunt' }))}`; cls = 'is-waiting'; }
   else if (wait) {
     big = `${targetFor(f.die, wait.step)}+`;
     note = `${wait.a.name} · ${cap(wait.step)}`;
@@ -241,7 +243,7 @@ function dieCell(f, ui) {
     // The die you actually chose, drawn as that die. A generic d6 pip face sat
     // under the label "d20" for every player who picked one, which is the same
     // caption-fights-picture defect the teaching slide had.
-    big = glyphSvg(`die-${f.die.replace(/^\d+/, '')}`, '', 34) || glyphSvg('dice', '', 30);
+    big = artGlyphSvg(`die-${f.die.replace(/^\d+/, '')}`, '', 34) || glyphSvg('dice', '', 30);
     note = f.die;
   }
   // It lives beside the hand, not opposite the boss. The old cell was 504x169
@@ -414,8 +416,9 @@ function renderBoss(s, f, ui) {
     // table with no d6 loses nothing.
     const faces = [1, 2, 3, 4, 5, 6].map((n) => {
       const rx = f.data ? reactionFor(f.data, n) : null;
-      const label = rx?.id ? t(`play.reactionName.${rx.id}`) : '';
-      return `<button class="die-chip" data-action="play-boss-face" data-face="${n}" aria-label="${n}: ${escHtml(label)}">
+      const sig = f.boss.signature;
+      const label = sig && sig.roll === n ? t(`play.signatureName.${sig.id}`) : rx?.id ? t(`play.reactionName.${rx.id}`) : '';
+      return `<button class="die-chip ${sig && sig.roll === n ? 'die-chip--sig' : ''}" data-action="play-boss-face" data-face="${n}" aria-label="${n}: ${escHtml(label)}">
         <span class="die-chip__n">${n}</span><small>${escHtml(label)}</small></button>`;
     }).join('');
     return `<div class="row row--between"><b>${escHtml(t('play.bossTurn'))}</b>
@@ -451,6 +454,21 @@ const typedInput = (f, ui) => `<input type="number" min="1" max="${dieMax(f.die)
 
 // ── Phase: your turn (the hand, the plan lane, one button) ────
 function renderTurn(s, run, f, ui) {
+  // Taunt was played and the table has not yet said what the real d6 showed.
+  // Nothing else on the turn can sensibly continue: the whole point of the
+  // card is to act on the answer.
+  if (f.awaitForetell) {
+    const faces = [1, 2, 3, 4, 5, 6].map((n) => {
+      const rx = f.data ? reactionFor(f.data, n) : null;
+      const sig = f.boss.signature;
+      const label = sig && sig.roll === n ? t(`play.signatureName.${sig.id}`) : rx?.id ? t(`play.reactionName.${rx.id}`) : '';
+      return `<button class="die-chip" data-action="play-foretell-face" data-face="${n}">
+        <span class="die-chip__n">${n}</span><small>${escHtml(label)}</small></button>`;
+    }).join('');
+    return `<div class="row row--between"><b>${escHtml(cardName(s.cards.byId.taunt))}</b></div>
+      <div class="boss-ask"><span class="pile-label">${escHtml(t('play.bossAsk'))}</span>
+      <div class="die-chips">${faces}</div></div>`;
+  }
   const plan = ui.plan || [];
   const can = pickable(f, plan);
   const planned = planActions(f, plan);

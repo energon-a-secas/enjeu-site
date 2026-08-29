@@ -83,7 +83,7 @@ test('the element sort keeps the printed element order, and the risk sort keeps 
   const els = groupCards(ALL, 'element').filter((g) => g.key.startsWith('element:')).map((g) => g.key);
   assert.deepEqual(els, ['element:fire', 'element:water', 'element:earth', 'element:wind', 'element:none']);
   const risk = groupCards(ALL, 'check').filter((g) => g.key.startsWith('check:')).map((g) => g.key);
-  assert.deepEqual(risk, ['check:none', 'check:sure', 'check:even'], 'always lands first, then the ramp as far as the cards go');
+  assert.deepEqual(risk, ['check:none', 'check:sure', 'check:even', 'check:wild'], 'always lands first, then the ramp as far as the cards go (wild joined with Invention, v1.2)');
   const dmg = groupCards(ALL, 'damage').filter((g) => g.key.startsWith('damage:')).map((g) => Number(g.key.slice(7)));
   const numeric = dmg.filter((n) => !Number.isNaN(n));
   assert.deepEqual(numeric, [...numeric].sort((a, b) => b - a), 'damage runs biggest hitter first');

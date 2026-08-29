@@ -54,6 +54,10 @@ export function runFight(data, opts, next) {
     .filter((c) => !(opts.noBubble && c.id === 'bubble'))
     .filter((c) => !(opts.noRun && c.id === 'run'));
   const attacks = [STRIKE, FOCUS, ALL_IN, ...extra, ...L.tiers.map((t) => TIER[t])];
+  if (opts.withTaunt && !opts.legacy) {
+    const taunt = data.skill.find((c) => c.foretells);
+    if (taunt) attacks.push(taunt);
+  }
   const el = opts.element || 'fire';
   const pool = Array.from({ length: L.cards }, (_, i) => (i < 4 ? el : 'extra'));
   let deck = null, hand = [];
@@ -61,9 +65,14 @@ export function runFight(data, opts, next) {
   const draw = () => deck?.shift() || null;
   const f = newFight(data, {
     level: opts.level, boss: L.boss, legacy: !!opts.legacy, bonus: opts.bonus || 0,
+    noSignatures: !!opts.noSignatures,
+    biome: opts.biome || null,
     hero: { element: el, klass: opts.klass && opts.klass !== 'none' ? opts.klass : null, pool, attacks },
     advantage: hand, die: 'd20', mode: 'standard', secondWind: !!opts.secondWind,
   });
+  // Grudge (RULES 8b) arrives as auto-successes; the harness dial mirrors what
+  // play.js applyGrudges does on a retry.
+  if (opts.runes) f.hero.rune += opts.runes;
   const comeback = () => {
     // A style always takes the comeback when it is offered: declining is never
     // better than a free or cheap second life, and the ladder makes it cost more

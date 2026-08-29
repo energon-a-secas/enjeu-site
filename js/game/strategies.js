@@ -6,7 +6,7 @@
 // rule the runner does not.
 
 import { UNIT, stepOdds } from './rules.js';
-import { legalAttacks, attack, reroll, ready, alive, broken, raging, playAdvantage, effectiveStep, attackBonus, attackDamage } from './engine.js';
+import { legalAttacks, attack, reroll, hide, ready, alive, broken, raging, playAdvantage, effectiveStep, attackBonus, attackDamage, bossFaceDamage } from './engine.js';
 
 export const STYLES = ['turtle', 'safe', 'adaptive', 'gamble'];
 
@@ -77,7 +77,12 @@ const targetHp = (f) => { const t = targetFor(f); return t === 'body' ? f.boss.b
 /** Pick a turn (sim.py choose). Styles differ only in how much life they will bet. */
 export function choose(f, style) {
   const desperate = f.round >= f.boss.rage - 1;
-  const guardNeed = Math.ceil(f.boss.damage / UNIT);
+  // A foretold die (Taunt) replaces the worst-case guard reserve with the KNOWN
+  // incoming number. This is the whole value of the card: a Brace foretold
+  // frees every reserved card to attack.
+  const guardNeed = f.foretold
+    ? Math.ceil(bossFaceDamage(f, f.foretold) / UNIT)
+    : Math.ceil(f.boss.damage / UNIT);
   const r = ready(f);
   const budget = { turtle: 0, safe: Math.max(0, r - guardNeed), adaptive: Math.max(0, r - guardNeed), gamble: r }[style];
   let options = affordable(f, budget);
@@ -181,6 +186,19 @@ export function wantsRun(f, style) {
 
 export function playTurn(f, style, next, drawFn) {
   playOpeners(f, drawFn);
+  // The Forest's free hide costs nothing, so a bot always takes it.
+  if (f.hero.hideAvailable && !f.hero.hidden) hide(f);
+  // Taunt first: information is only worth an action BEFORE the plan is made.
+  // The face comes from the stream, never from inside the engine. And it is
+  // only worth the action against the final boss: played every turn it costs
+  // 5 to 39 points at levels 1-4 and pays +15.7 only at level 5
+  // (tools/checks/taunt.mjs), where the fight is long enough to amortize the
+  // information and the foretold Hoard is worth dodging.
+  const taunt = legalAttacks(f).find((a) => a.foretells);
+  if (taunt && !f.foretold && style !== 'turtle' && f.actionsLeft >= 3
+      && f.boss.damage >= 100 && f.boss.maxHp > 1200) {
+    attack(f, taunt, { roll: 1 + Math.floor(next() * 6) });
+  }
   const bub = legalAttacks(f).find((a) => a.shield);
   for (let i = bubblesNeeded(f, style); i > 0 && f.actionsLeft >= bub.actions; i--) attack(f, bub, {});
   if (wantsRun(f, style)) attack(f, legalAttacks(f).find((a) => a.hides), {});

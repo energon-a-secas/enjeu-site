@@ -106,6 +106,7 @@ Tienes 3 acciones por turno. **Puedes** repetir cualquier acción.
 | **Todo o Nada** | 2 | las cartas En Pie que quieras | 4× lo que apostaste | ●● Pareja |
 | **Burbuja** | 1 | nada | nada: absorbe 25 | ninguna, siempre funciona |
 | **Escape** | 1 | nada | nada: te Escondes | ninguna, siempre funciona |
+| **Invención** | 1 | 1 carta | 350 | ●●●● Loca |
 
 Apostar gira esas cartas de costado (De Lado) **acierte o no el ataque**. Un ataque que falla
 igual te cuesta la vida.
@@ -142,6 +143,13 @@ carta que puede sacar un golpe entero de la mesa.
 castillo que armaste. Las reglas no preguntan y no les importa. Escape es la única carta cuyo
 efecto describes en vez de contarlo, que es en lo que se convirtieron los hechizos inventados de
 la primera versión: el juego se queda con el número, tú te quedas con la historia.
+
+**Invención** es el hechizo que tú inventas. Antes de tirar, di el hechizo en voz alta:
+cómo se llama, cómo se ve, qué le hace a la sala. Después apuesta una carta y tira la
+prueba Loca. Si acierta hace 350, el número más grande de tu mazo, y falla la mayoría de
+las veces, que es lo que cuesta la magia salvaje. El hechizo es tuyo: el juego nunca
+pregunta qué era, solo si acertó. Esta es la regla de los hechizos inventados de la
+primera versión del juego, por fin con un número puesto.
 
 Cubrir al **Aliado** significa salir del escondite. No puedes estar escondido y delante de tu
 amigo al mismo tiempo.
@@ -192,9 +200,9 @@ elección sobre las cartas sin color, que son las que te preguntan qué eres.
 | Río | Agua | nada |
 | Montaña | Tierra | nada |
 | Desierto | Viento | nada |
-| Bosque | ninguno | Una vez por ronda, Escape cuesta 0 acciones. Hay dónde esconderse en todas partes. |
+| Bosque | ninguno | Una vez por nivel, Esconderse no cuesta nada: ni carta ni acción. Hay dónde esconderse en todas partes. |
 | Aldea | ninguno | Empiezas el nivel con 1 carta de vida En Pie extra. |
-| Castillo | ninguno | El jefe actúa dos veces en la ronda 1. |
+| Castillo | ninguno | El jefe actúa dos veces en la ronda 1. Entre golpe y golpe recuperas el aliento: las cartas Gastadas se Recuperan. |
 
 ## 7. El jefe
 
@@ -225,6 +233,23 @@ es la reacción del jefe. Saca un 14 en un d20 y cuentas 1-2-3-4-5-6-1-2-3-4-5-6
 detienes en la fila 2, un Golpe. Esto funciona con cualquier dado que tengas y no necesita
 cuentas, que es de lo que se trata. La tabla de reacciones es el único lugar del juego que
 necesita seis resultados igual de probables.
+
+### Movimientos característicos
+
+Desde el nivel 1, cada jefe reemplaza **una fila** de la tabla de reacciones con un
+movimiento propio. La fila cambiada aparece aquí y en la tabla de la campaña; todo lo
+demás de la tabla queda como está impreso. Una fila por jefe es toda la regla: cinco
+jefes dejan de compartir un solo cerebro sin que nadie aprenda cinco tablas nuevas.
+
+| Jefe | Tirada | Característico | Qué pasa en su lugar |
+|---|---|---|---|
+| Nivel 1 | 1 | **Correteo** | No hace daño, y queda desequilibrado: tu próximo ataque que acierte hace +25. |
+| Nivel 2 | 4 | **Enroscada** | Invocación, y el esbirro nuevo golpea de inmediato. |
+| Nivel 3 | 1 | **Cimiento** | Aguante, y se repara 25: un punto de su muro vuelve. |
+| Nivel 4 | 6 | **Rompetormentas** | Ruina. Si ninguna de tus cartas de vida sigue En Pie, hace Ruina **otra vez**: la tormenta encuentra a quien no se cubre. |
+| Nivel 5 | 5 | **Botín** | Roba 1 carta de vida En Pie en vez de hacer daño (se pierde por el nivel, sus 25 se suman al muro). ¿No queda ninguna En Pie? Entonces te Ruge. |
+
+El Esbirro nunca tiene característico: no es un jefe.
 
 ### Los esbirros
 
@@ -340,6 +365,13 @@ una carta que solo tú puedes sacar.
 | **Cazador** | Una vez por ronda, vuelve a tirar una tirada fallada. |
 | **Nigromante** | Cuando cae un esbirro, toma una de sus cartas de vida como una carta de vida tuya, En Pie. Defiende **25**, como cada carta que tienes al frente, no los 100 impresos en su cara. Esos 100 eran lo que valía como vida del jefe; en tus manos es una carta de vida, y cada carta de vida defiende 25. |
 
+**Provocación** es la carta de Habilidad propia del Caballero (rango 1, solo Caballero,
+sale en la elección como cualquier otra habilidad). Una acción, sin apuesta, sin prueba:
+grita la provocación, y el jefe tira su dado AHORA, boca arriba. Juegas el resto de tu
+turno sabiendo lo que viene. Esa es toda la carta: información, comprada con una acción.
+Es la mejor carta del juego la ronda antes de la Furia, y peso muerto cuando igual ibas a
+defenderlo todo.
+
 ## 8b. Segundo Aire, el juego suave
 
 Una carta opcional. Ponla en juego para una partida más blanda, o déjala en la caja.
@@ -362,6 +394,24 @@ Medido sobre 4.000 peleas por nivel en el motor del sitio, le sube a un jugador 
 11 y 26 puntos por nivel, y una partida completa de cinco niveles de 6,1% a 28,9%; al que juega
 arriesgado es al que más lo ayuda, que es justo para lo que sirve una red de seguridad.
 
+### Jugando de a dos: el Compinche
+
+Una carta convierte el juego solitario en una mesa para dos. El segundo jugador es el
+**Compinche**: tiene su propia figura, y ES DUEÑO de dos de tus cinco cartas de ataque:
+Golpe y Escape. De tus tres acciones, cualquier acción con una carta suya la elige él,
+la dice él en voz alta, y la tira él. Las cartas de vida siguen siendo un solo montón
+compartido frente a los dos, así que la matemática de la pelea no cambia nada: lo que
+cambia es a quién le toca ser valiente. Cambien qué cartas son del Compinche cuando los
+dos quieran.
+
+### Rencor
+
+Cuando un jefe te derrota, pon una carta de **Rencor** bajo su carta de jefe y déjala
+ahí. La próxima vez que pelees contra ese jefe, cada Rencor funciona como una Runa: una
+prueba que tú elijas acierta automáticamente, declarada antes de tirar. Un jefe guarda
+como máximo **2** Rencores; véncelo y sus Rencores vuelven a la caja. Perder se escribe
+solo en la mesa, y la mesa lo recuerda por ti.
+
 ## 9. La campaña
 
 Cinco niveles. Estos números salen de `tools/sim.py`; en
@@ -380,17 +430,18 @@ Esa es toda la aritmética del jefe, y por eso el muro de cartas frente al jefe 
 la barra de vida: puedes ver cuánto queda sin contar nada. Una Invocación igual mueve dos de esas
 cartas, así que un esbirro son 200 dondequiera que te lo encuentres.
 
-Ganas la partida pasando el nivel 5.
+Ganas la partida pasando el nivel 5. Un nivel perdido no se borra: te deja un Rencor
+(regla 8b), y el intento siguiente empieza más fuerte.
 
 ## 10. Componentes
 
-105 cartas, tamaño póker **63 × 88 mm**, en cartulina de 300gsm. En impresoras de casa: 9 por
+110 cartas, tamaño póker **63 × 88 mm**, en cartulina de 300gsm. En impresoras de casa: 9 por
 hoja A4, o sea 12 hojas, la última a medio llenar. Fueron exactamente 10 hojas hasta que la
 primera prueba de juego del 2026-08-27 pidió dos cartas más, Burbuja y Segundo Aire; el número
 redondo perdió contra cartas que un jugador de verdad quería. Esa misma prueba pidió dos ayudas
 más para el jugador, la tabla de reacciones del jefe y la Pista de Daño, y 11 hojas absorbieron
 las dos. La hoja doce es el precio de dos cambios posteriores: Escape, y hacer que cada carta de
-vida del jefe valga 100, que llevó la pila de vida del jefe de 10 cartas a 20.
+vida del jefe valga 100, que llevó la pila de vida del jefe de 10 cartas a 20. La hoja trece paga las cartas de v1.2: Invención, Provocación, el Compinche y dos Rencores.
 Cada carta se distingue **tanto** por color como por una forma o un signo, así que el mazo se
 sigue leyendo sin visión de color.
 
@@ -417,15 +468,15 @@ es bastante tinta en una impresora de casa.
 | Vida de elemento: 4 elementos × 4 | 16 |
 | Vida extra: blancas | 5 |
 | Vida del jefe: 100 cada una | 20 |
-| Ataque: Golpe, Puntería, Todo o Nada, Burbuja, Escape | 5 |
+| Ataque: Golpe, Puntería, Todo o Nada, Burbuja, Escape, Invención | 6 |
 | Clase | 4 |
-| Habilidad: 5 base + 4 rangos × 5 | 25 |
+| Habilidad: 5 base + 4 rangos × 5, más Provocación | 26 |
 | Ventaja: 6 tipos × 2 | 12 |
 | Jefe: S, M, L, L, XL, UM | 6 |
 | Bioma | 7 |
 | Ayudas: tiradas, orden del turno, reacciones del jefe, pista de daño | 4 |
-| Modo suave: Segundo Aire | 1 |
-| **Total** | **105** |
+| Modos: Segundo Aire, Compinche, Rencor × 2 | 4 |
+| **Total** | **110** |
 
 Las dos cartas L no son un duplicado: los niveles 2 y 3 son los dos de tamaño L con distinta vida
 y distinto Daño, y la carta S existe solo como invocación. `tests/cards.test.mjs` parsea esa

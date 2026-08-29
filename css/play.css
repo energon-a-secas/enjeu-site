@@ -655,3 +655,7 @@ button.tbl-slot { cursor: zoom-in; }
   .fight-table { order: 2; }
   .fight-side { order: 3; }
 }
+
+/* The boss's own row on the chips wears its signature colour. */
+.die-chip--sig { border-color: var(--gold-deep); background: #fdf6e0; }
+.die-chip--sig small { color: var(--gold-deep); font-weight: 700; }

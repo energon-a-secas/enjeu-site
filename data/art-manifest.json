@@ -655,6 +655,38 @@
    "source": "https://thenounproject.com/icon/learning-7740728/",
    "creator": "Nur Achmadi Yusuf",
    "licence": "CC BY 3.0"
+  },
+  {
+   "id": "invention",
+   "use": "Attack: Invention",
+   "source": null,
+   "creator": null,
+   "licence": null,
+   "note": "v1.2 card; in-house glyph until an icon is chosen"
+  },
+  {
+   "id": "taunt",
+   "use": "Skill: Taunt (Knight)",
+   "source": null,
+   "creator": null,
+   "licence": null,
+   "note": "v1.2 card; in-house glyph until an icon is chosen"
+  },
+  {
+   "id": "sidekick",
+   "use": "Mode: Sidekick",
+   "source": null,
+   "creator": null,
+   "licence": null,
+   "note": "v1.2 card; in-house glyph until an icon is chosen"
+  },
+  {
+   "id": "grudge",
+   "use": "Mode: Grudge",
+   "source": null,
+   "creator": null,
+   "licence": null,
+   "note": "v1.2 card; in-house glyph until an icon is chosen"
   }
  ]
 }

@@ -94,6 +94,8 @@ export function newFight(data, init) {
     boss: {
       id: b.id, name: b.name || b.id, size: b.size, perCard, damage: b.damage, rage: b.rage || 99,
       summonCards: b.summon_cards ?? 2,
+      signature: init.noSignatures || init.legacy ? null : (b.signature || null),
+      offBalance: false,
       element: b.element || null, body: b.hp ?? b.life_cards * perCard, maxHp: b.hp ?? b.life_cards * perCard,
       minions: [], braced: false, actsTwice: init.biome?.id === 'castle',
     },
@@ -104,13 +106,15 @@ export function newFight(data, init) {
       // ally is null or a figure: { def }. It was a boolean until the boss could
       // aim at it, and a boolean has nothing to subtract 50 from.
       relic: false, ally: null, rune: 0, flatBonus: init.bonus || 0, shield: 0,
-      penalty: false, hidden: false, hideAvailable: false,
+      penalty: false, hidden: false, hideAvailable: init.biome?.id === 'forest',
       knightUsed: false, hunterUsed: false, lastMiss: null,
       secondWind: !!init.secondWind, revives: 0,
     },
     actionsLeft: 0,
     phase: 'act',      // act | boss | down | won | lost | stall
     pending: null,     // a rolled boss reaction awaiting resolve (Barrier window)
+    foretold: null,    // Taunt: the boss's die, already thrown face up
+    awaitForetell: false,
     fell: null,        // where a fall interrupted the boss phase, for attemptRevive
     log: [],
     stats: { rounds: 0, attacks: 0, hits: 0, allIns: 0 },
@@ -139,7 +143,10 @@ export function startRound(f) {
   for (const c of f.hero.pool) if (c.st === 'spent') c.st = 'ready';
   f.actionsLeft = 3;
   f.hero.penaltyArmed = f.hero.penalty; // a Roar from the last boss turn applies this turn
-  f.hero.hidden = false; f.hero.hideAvailable = f.biome?.id === 'forest';
+  f.hero.hidden = false;
+  // The Forest's free hide is once per LEVEL, granted at newFight. Re-granting
+  // it every round measured as 85-96% win at every level (biome-spread.mjs):
+  // a permanent half-damage aura, not a biome.
   f.hero.shield = 0;   // an unused Bubble pops; it guards the round it was cast in
   f.hero.knightUsed = false; f.hero.hunterUsed = false; f.hero.lastMiss = null;
   // legacy: the sim clears Brace at the top of every round after the first,
@@ -218,6 +225,16 @@ export function attack(f, a, o = {}) {
   // biome and Relic bonuses: a 1-action, no-bet, no-check card dealing up to 75.
   // Every test passed in that state, because none of them assert that a card
   // with no damage deals none.
+  // Taunt: the Knight buys information. The boss's die is thrown NOW, face up,
+  // and bossRoll is bound to it. o.roll carries the face; without one the fight
+  // waits in awaitForetell for the table to say what the real d6 showed.
+  if (a.foretells) {
+    f.actionsLeft -= a.actions;
+    const face = o.roll ? Math.max(1, Math.min(6, Math.round(o.roll))) : null;
+    if (face) { f.foretold = face; say(f, `Taunt: the boss will roll ${face}.`, 'hero'); }
+    else f.awaitForetell = true;
+    return { hit: true, auto: true, foretells: true, dealt: 0, bet: 0, step: null, need: null, roll: face };
+  }
   if (a.hides) {
     f.actionsLeft -= a.actions;
     f.hero.hidden = true;
@@ -272,6 +289,8 @@ function effectiveStepNoPenalty(f, a) {
 
 function applyHit(f, a, bet, target) {
   let dealt = attackDamage(f, a, bet);
+  // Skitter left it off balance: the next landed hit takes the opening, once.
+  if (f.boss.offBalance && dealt > 0) { dealt += UNIT; f.boss.offBalance = false; say(f, 'It was off balance: +25.', 'good'); }
   if (f.boss.braced) dealt = halve(dealt);
   dealToBoss(f, target, dealt, a.name || a.id);
   return dealt;
@@ -403,8 +422,49 @@ function minionStrikes(f, n) {
  * The boss rolls its d6. Nothing is applied yet: the runner shows the face,
  * offers Barrier if the hero holds one, then calls resolveBoss.
  */
+/**
+ * The damage face `d6` would deal the hero, signature and Rage included. This
+ * is what a foretold die is FOR: choose() swaps its worst-case guard reserve
+ * for the known number, which is the whole value of the Knight's Taunt.
+ */
+export function bossFaceDamage(f, d6) {
+  const rage = raging(f);
+  const base = f.boss.damage * (rage ? 2 : 1);
+  const sig = f.boss.signature;
+  if (sig && sig.roll === d6) {
+    return sig.id === 'stormbreak' ? base * 2 : sig.id === 'hoard' ? base : sig.id === 'coil' ? UNIT : 0;
+  }
+  const rx = reactionFor(f.data, d6);
+  const kind = rx.name.toLowerCase();
+  if (kind === 'strike' || kind === 'roar') return base;
+  if (kind === 'ruin') return base * 2;
+  if (kind === 'summon') {
+    const chunk = f.legacy ? 100 : f.boss.summonCards * f.boss.perCard;
+    const can = f.legacy ? (f.boss.body > 100 && f.boss.minions.length < 3)
+                         : (f.boss.body > chunk && f.boss.minions.length < 3);
+    return can ? 0 : base;
+  }
+  return 0;
+}
+
 export function bossRoll(f, d6) {
   if (f.phase !== 'boss') throw new Error('not the boss phase');
+  // A Taunt already made this roll, face up, during the hero's turn. The boss
+  // is bound by what everyone saw: a foretold die that could be re-rolled here
+  // would make the Knight's card a lie.
+  if (f.foretold) { d6 = f.foretold; f.foretold = null; }
+  // Each boss overrides ONE row of the shared table with its signature move
+  // (RULES.md, "Signature moves"). Legacy mode skips them: tools/sim.py has
+  // never heard of a signature and the parity test holds it to that.
+  const sig = f.boss.signature;
+  if (sig && sig.roll === d6) {
+    const rage = raging(f);
+    const base = f.boss.damage * (rage ? 2 : 1);
+    const chunk = f.boss.summonCards * f.boss.perCard;
+    const dmg = sig.id === 'stormbreak' ? base * 2 : sig.id === 'hoard' ? base : 0;
+    f.pending = { roll: d6, kind: 'signature', sig: sig.id, dmg, chunk, rage, at: 'hero', name: sig.name };
+    return f.pending;
+  }
   const rx = reactionFor(f.data, d6);
   const rage = raging(f);
   const base = f.boss.damage * (rage ? 2 : 1);
@@ -465,6 +525,59 @@ export function resolveBoss(f, { barrier = false, cover = false } = {}) {
         f.boss.body -= p.chunk; f.boss.minions.push({ hp: p.chunk, max: p.chunk });
         say(f, `The boss Summons: ${p.chunk} of its life moves under a minion.`, 'boss'); break;
       }
+      case 'signature': {
+        switch (p.sig) {
+          case 'skitter':
+            f.boss.offBalance = true;
+            say(f, 'Skitter: it darts aside, no damage, and it is off balance. Your next landed hit deals +25.', 'boss');
+            break;
+          case 'coil': {
+            f.boss.body -= p.chunk; f.boss.minions.push({ hp: p.chunk, max: p.chunk });
+            say(f, `Coil: ${p.chunk} of its life moves under a minion, and the minion strikes at once.`, 'boss');
+            take(f, UNIT, raging(f));
+            break;
+          }
+          case 'bedrock': {
+            f.boss.braced = true;
+            f.boss.body = Math.min(f.boss.maxHp, f.boss.body + UNIT);
+            say(f, 'Bedrock: it braces, and 25 of its wall grinds back into place.', 'boss');
+            break;
+          }
+          case 'stormbreak': {
+            // Measured into this shape: a flat x3 or x4 taxed CAREFUL play
+            // hardest (a pre-Rage 300+ into any pool is mass breakage) and left
+            // the level 4 inversion wider than before. Conditional on an empty
+            // guard, it taxes exactly the player it was designed to: the storm
+            // finds the unguarded.
+            const naked = f.hero.pool.every((c) => c.st !== 'ready');
+            say(f, `Stormbreak! Ruin: ${p.dmg}.${naked ? ' No card of yours is standing: it Ruins AGAIN.' : ''}`, 'boss');
+            take(f, p.dmg, p.rage, 'ruin');
+            // The second Ruin only lands on a hero still standing: take()
+            // moves the fight to 'down' the moment the first one fells you.
+            if (naked && f.phase === 'boss') take(f, p.dmg, p.rage, 'ruin');
+            break;
+          }
+          case 'hoard': {
+            // Measured into this shape, twice. Steal PLUS a full Roar collapsed
+            // level 5 by 12.6 points; steal INSTEAD of damage handed reckless
+            // play +13.5, because a no-damage face is a gift to whoever kept
+            // nothing back. Conditional is the answer both times: it takes a
+            // standing card if you have one, and Roars at you if you do not.
+            const i = f.hero.pool.findIndex((c) => c.st === 'ready');
+            if (i >= 0) {
+              say(f, 'Hoard: the boss deals nothing. It is busy pocketing your life.', 'boss');
+              f.hero.pool.splice(i, 1);
+              f.boss.body = Math.min(f.boss.maxHp, f.boss.body + UNIT);
+              say(f, 'It steals a Ready life card: gone for the level, and its 25 joins the wall.', 'bad');
+            } else {
+              say(f, `Hoard: nothing standing to steal. It Roars for ${p.dmg} instead.`, 'boss');
+              take(f, p.dmg, p.rage, 'roar'); f.hero.penalty = true;
+            }
+            break;
+          }
+        }
+        break;
+      }
       case 'roar': say(f, `The boss Roars for ${p.dmg}. Your next check is one step harder.`, 'boss'); take(f, p.dmg, p.rage, 'roar'); f.hero.penalty = true; break;
       case 'ruin': say(f, `Ruin! The boss deals ${p.dmg}.`, 'boss'); take(f, p.dmg, p.rage, 'ruin'); break;
       default: {
@@ -501,8 +614,16 @@ export function resolveBoss(f, { barrier = false, cover = false } = {}) {
  * has to run exactly this and no more when a comeback lands mid-reaction.
  */
 function endBossPhase(f) {
-  // Castle: the boss acts twice on round 1. Leave the phase open for a second roll.
-  if (f.boss.actsTwice && f.round === 1 && !f._secondAct) { f._secondAct = true; say(f, 'Castle: the boss acts again.', 'boss'); return 'again'; }
+  // Castle: the boss acts twice on round 1. Leave the phase open for a second
+  // roll, and let Spent guards Recover in between: without that breath the
+  // second swing broke the guards the first one spent, three cards a fight,
+  // every fight, and the cell measured 0.0% (tools/checks/biome-spread.mjs).
+  if (f.boss.actsTwice && f.round === 1 && !f._secondAct) {
+    f._secondAct = true;
+    for (const c of f.hero.pool) if (c.st === 'spent') c.st = 'ready';
+    say(f, 'Castle: the boss acts again. You catch your breath between swings.', 'boss');
+    return 'again';
+  }
   f._secondAct = false;
   if (f.round >= MAX_ROUNDS) { f.phase = 'stall'; return 'stall'; }
   startRound(f);
