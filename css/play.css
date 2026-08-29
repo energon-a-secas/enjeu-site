@@ -752,3 +752,61 @@ button.tbl-slot { cursor: zoom-in; }
   0%, 100% { outline-offset: 4px; }
   50% { outline-offset: 7px; }
 }
+
+/* ── The resolve popup: the throw gets a stage ─────────────── */
+.rm-backdrop {
+  position: fixed; inset: 0; z-index: 70;
+  background: rgba(50, 42, 26, 0.38);
+  display: grid; place-items: center;
+  animation: rm-in 200ms var(--ease-out);
+}
+.rm {
+  width: min(520px, calc(100vw - 28px));
+  background: var(--surface-1); border: 2px solid var(--border-strong);
+  border-radius: var(--radius); padding: 16px 18px;
+  box-shadow: 0 18px 50px rgba(40, 32, 16, 0.35);
+}
+@keyframes rm-in { 0% { opacity: 0; } 100% { opacity: 1; } }
+.rm-what { margin: 0 0 10px; display: flex; flex-direction: column; gap: 3px; }
+.rm-what span { font-size: var(--text-sm); color: var(--text-muted); }
+.rm-row { margin-top: 12px; }
+.rm-ledger { list-style: none; margin: 10px 0 0; padding: 8px 0 0; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; font-size: var(--text-sm); }
+.rm-ledger li { display: flex; align-items: center; gap: 7px; }
+.rm-ledger li.bad { color: var(--text-muted); }
+.rm-roll {
+  display: inline-grid; place-items: center; width: 26px; height: 26px; flex: none;
+  border: 2px solid var(--gold-deep); border-radius: 7px; font-weight: 900; font-size: 12px;
+  background: #fffdf7;
+}
+.rm-roll--auto { border-color: var(--border); color: var(--text-muted); }
+
+/* The die on its stage: a pseudo-3D tumble. The glyph spins through a
+   perspective transform with a squash-and-stretch landing, and the number is
+   revealed only at the end, so the animation can never contradict the engine's
+   roll. Reduced motion: the number is simply there. */
+.die-stage { display: grid; place-items: center; min-height: 108px; perspective: 420px; }
+.die-3d { position: relative; display: grid; place-items: center; width: 92px; height: 92px; }
+.die-3d__glyph { width: 92px; height: 92px; color: var(--gold-deep); }
+.die-3d__n {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-weight: 900; font-size: 30px; color: var(--text-primary);
+  text-shadow: 0 1px 0 #fffdf7;
+}
+.die-3d.is-thrown { animation: die-throw 700ms var(--ease-out); }
+.die-3d.is-thrown .die-3d__n { animation: die-land 700ms var(--ease-out); }
+@keyframes die-throw {
+  0%   { transform: translateY(-46px) rotateX(0turn) rotateZ(-0.2turn) scale(0.7); }
+  55%  { transform: translateY(6px) rotateX(0.75turn) rotateZ(0.15turn) scale(1.08); }
+  72%  { transform: translateY(-10px) rotateX(1turn) rotateZ(-0.04turn) scale(0.96); }
+  86%  { transform: translateY(2px) rotateX(1turn) rotateZ(0.01turn) scaleY(0.92) scaleX(1.06); }
+  100% { transform: none; }
+}
+@keyframes die-land {
+  0%, 62% { opacity: 0; }
+  78% { opacity: 1; transform: scale(1.35); }
+  100% { opacity: 1; transform: none; }
+}
+@media (max-width: 900px) {
+  .rm { width: calc(100vw - 16px); padding: 12px; }
+  .rm-row .btn { min-height: 48px; }
+}

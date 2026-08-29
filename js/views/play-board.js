@@ -557,7 +557,8 @@ function renderTurn(s, run, f, ui) {
       </div>
     </div>
     <div class="band band--plan">${planLane(s, f, ui, plan, wait)}</div>
-    <div class="band band--go" data-tour="go">${wait ? rollPanel(f, ui, wait) : plan.length ? '' : planBar(f, ui, plan)}${verdict(ui)}</div>`;
+    <div class="band band--go" data-tour="go">${ui.resolveOpen || plan.length ? '' : planBar(f, ui, plan)}${ui.resolveOpen ? '' : verdict(ui)}</div>
+    ${ui.resolveOpen ? resolveModal(f, ui, plan, wait) : ''}`;
 }
 
 function planLane(s, f, ui, plan, wait) {
@@ -601,7 +602,7 @@ function planLane(s, f, ui, plan, wait) {
   // exists in .actions at any moment (Enter's contract): Resolve here, Skip in
   // the go band when the lane is empty, Roll in the roll panel while waiting.
   const v = plan.length ? validatePlan(f, plan) : null;
-  const actions = plan.length && !wait ? `<div class="plan-actions" data-tour="go">
+  const actions = plan.length && !wait && !ui.resolveOpen ? `<div class="plan-actions" data-tour="go">
       <button class="btn btn--ghost btn--sm" data-action="play-undo-last">${escHtml(t('play.undoLast'))}</button>
       <button class="btn btn--ghost btn--sm" data-action="play-clear-plan">${escHtml(t('play.clearPlan'))}</button>
       <button class="btn btn--ghost btn--sm" data-action="play-end-turn">${escHtml(t('play.endTurn'))} ${glyphSvg('skip', '', 16)}</button>
@@ -623,24 +624,75 @@ function planBar(f, ui, plan) {
   </div>`;
 }
 
-/** The lane has stopped on a step that needs a die. The roll comes from here. */
-function rollPanel(f, ui, wait) {
-  const { i, st, a, step } = wait;
-  const need = targetFor(f.die, step);
-  const dmg = attackDamage(f, a, betFor(a, st));
-  return `<div class="panel panel--sunk roll-now">
-    <div class="row row--between">
-      <b>${escHtml(t('play.planStep'))} ${i + 1}: ${escHtml(cardName(a))}</b>
-      <span>${riskDots(step)} ${escHtml(cap(step))}, ${Math.round(stepOdds(step) * 100)}%: ${escHtml(t('play.need'))} <b>${need}+</b> on ${f.die}</span>
-      <span>${dmg} damage${f.boss.braced ? ' (Braced: halved)' : ''}</span>
-    </div>
-    <div class="row">
-      <button class="btn btn--primary btn--lg" data-action="play-roll">${glyphSvg('dice', '', 18)} ${escHtml(t('play.roll'))}</button>
-      <span class="muted small">${escHtml(t('play.typeRoll'))}</span>${typedInput(f, ui)}
-      <button class="btn btn--sm" data-action="play-go-typed">${escHtml(t('play.go'))}</button>
-      <span class="grow"></span>
-      <button class="btn btn--ghost btn--sm" data-action="play-resolve-all" title="${escHtml(t('play.resolveAllHint'))}">${escHtml(t('play.resolveAll'))}</button>
-    </div>
+/**
+ * The resolve popup: the throw gets a stage. Three states, one element:
+ * the CHOOSER (throw each die, or resolve it all at once), the THROW (one
+ * check at a time, the die front and centre, the physical-die typed input
+ * kept), and the LEDGER (every result, then Close). Rendered inside the
+ * .actions panel so Enter reaches its primary, and the lane's own buttons
+ * hide while it is up, so the one-primary contract holds in every state.
+ */
+function resolveModal(f, ui, plan, wait) {
+  let body;
+  if (wait) {
+    const { i, st, a, step } = wait;
+    const need = targetFor(f.die, step);
+    const dmg = attackDamage(f, a, betFor(a, st));
+    body = `<p class="rm-what"><b>${escHtml(t('play.planStep'))} ${i + 1}: ${escHtml(cardName(a))}</b>
+        <span>${riskDots(step)} ${escHtml(cap(step))}, ${Math.round(stepOdds(step) * 100)}%: ${escHtml(t('play.need'))} <b>${need}+</b> ${escHtml(f.die)} · ${dmg} ${escHtml(t('play.damage'))}${f.boss.braced ? ` · ${escHtml(t('play.bracedHalved'))}` : ''}</span></p>
+      <div class="rm-die">${dieThrow(f, ui)}</div>
+      <div class="row rm-row">
+        <button class="btn btn--primary btn--lg" data-action="play-roll">${glyphSvg('dice', '', 18)} ${escHtml(t('play.throw'))}</button>
+        <span class="muted small">${escHtml(t('play.typeRoll'))}</span>${typedInput(f, ui)}
+        <button class="btn btn--sm" data-action="play-go-typed">${escHtml(t('play.go'))}</button>
+        <span class="grow"></span>
+        <button class="btn btn--ghost btn--sm" data-action="play-resolve-all" title="${escHtml(t('play.resolveAllHint'))}">${escHtml(t('play.resolveAll'))}</button>
+      </div>
+      ${ledger(ui, false)}`;
+  } else if (ui.results && ui.results.length) {
+    // The LAST throw of the lane lands here (the check that ended it), so the
+    // die still gets its tumble: without this, a one-check turn never showed
+    // the animation at all, the stage vanished the instant the roll resolved.
+    // ui.last is wiped by resetPlan when the lane completes, so the roll is
+    // read from the ledger's own tail, gated by the one-shot fx that marks
+    // "a step landed on THIS render".
+    const tail = ui.results[ui.results.length - 1];
+    const justRolled = (ui.fx === 'hit' || ui.fx === 'miss' || ui.fx === 'boss-felled') && tail?.roll !== null && tail?.roll !== undefined;
+    body = `${justRolled ? `<div class="rm-die">${dieThrow(f, ui, tail.roll)}</div>` : ''}${ledger(ui, true)}
+      <div class="row rm-row"><button class="btn btn--primary" data-action="play-resolve-close">${escHtml(t('play.rm.close'))}</button></div>`;
+  } else {
+    const n = plan.filter((st) => effectiveStep(f, attackFor(f, st.id))).length;
+    body = `<p class="rm-what">${escHtml(t('play.rm.lead'))}${n ? ` ${n} ${escHtml(t(n > 1 ? 'play.rm.checks' : 'play.rm.check'))}.` : ` ${escHtml(t('play.rm.noChecks'))}`}</p>
+      <div class="row rm-row">
+        <button class="btn btn--primary btn--lg" data-action="play-resolve-throw">${glyphSvg('dice', '', 18)} ${escHtml(t('play.rm.throw'))}</button>
+        <button class="btn" data-action="play-resolve-fast">${escHtml(t('play.rm.fast'))}</button>
+        <span class="grow"></span>
+        <button class="btn btn--ghost btn--sm" data-action="play-resolve-close">${escHtml(t('play.rm.back'))}</button>
+      </div>`;
+  }
+  return `<div class="rm-backdrop"><div class="rm" role="dialog" aria-modal="true" aria-label="${escHtml(t('play.resolvePlan'))}">${body}</div></div>`;
+}
+
+/** The throw's ledger: what has landed so far, or the whole turn at the end. */
+function ledger(ui, done) {
+  if (!ui.results?.length) return '';
+  const rows = ui.results.map((r) => `<li class="${r.hit ? 'good' : 'bad'}">
+      ${r.roll !== null && r.roll !== undefined ? `<span class="rm-roll">${r.roll}</span>` : '<span class="rm-roll rm-roll--auto">·</span>'}
+      <b>${escHtml(r.name)}</b> ${escHtml(r.auto ? t('play.lands') : r.hit ? t('play.hit') : t('play.miss'))}${r.dealt ? `, ${r.dealt} ${escHtml(t('play.damage'))}` : ''}</li>`).join('');
+  return `<ul class="rm-ledger ${done ? 'is-done' : ''}">${rows}</ul>`;
+}
+
+/**
+ * The die on its stage. A 3D-feeling tumble is layered on by CSS when a roll
+ * has just landed (ui.last carries it); at rest it shows the die waiting.
+ * The visual is deliberately one function so the animation technique can be
+ * swapped without touching the modal.
+ */
+function dieThrow(f, ui, roll = null) {
+  const n = roll ?? (ui.last && ui.last.roll !== null && ui.last.roll !== undefined ? ui.last.roll : null);
+  return `<div class="die-stage ${n !== null ? 'has-rolled' : ''}">
+    <div class="die-3d ${n !== null ? 'is-thrown' : ''}">${artGlyphSvg(`die-${f.die.replace(/^\d+/, '')}`, 'die-3d__glyph', 64)}
+      <span class="die-3d__n">${n !== null ? n : ''}</span></div>
   </div>`;
 }
 

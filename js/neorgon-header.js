@@ -502,13 +502,32 @@
     /* The title link is already focusable, so keyboard users get this for
        free and no new tab stop is introduced inside the header. */
     var trigger = sub.closest('.header-title-link') || sub;
-    var shown = false;
-    function show() { if (!shown) { shown = true; scramble(span, en, 'en'); } }
-    function hide() { if (shown) { shown = false; scramble(span, fr, 'fr'); } }
-    trigger.addEventListener('mouseenter', show);
-    trigger.addEventListener('mouseleave', hide);
-    trigger.addEventListener('focus', show);
-    trigger.addEventListener('blur', hide);
+
+    /* Track the target language rather than a shown/hidden boolean. A boolean
+       desyncs whenever mouseenter fires without its mouseleave, which is what
+       happens when the tab is switched mid-hover: the flag stays true, and
+       every later hover is a no-op. Comparing against the target cannot drift. */
+    var target = 'fr';
+    function to(lang) {
+      if (target === lang) return;
+      target = lang;
+      scramble(span, lang === 'en' ? en : fr, lang);
+    }
+    trigger.addEventListener('mouseenter', function () { to('en'); });
+    trigger.addEventListener('mouseleave', function () { to('fr'); });
+    trigger.addEventListener('focus', function () { to('en'); });
+    trigger.addEventListener('blur', function () { to('fr'); });
+
+    /* requestAnimationFrame stops in a hidden tab, so a scramble caught by a
+       tab switch freezes with decoding glyphs on screen and the visitor sees
+       that garbage when they come back. Settle immediately instead. */
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden || !span._raf) return;
+      cancelAnimationFrame(span._raf);
+      span._raf = 0;
+      span.textContent = target === 'en' ? en : fr;
+      span.lang = target;
+    });
   }
 
   /* ── Init ────────────────────────────────────────────────────────────── */

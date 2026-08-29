@@ -268,6 +268,29 @@ test('betRoom is what could LEGALLY be staked: other steps subtract, your own st
   assert.equal(betRoom(f, plan, 0), 3, 'raising your own bet must not raise your own ceiling');
 });
 
+test('Resolve opens a chooser: throw each die or resolve at once, one primary either way', () => {
+  const s = session(fight());
+  s.play = { tourDone: true };
+  click(s, 'pick', { id: 'focus' });
+  click(s, 'resolve-plan');
+  let html = renderPlay(s);
+  assert.ok(html.includes('rm-backdrop'), 'the popup opens instead of advancing');
+  assert.ok(html.includes('data-action="play-resolve-throw"'));
+  assert.ok(html.includes('data-action="play-resolve-fast"'));
+  const actions = html.slice(html.indexOf('<div class="panel actions">'));
+  assert.equal(actions.split('btn--primary').length - 1, 1, 'the modal primary is the only one');
+  assert.equal(s.run.fight.actionsLeft, 3, 'opening the chooser resolves nothing: actions are spent by the throw, not the door');
+
+  click(s, 'resolve-fast');
+  html = renderPlay(s);
+  assert.ok(html.includes('rm-ledger'), 'the fast path shows the ledger');
+  assert.ok(html.includes('data-action="play-resolve-close"'));
+  const ui = s.run.ui;
+  assert.equal(ui.results.length, 1, 'one step, one result row');
+  click(s, 'resolve-close');
+  assert.ok(!renderPlay(s).includes('rm-backdrop'), 'Done closes the stage');
+});
+
 test('the first fight offers the tour: four steps, skippable, remembered on the session', () => {
   const run = newRun(data, { kind: 'first', element: 'fire', die: 'd20', mode: 'standard', secondWind: true });
   startLevel(run, data);
@@ -461,7 +484,8 @@ test('the wall renders the card this hit knocked off, weighted by the damage', (
   const s = session(fight());
   for (const id of ['all-in']) click(s, 'pick', { id });
   click(s, 'step-bet', { i: '0', bet: '3' });
-  click(s, 'resolve-plan');
+  click(s, 'resolve-plan');        // opens the chooser
+  click(s, 'resolve-throw');       // step mode: advance to the check
   click(s, 'go-typed');            // needs a roll; use typed path
   s.run.ui.typed = 20; click(s, 'go-typed');
   const ui = s.run.ui;
@@ -482,6 +506,7 @@ test('the endings own the bubble: win fells the figure, loss stays kind', () => 
   f.boss.body = 25;
   click(s, 'pick', { id: 'strike' });
   click(s, 'resolve-plan');
+  click(s, 'resolve-fast');
   assert.equal(f.phase, 'won');
   const html = renderPlay(s);
   assert.ok(html.includes('is-felled'), 'the boss figure falls over');

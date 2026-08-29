@@ -82,6 +82,7 @@ function step(run, f, ui, roll) {
   ui.typed = null;
   if (r.error) { showToast(reasonText(r.error)); return true; }
   if (ui.last) {
+    if (ui.results) ui.results.push({ name: ui.last.name, roll: ui.last.roll, auto: ui.last.auto, hit: ui.last.hit, dealt: ui.last.dealt || 0 });
     ui.fx = ui.last.hit ? 'hit' : 'miss';
     ui.dealt = ui.last.dealt || 0;
     ui.wallFell = Math.max(0, cardsOf(b0) - cardsOf(f.boss.body));
@@ -190,10 +191,33 @@ export function onPlayAction(s, act, el, e) {
       case 'park': ui.reaction = ui.reaction === d.id ? null : d.id; return true;
 
       // ── Resolving the lane ─────────────────────────────────
+      // Resolve opens a chooser instead of advancing: the throw is the game's
+      // dramatic beat, so it gets a stage (the popup) and two doors: throw
+      // each die, or skip the theatre and resolve everything at once.
       case 'resolve-plan': {
         if (!ui.plan?.length) return false;
-        ui.at = 0; ui.awaiting = null;
+        ui.resolveOpen = true; ui.results = []; ui.at = null; ui.awaiting = null;
+        return true;
+      }
+      case 'resolve-throw': {
+        if (!ui.resolveOpen) return false;
+        ui.resolveMode = 'step'; ui.at = 0; ui.awaiting = null;
         return step(run, f, ui, null);
+      }
+      case 'resolve-fast': {
+        if (!ui.resolveOpen) return false;
+        ui.resolveMode = 'all'; ui.at = 0; ui.awaiting = null;
+        let r = step(run, f, ui, null);
+        let guard = (ui.plan?.length || 0) + 1;
+        while (f.phase === 'act' && awaitingStep(f, ui) && guard-- > 0) {
+          r = step(run, f, ui, rollDie(f.die, Math.random));
+        }
+        return true;
+      }
+      case 'resolve-close': {
+        if (awaitingStep(f, ui)) return false;   // a thrown attack cannot be un-thrown
+        ui.resolveOpen = false; ui.results = null; ui.resolveMode = null;
+        return true;
       }
       case 'typed': ui.typed = Number(el.value) || null; return false;
       case 'roll': {
