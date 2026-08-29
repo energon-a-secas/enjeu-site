@@ -33,7 +33,7 @@ import { figureSvg } from '../game/figures.js';
 import { heroFor, MINION } from '../data/placeholders.js';
 import { legalAttacks, ready, spent, broken, alive, bossHp, raging, effectiveStep, attackDamage, reviveStep, ALLY_DEF } from '../game/engine.js';
 import { targetFor, dieMax, stepOdds, reactionFor } from '../game/rules.js';
-import { validatePlan, planActions, attackFor, betFor, readyAt, runeSpare, pickable, awaitingStep } from './play-plan.js';
+import { validatePlan, planActions, attackFor, betFor, readyAt, runeSpare, pickable, awaitingStep, betRoom } from './play-plan.js';
 
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
 
@@ -556,11 +556,11 @@ function renderTurn(s, run, f, ui) {
         ${adv ? `<div class="adv-hand"><span class="pile-label">${escHtml(t('play.advHand'))}</span><div class="action-cards">${adv}</div></div>` : ''}
       </div>
     </div>
-    <div class="band band--plan">${planLane(s, f, ui, plan)}${plan.length ? `<button class="btn btn--ghost btn--sm plan-undo" data-action="play-undo-last">${escHtml(t('play.undoLast'))}</button>` : ''}</div>
-    <div class="band band--go" data-tour="go">${wait ? rollPanel(f, ui, wait) : planBar(f, ui, plan)}${verdict(ui)}</div>`;
+    <div class="band band--plan">${planLane(s, f, ui, plan, wait)}</div>
+    <div class="band band--go" data-tour="go">${wait ? rollPanel(f, ui, wait) : plan.length ? '' : planBar(f, ui, plan)}${verdict(ui)}</div>`;
 }
 
-function planLane(s, f, ui, plan) {
+function planLane(s, f, ui, plan, wait) {
   const justQueued = ui.fx === 'queued' ? plan.length - 1 : -1;
   const at = ui.at || 0;
   const hasBarrier = f.hero.advantage.includes('barrier') || ui.reaction === 'barrier';
@@ -571,9 +571,12 @@ function planLane(s, f, ui, plan) {
     const step = effectiveStep(f, a);
     const bet = betFor(a, st);
     const spare = runeSpare(f, plan);
-    const room = readyAt(f, plan, i) + (a.bet === 'any' ? bet : 0);
+    const room = a.bet === 'any' ? betRoom(f, plan, i) : 0;
+    // Pips, not a numeral strip: each one is a life card you are staking,
+    // drawn at the 63x88 card ratio, filled up to the bet. The count in words
+    // already lives on the step ("Bet 3"), so the row can afford to be quiet.
     const bets = a.bet === 'any'
-      ? `<span class="plan-bet">${Array.from({ length: Math.max(room, 1) }, (_, k) => k + 1).map((n) => `<button data-action="play-step-bet" data-i="${i}" data-bet="${n}" aria-pressed="${bet === n}">${n}</button>`).join('')}</span>` : '';
+      ? `<span class="plan-bet" role="group" aria-label="${escHtml(t('play.bet'))}">${Array.from({ length: room }, (_, k) => k + 1).map((n) => `<button class="plan-pip ${n <= bet ? 'is-staked' : ''}" data-action="play-step-bet" data-i="${i}" data-bet="${n}" aria-pressed="${bet === n}" aria-label="${escHtml(t('play.bet'))} ${n}"></button>`).join('')}</span>` : '';
     const rune = step && (st.rune || spare > 0)
       ? `<button class="plan-rune" data-action="play-rune-step" data-i="${i}" aria-pressed="${!!st.rune}" title="${escHtml(t('play.attachTo'))} ${i + 1}">${glyphSvg('adv-rune', '', 15)}</button>` : '';
     const tgt = f.boss.minions.length
@@ -592,29 +595,31 @@ function planLane(s, f, ui, plan) {
     </li>` : '';
   // The keyboard hint sits on this row, not in the table aside: that column is
   // 158px wide and the same sentence wrapped to four lines there.
+  // The turn's buttons live ON the lane's own line, pinned right: the owner's
+  // sketch, and it hands the fight box back the border and 52px row the old
+  // resolve band cost. Gated on plan.length && !wait so exactly one primary
+  // exists in .actions at any moment (Enter's contract): Resolve here, Skip in
+  // the go band when the lane is empty, Roll in the roll panel while waiting.
+  const v = plan.length ? validatePlan(f, plan) : null;
+  const actions = plan.length && !wait ? `<div class="plan-actions" data-tour="go">
+      <button class="btn btn--ghost btn--sm" data-action="play-undo-last">${escHtml(t('play.undoLast'))}</button>
+      <button class="btn btn--ghost btn--sm" data-action="play-clear-plan">${escHtml(t('play.clearPlan'))}</button>
+      <button class="btn btn--ghost btn--sm" data-action="play-end-turn">${escHtml(t('play.endTurn'))} ${glyphSvg('skip', '', 16)}</button>
+      <button class="btn btn--primary" data-action="play-resolve-plan" ${v.ok ? '' : 'aria-disabled="true"'}>${glyphSvg('dice', '', 18)} ${escHtml(t('play.resolvePlan'))}</button>
+    </div>` : '';
   return `<div class="plan-wrap">
     <div class="row row--between"><span class="pile-label">${escHtml(t('play.plan'))}</span><small class="muted">${escHtml(plan.length ? t('play.planHint') : f.actionsLeft <= 0 ? t('play.outOfActions') : t('play.planEmpty'))}</small><small class="muted plan-keys">${escHtml(t('play.keys'))}</small></div>
-    <ul class="plan">${steps}${react}</ul>
+    <div class="plan-row"><ul class="plan">${steps}${react}</ul>${actions}</div>
     ${ui.error ? `<div class="plan-error">${escHtml(reasonText(ui.error))}</div>` : ''}
   </div>`;
 }
 
 function planBar(f, ui, plan) {
-  // One row settles the turn either way. With a plan, Resolve is the primary
-  // and End turn waits at the end of the same line; with none, the same slot
-  // reads Skip turn and IS the primary, so the confusing lone End turn button
-  // in the header is gone and Enter always does the obvious thing.
-  const v = plan.length ? validatePlan(f, plan) : null;
-  if (!plan.length) {
-    return `<div class="row plan-bar">
-      <button class="btn btn--primary" data-action="play-end-turn">${escHtml(t('play.skipTurn'))} ${glyphSvg('skip', '', 16)}</button></div>`;
-  }
+  // Only the EMPTY lane reaches this band now: a queued plan carries its own
+  // buttons on the lane's line (planLane). With nothing queued the one thing
+  // left to do is hand the turn over, so Skip is the primary and Enter takes it.
   return `<div class="row plan-bar">
-    <button class="btn btn--primary btn--lg" data-action="play-resolve-plan" ${v.ok ? '' : 'aria-disabled="true"'}>${glyphSvg('dice', '', 18)} ${escHtml(t('play.resolvePlan'))}</button>
-    <button class="btn btn--ghost btn--sm" data-action="play-clear-plan">${escHtml(t('play.clearPlan'))}</button>
-    <span class="grow"></span>
-    <button class="btn btn--ghost btn--sm" data-action="play-end-turn">${escHtml(t('play.endTurn'))} ${glyphSvg('skip', '', 16)}</button>
-    ${v.ok ? '' : `<span class="plan-error">${escHtml(reasonText(v.reason))}</span>`}
+    <button class="btn btn--primary" data-action="play-end-turn">${escHtml(t('play.skipTurn'))} ${glyphSvg('skip', '', 16)}</button>
   </div>`;
 }
 

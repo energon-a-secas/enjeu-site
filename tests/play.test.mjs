@@ -16,7 +16,7 @@ import { dirname, join } from 'node:path';
 import { useCards } from '../js/data/cards.js';
 import { newFight, playAdvantage, take, bossRoll, endTurn, resolveBoss, ready, spent, broken, bossHp, attack, reviveStep, attemptRevive } from '../js/game/engine.js';
 import { newRun, startLevel } from '../js/game/run.js';
-import { validatePlan, queueStep, unqueueStep, setStepBet, toggleStepRune, advancePlan, planActions, pickable } from '../js/views/play-plan.js';
+import { validatePlan, queueStep, unqueueStep, setStepBet, toggleStepRune, advancePlan, planActions, pickable, betRoom } from '../js/views/play-plan.js';
 import { onPlayAction, renderPlay, onPlayKey } from '../js/views/play.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -255,6 +255,17 @@ test('Enter belongs to the focused control, and only reaches the board when noth
   } finally {
     globalThis.document = saved;
   }
+});
+
+test('betRoom is what could LEGALLY be staked: other steps subtract, your own stake does not double', () => {
+  const f = fight();
+  let plan = queueStep(f, [], 'all-in', {}).plan;
+  plan = queueStep(f, plan, 'focus', {}).plan;
+  // Pool of 4: Focus stakes 1, so All In can reach at most 3. The old ceiling
+  // said readyAt(0) + own bet = 4 + 1 = 5 and rendered dead buttons past 3.
+  assert.equal(betRoom(f, plan, 0), 3, 'every Ready card no other step has claimed');
+  plan[0].bet = 3;
+  assert.equal(betRoom(f, plan, 0), 3, 'raising your own bet must not raise your own ceiling');
 });
 
 test('the first fight offers the tour: four steps, skippable, remembered on the session', () => {

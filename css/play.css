@@ -249,9 +249,12 @@ button.tbl-slot { cursor: zoom-in; }
      over the attack cards. Flex wraps instead; cards lead on their own line. */
   .hand-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-3); }
   .hand-row > .hand-attacks { width: 100%; order: -1; }
-  /* One thumb-width action row. */
+  /* One thumb-width action row, whichever band renders it. */
   .plan-bar { width: 100%; }
   .plan-bar .btn { flex: 1; min-height: 48px; }
+  .plan-row { flex-wrap: wrap; }
+  .plan-actions { width: 100%; margin-left: 0; }
+  .plan-actions .btn { flex: 1; min-height: 48px; }
 }
 
 /* ── The boss speaks ───────────────────────────────────────── */
@@ -413,12 +416,20 @@ button.tbl-slot { cursor: zoom-in; }
 .plan-what { display: flex; flex-direction: column; line-height: 1.1; font-size: 11px; font-weight: 700; }
 .plan-what small { color: var(--text-muted); display: flex; align-items: center; gap: 3px; }
 .plan-what small svg { width: 11px; height: 11px; }
-.plan-bet { display: inline-flex; gap: 2px; }
-.plan-bet button, .plan-tgt, .plan-rune {
+.plan-bet { display: inline-flex; gap: 3px; align-items: center; }
+/* Each pip IS a life card being staked: 12x17 is the 63x88 card ratio the .lc
+   minis already draw. Filled up to the bet, hollow above it, capped by betRoom
+   at what could legally be staked, so every pip is a live button. */
+.plan-bet .plan-pip {
+  width: 12px; height: 17px; padding: 0; cursor: pointer;
+  border: 2px solid var(--border-strong); border-radius: 3px; background: var(--surface-2);
+}
+.plan-bet .plan-pip.is-staked { background: var(--gold); border-color: var(--gold-deep); }
+.plan-tgt, .plan-rune {
   font: inherit; font-size: 10px; font-weight: 800; cursor: pointer; padding: 1px 5px;
   border: 2px solid var(--border-strong); border-radius: 6px; background: var(--surface-2); color: var(--text-secondary);
 }
-.plan-bet button[aria-pressed="true"], .plan-rune[aria-pressed="true"] { background: var(--text-primary); color: var(--surface-1); border-color: var(--text-primary); }
+.plan-rune[aria-pressed="true"] { background: var(--text-primary); color: var(--surface-1); border-color: var(--text-primary); }
 /* The per-step target button carries the same gold as the chips in the strip
    above it: one colour means "this is who that step is aimed at", wherever the
    player happens to be looking. */
@@ -650,9 +661,11 @@ button.tbl-slot { cursor: zoom-in; }
 .die-chip small { color: var(--text-muted); font-size: var(--text-xs); }
 
 /* ── The plan's visible Undo, and the settle-in ────────────── */
-.band--plan { display: flex; align-items: center; gap: var(--space-3); }
-.band--plan > :first-child { flex: 1; min-width: 0; }
-.plan-undo { flex: none; }
+/* The lane's own line carries the turn's buttons, pinned right. Steps wrap
+   downward inside ul.plan; the cluster stays vertically centred beside them. */
+.plan-row { display: flex; align-items: center; gap: var(--space-3); }
+.plan-row > .plan { flex: 1; min-width: 0; }
+.plan-actions { flex: none; margin-left: auto; display: flex; align-items: center; gap: var(--space-2); }
 .plan-step.just-queued { animation: queue-settle 350ms var(--ease-out); }
 @keyframes queue-settle { 0% { transform: translateY(-8px); opacity: 0.4; } 100% { transform: none; opacity: 1; } }
 
@@ -683,13 +696,14 @@ button.tbl-slot { cursor: zoom-in; }
 @media (pointer: coarse) {
   .die-chip { min-width: 72px; min-height: 56px; }
   .action-card, .btn, .tbl-slot, .setup-step, .seg button { min-height: 44px; }
-  .plan-undo, .minion { min-height: 44px; }
+  .minion { min-height: 44px; }
   .minion { padding: 4px 10px; }
   /* The plan number stays a 24px circle but hits like 48: deleting a step is
      the control a thumb misses most. Steps are a full row apart, no overlap. */
   .plan-num { position: relative; }
   .plan-num::after { content: ""; position: absolute; inset: -8px; }
-  .plan-bet button, .plan-tgt, .plan-rune { min-height: 32px; min-width: 32px; padding: 4px 8px; }
+  .plan-bet .plan-pip { min-height: 28px; min-width: 18px; }
+  .plan-tgt, .plan-rune { min-height: 32px; min-width: 32px; padding: 4px 8px; }
   .typed-roll { min-height: 44px; width: 84px; }
 }
 /* Sticky hover is not hover: a tapped rail slot stayed 4x scaled over the

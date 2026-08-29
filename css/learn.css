@@ -196,8 +196,12 @@ html[data-view="learn"] #viewRoot { min-height: 0; }
 /* The components counts: the number is the thing, the deck name labels it. Three
    across, because there are nine printed decks (DECKS in js/data/cards.js) and
    four across leaves the ninth alone on its own row. */
-.strip--counts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.strip--counts .strip__cell b { font-size: var(--text-xl); font-variant-numeric: tabular-nums; }
+.strip--counts { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); }
+/* Number BESIDE the label, one baseline. Stacked, each tile paid two full line
+   heights and the grid alone (276px) made the slide scroll at 1280x720 by 30px
+   (measured); on one line the grid is 159px and the slide has 70px of slack. */
+.strip--counts .strip__cell { display: flex; align-items: baseline; justify-content: center; gap: 6px; padding: var(--space-2); }
+.strip--counts .strip__cell b { display: inline; font-size: var(--text-lg); font-variant-numeric: tabular-nums; }
 /* The boss table's roll, drawn as the die it is. Smaller than the runner's
    .die-face, which is a real die being rolled and not a table row. */
 .strip__die {

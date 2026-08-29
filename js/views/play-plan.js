@@ -63,6 +63,18 @@ export function readyAt(f, plan, i) {
   return Math.max(0, left);
 }
 
+/**
+ * The most step i could stake: every Ready card no OTHER step has claimed.
+ * The old on-board ceiling was readyAt(i) + own bet, which double-counted the
+ * step's own stake and ignored steps queued after it, so a 4-card pool could
+ * render 7 chips and the top ones were dead buttons validatePlan refused.
+ */
+export function betRoom(f, plan, i) {
+  const a = attackFor(f, plan[i].id);
+  if (!a) return 1;
+  return Math.max(1, readyAt(f, plan, plan.length) + betFor(a, plan[i]));
+}
+
 /** One more action of `id` at the end of the lane, or a refusal with its reason. */
 export function queueStep(f, plan, id, { target = 'body' } = {}) {
   const a = attackFor(f, id);
