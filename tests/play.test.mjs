@@ -291,6 +291,23 @@ test('Resolve opens a chooser: throw each die or resolve at once, one primary ei
   assert.ok(!renderPlay(s).includes('rm-backdrop'), 'Done closes the stage');
 });
 
+test('the throw stage is a real polyhedron that lands on the engine roll', () => {
+  const s = session(fight());
+  s.play = { tourDone: true };
+  click(s, 'pick', { id: 'focus' });
+  click(s, 'resolve-plan');
+  click(s, 'resolve-throw');
+  let html = renderPlay(s);
+  assert.ok(html.includes('die--d20'), 'a d20 fight stages a d20');
+  const stage = html.slice(html.indexOf('die-stage'), html.indexOf('rm-row'));
+  assert.equal((stage.match(/<b>\d+<\/b>/g) || []).length, 20, 'all twenty faces exist on the stage');
+  assert.ok(!html.includes('data-face='), 'no face is claimed before the throw');
+  s.run.ui.typed = 14; click(s, 'go-typed');
+  html = renderPlay(s);
+  assert.ok(html.includes('data-face="14"'), 'the die lands on the exact number the engine was given');
+  assert.ok(html.includes('is-thrown'), 'and the tumble class fires on that render');
+});
+
 test('the first fight offers the tour: four steps, skippable, remembered on the session', () => {
   const run = newRun(data, { kind: 'first', element: 'fire', die: 'd20', mode: 'standard', secondWind: true });
   startLevel(run, data);
