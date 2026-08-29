@@ -436,12 +436,16 @@ Ganas la partida pasando el nivel 5. Un nivel perdido no se borra: te deja un Re
 ## 10. Componentes
 
 110 cartas, tamaño póker **63 × 88 mm**, en cartulina de 300gsm. En impresoras de casa: 9 por
-hoja A4, o sea 12 hojas, la última a medio llenar. Fueron exactamente 10 hojas hasta que la
+hoja A4, o sea 13 hojas, la última a medio llenar. Fueron exactamente 10 hojas hasta que la
 primera prueba de juego del 2026-08-27 pidió dos cartas más, Burbuja y Segundo Aire; el número
 redondo perdió contra cartas que un jugador de verdad quería. Esa misma prueba pidió dos ayudas
 más para el jugador, la tabla de reacciones del jefe y la Pista de Daño, y 11 hojas absorbieron
 las dos. La hoja doce es el precio de dos cambios posteriores: Escape, y hacer que cada carta de
 vida del jefe valga 100, que llevó la pila de vida del jefe de 10 cartas a 20. La hoja trece paga las cartas de v1.2: Invención, Provocación, el Compinche y dos Rencores.
+No hace falta imprimir las trece. La página de Cartas del sitio ofrece dos juegos más chicos:
+**Lo esencial** (103 cartas, 12 hojas) deja fuera los siete biomas, porque cualquier objeto
+sobre la mesa puede ser el lugar, y **Primera partida** (33 cartas, 4 hojas) es exactamente lo
+que reparte la Primera partida: un jefe, seis cartas, la vida de los cuatro elementos y las ayudas.
 Cada carta se distingue **tanto** por color como por una forma o un signo, así que el mazo se
 sigue leyendo sin visión de color.
 

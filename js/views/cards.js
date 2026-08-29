@@ -19,6 +19,7 @@ import { glyphSvg, artCount } from '../cards/glyphs.js';
 // backKind comes from sheet.js: the printer owns which back a card takes, and
 // the grid shows that one rather than deciding for itself.
 import { renderPrintSheet, backKind } from '../cards/sheet.js';
+import { SCOPES, scopeCards, scopeSheets } from '../cards/scopes.js';
 import { aidFor } from '../game/rules.js';
 import { openModal } from '../events.js';
 
@@ -226,8 +227,14 @@ function filterMenu({ label, action, dataKey, current, options, count }) {
  * filtering is what you reach for while scanning a long grid, so that sticks.
  */
 function printRow(s) {
+  const scope = s.printScope || 'all';
+  const n = scopeCards(s.cards, scope).length;
+  const sheets = scopeSheets(s.cards, scope);
   return `<div class="cards-print">
-      <button class="btn btn--primary" data-action="cards-print" title="${escHtml(t('cards.printOrder'))}">${glyphSvg('dice', '', 16)} ${escHtml(t('cards.printAll'))}</button>
+      <button class="btn btn--primary" data-action="cards-print" title="${escHtml(t('cards.printOrder'))}">${glyphSvg('dice', '', 16)} ${escHtml(t('cards.printBtn'))} ${n} (${sheets} ${escHtml(t('cards.sheets'))})</button>
+      <span class="seg" role="group" aria-label="${escHtml(t('cards.scopeLabel'))}">
+        ${SCOPES.map((k) => `<button data-action="cards-print-scope" data-scope="${k}" aria-pressed="${scope === k}" title="${escHtml(t(`cards.scopeHint.${k}`))}">${escHtml(t(`cards.scope.${k}`))}</button>`).join('')}
+      </span>
       ${s.deckFilter !== 'all' ? `<button class="btn" data-action="cards-print-deck" data-deck="${escHtml(s.deckFilter)}">${escHtml(t('cards.printDeck'))}</button>` : ''}
       <span class="seg" role="group" aria-label="${escHtml(t('cards.paper'))}">
         <button data-action="cards-paper" data-paper="a4" aria-pressed="${s.paper === 'a4'}">${escHtml(t('cards.a4'))}</button>
@@ -347,7 +354,7 @@ export function renderCards(s) {
  */
 export function printOrder(s, deck = null) {
   const physical = s.cards.physical;
-  return deck ? physical.filter((c) => c.deck === deck) : physical;
+  return deck ? physical.filter((c) => c.deck === deck) : scopeCards(s.cards, s.printScope || 'all');
 }
 
 /** Fill the print root and open the browser's print dialog. */
@@ -432,6 +439,7 @@ export function onCardsAction(s, act, el, e) {
     // answer to this one handler where the difference is readable.
     case 'paper': s.paper = el.dataset.paper; return true;
     case 'print-backs': s.withBacks = el.dataset.backs; return true;
+    case 'print-scope': s.printScope = el.dataset.scope; return true;
     // t() does not interpolate (js/strings.js), so the count is composed here.
     case 'print': { const n = printCards(s); showToast(`${n} sheet${n === 1 ? '' : 's'}`); return false; }
     case 'print-deck': { const n = printCards(s, el.dataset.deck); showToast(`${n} sheet${n === 1 ? '' : 's'}`); return false; }

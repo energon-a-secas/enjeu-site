@@ -87,7 +87,15 @@ export const STRINGS = {
     cards: {
       title: 'The cards',
       lead: 'A hundred and ten cards, poker size, no words on any of them. The picture is the name, the corners carry the numbers. Tap a card to see what it does.',
-      printAll: 'Print all 110 (13 sheets)',
+      printBtn: 'Print',
+      sheets: 'sheets',
+      scopeLabel: 'What to print',
+      scope: { all: 'Everything', essentials: 'Essentials', first: 'First Game' },
+      scopeHint: {
+        all: 'The whole box.',
+        essentials: 'Skips the 7 biome cards: anything on the table can be the place. Life and mode cards stay.',
+        first: 'Everything the First Game deals: one boss, six cards, all four elements of life, the aids.',
+      },
       printDeck: 'Print this deck',
       printing: 'Filling the print sheet',
       paper: 'Paper',
@@ -428,7 +436,15 @@ export const STRINGS = {
     cards: {
       title: 'Las cartas',
       lead: 'Ciento diez cartas, tamaño póker, sin palabras en ninguna. El dibujo es el nombre, las esquinas llevan los números. Toca una carta para ver qué hace.',
-      printAll: 'Imprimir las 110 (13 hojas)',
+      printBtn: 'Imprimir',
+      sheets: 'hojas',
+      scopeLabel: 'Qué imprimir',
+      scope: { all: 'Todo', essentials: 'Lo esencial', first: 'Primera partida' },
+      scopeHint: {
+        all: 'La caja completa.',
+        essentials: 'Salta las 7 cartas de bioma: cualquier cosa sobre la mesa puede ser el lugar. Las de vida y de modo se quedan.',
+        first: 'Todo lo que reparte la Primera partida: un jefe, seis cartas, la vida de los cuatro elementos y las ayudas.',
+      },
       printDeck: 'Imprimir este mazo',
       printing: 'Armando la hoja de impresión',
       paper: 'Papel',

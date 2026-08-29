@@ -25,6 +25,7 @@ export const state = {
     backs: false,        // show the printed BACK of each card instead of its face
   },
   paper: 'a4',
+  printScope: 'all',   // all | essentials | first  (which faces the sheet gets)
   withBacks: 'none',   // none | few (4) | all  (what the PRINT sheet appends)
   // Play view preferences (persisted) and the run itself (persisted)
   die: 'd20',
@@ -47,7 +48,7 @@ export const state = {
  */
 export const secondWindDefault = (kind) => kind === 'first';
 
-const PERSIST = ['lang', 'learnStep', 'deckFilter', 'browse', 'paper', 'withBacks', 'die', 'mode', 'element', 'runKind', 'secondWind', 'run', 'play', 'balance'];
+const PERSIST = ['lang', 'learnStep', 'deckFilter', 'browse', 'paper', 'printScope', 'withBacks', 'die', 'mode', 'element', 'runKind', 'secondWind', 'run', 'play', 'balance'];
 
 // The nested settings, defaults captured before anything can overwrite them.
 const NESTED = ['balance', 'browse', 'play'];

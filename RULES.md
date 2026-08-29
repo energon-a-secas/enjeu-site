@@ -441,7 +441,12 @@ playtest on 2026-08-27 asked for two more cards, Bubble and Second Wind; the
 round number lost to cards a real player wanted. The same playtest asked for two more
 player aids, the boss's reaction table and the Damage Track, and 11 sheets absorbed both.
 The twelfth sheet is the price of two later changes: Run, and making every boss life card
-worth 100, which took the boss life pile from 10 cards to 20.
+worth 100, which took the boss life pile from 10 cards to 20. The thirteenth pays for the
+v1.2 cards: Invention, Taunt, Sidekick and two Grudges.
+You do not have to print all thirteen. The site's Cards page offers two smaller sets:
+**Essentials** (103 cards, 12 sheets) leaves out the seven biomes, because any object on
+the table can stand for a place, and **First Game** (33 cards, 4 sheets) is exactly what
+the First Game deals: one boss, six cards, all four elements of life, the aids.
 Every card is distinguished by **both** colour and a shape or sigil, so
 the deck stays readable without colour vision.
 

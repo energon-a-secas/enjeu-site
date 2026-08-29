@@ -659,10 +659,10 @@
   {
    "id": "invention",
    "use": "Attack: Invention",
-   "source": null,
-   "creator": null,
-   "licence": null,
-   "note": "v1.2 card; in-house glyph until an icon is chosen"
+   "source": "https://thenounproject.com/icon/invention-7895989/",
+   "creator": "nangicon",
+   "licence": "CC BY 3.0",
+   "note": "v1.2 card"
   },
   {
    "id": "taunt",
@@ -675,18 +675,18 @@
   {
    "id": "sidekick",
    "use": "Mode: Sidekick",
-   "source": null,
-   "creator": null,
-   "licence": null,
-   "note": "v1.2 card; in-house glyph until an icon is chosen"
+   "source": "https://thenounproject.com/icon/friend-6929953/",
+   "creator": "Iconographer",
+   "licence": "CC BY 3.0",
+   "note": "v1.2 card"
   },
   {
    "id": "grudge",
    "use": "Mode: Grudge",
-   "source": null,
-   "creator": null,
-   "licence": null,
-   "note": "v1.2 card; in-house glyph until an icon is chosen"
+   "source": "https://thenounproject.com/icon/anger-7788151/",
+   "creator": "siti muayanah",
+   "licence": "CC BY 3.0",
+   "note": "v1.2 card"
   }
  ]
 }

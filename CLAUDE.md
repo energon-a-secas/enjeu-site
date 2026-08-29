@@ -40,7 +40,7 @@ Vendored from `packages/neorgon-ui/`, never edit in place: `js/neorgon-header.js
 ## Data
 
 - `data/cards.json`: all 110 cards (the Python linter and the JS tests both count them)
-- `data/art-manifest.json`: 75 art slots (66 credited, 9 in-house on purpose); a slot renders `art/<id>.svg` only once it has creator AND licence
+- `data/art-manifest.json`: 75 art slots (69 credited, 5 in-house on purpose, 1 pending: taunt); a slot renders `art/<id>.svg` only once it has creator AND licence
 - `localStorage['enjeu-state']`: filters, die, mode, and the run in progress (no card data: the fight's `data` pointer is non-enumerable)
 
 ## Conventions

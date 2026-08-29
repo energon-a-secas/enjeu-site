@@ -7,6 +7,8 @@ import { useCards, DECKS } from '../js/data/cards.js';
 import { GLYPHS, hasGlyph, setArtManifest, artSrc, loadArt, artBody, clearArtBodies } from '../js/cards/glyphs.js';
 import { cardFace, cardBack, lifeMini } from '../js/cards/face.js';
 import { aidFor } from '../js/game/rules.js';
+import { SCOPES, scopeCards, scopeSheets } from '../js/cards/scopes.js';
+import { BOSSES, MINION } from '../js/data/placeholders.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const data = useCards(JSON.parse(readFileSync(join(root, 'data/cards.json'), 'utf8')));
@@ -359,6 +361,33 @@ test('the pool back carries the emblem its own comment promises, in ink and neve
   // A life card's back is the break line, not the emblem: that is the printed
   // difference between "a card from a pile" and "a card off your life".
   assert.ok(!cardBack('boss').includes('<rect x="231" y="356"'), 'a life back keeps its break line');
+});
+
+test('print scopes: essentials skips only biomes; first is exactly what the First Game deals', () => {
+  const all = scopeCards(data, 'all');
+  assert.equal(all.length, data.physical.length, "scope 'all' is the whole box");
+
+  const ess = scopeCards(data, 'essentials');
+  assert.equal(ess.length, all.length - all.filter((c) => c.deck === 'biome').length);
+  assert.ok(ess.every((c) => c.deck !== 'biome'), 'no biome face in essentials');
+  assert.equal(ess.filter((c) => c.deck === 'life').length, all.filter((c) => c.deck === 'life').length, 'every life card stays');
+  assert.equal(ess.filter((c) => c.deck === 'mode').length, all.filter((c) => c.deck === 'mode').length, 'the player-count cards stay');
+
+  // The starter list is DERIVED from the same rosters run.js plays from, so
+  // this test states the contract, not the numbers: change the First Game and
+  // the printed starter follows without anyone editing a list.
+  const first = scopeCards(data, 'first');
+  const ids = new Set(first.map((c) => c.id));
+  for (const a of data.attack) assert.ok(ids.has(a.id), `${a.id} is in the First Game hand`);
+  assert.ok(ids.has(BOSSES[0].card) && ids.has(MINION.card), 'the level 1 boss and the minion card a Summon needs');
+  assert.ok(ids.has('second-wind'), 'the First Game defaults Second Wind on');
+  assert.equal(first.filter((c) => c.id === 'life-boss').length, data.byId[BOSSES[0].card].life_cards, "the boss's life, no more");
+  for (const el of ['fire', 'water', 'earth', 'wind']) assert.ok(ids.has(`life-${el}`), 'all four elements: you pick yours at the table');
+  assert.ok(!ids.has('life-extra'), 'extras are earned, not dealt');
+  assert.ok(!ids.has('knight') && !ids.has('taunt'), 'no classes, no skills: the First Game is six cards');
+  for (const a of data.aid) assert.ok(ids.has(a.id), `${a.id} rides along`);
+  // And the shipped counts, so a data change that moves them is a conscious one.
+  assert.deepEqual(SCOPES.map((k) => [scopeCards(data, k).length, scopeSheets(data, k)]), [[110, 13], [103, 12], [33, 4]]);
 });
 
 for (const [name, fn] of queue) {                 // in declaration order: they share module state

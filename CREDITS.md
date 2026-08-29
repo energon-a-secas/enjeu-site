@@ -40,13 +40,16 @@ Collection: https://thenounproject.com/browse/collection-icon/role-playing-game-
 | [`earth`](https://thenounproject.com/icon/element-mountain-2360067/) | Earth element sigil | Maxicons | CC BY 3.0 |
 | [`fire`](https://thenounproject.com/icon/element-fire-2360070/) | Fire element sigil | Maxicons | CC BY 3.0 |
 | [`focus`](https://thenounproject.com/icon/classes-monk-2360006/) | Focus (attack card) | Maxicons | CC BY 3.0 |
+| [`grudge`](https://thenounproject.com/icon/anger-7788151/) | Mode: Grudge | siti muayanah | CC BY 3.0 |
 | [`hunter`](https://thenounproject.com/icon/classes-hunter-2360018/) | Hunter class | Maxicons | CC BY 3.0 |
+| [`invention`](https://thenounproject.com/icon/invention-7895989/) | Attack: Invention | nangicon | CC BY 3.0 |
 | [`knight`](https://thenounproject.com/icon/equipment-helm-armor-2360086/) | Knight class | Maxicons | CC BY 3.0 |
 | [`life`](https://thenounproject.com/icon/life-4724760/) | Life card marker | verry poernomo | CC BY 3.0 |
 | [`mage`](https://thenounproject.com/icon/equipment-wizard-hat-2360088/) | Mage class | Maxicons | CC BY 3.0 |
 | [`necromancer`](https://thenounproject.com/icon/classes-necromancer-2360015/) | Necromancer class | Maxicons | CC BY 3.0 |
 | [`revive`](https://thenounproject.com/icon/zombie-hand-5193546/) | Second Wind (gentle-mode card) | Narakorn Chanchittakarn | CC BY 3.0 |
 | [`run`](https://thenounproject.com/icon/run-1651221/) | Attack: Run | Adrien Coquet | CC BY 3.0 |
+| [`sidekick`](https://thenounproject.com/icon/friend-6929953/) | Mode: Sidekick | Iconographer | CC BY 3.0 |
 | [`skill-boulder`](https://thenounproject.com/icon/rock-2632080/) | Skill: Boulder (earth t1) | RIZCA | CC BY 3.0 |
 | [`skill-cataclysm`](https://thenounproject.com/icon/disaster-6140448/) | Skill: Cataclysm (earth t4) | Afianroc | CC BY 3.0 |
 | [`skill-cold-curse`](https://thenounproject.com/icon/skill-magic-cold-curse-2360200/) | Skill: Cold Curse | Maxicons | CC BY 3.0 |
@@ -76,4 +79,4 @@ Collection: https://thenounproject.com/browse/collection-icon/role-playing-game-
 | [`water`](https://thenounproject.com/icon/element-stream-2360063/) | Water element sigil | Maxicons | CC BY 3.0 |
 | [`wind`](https://thenounproject.com/icon/element-wind-2360065/) | Wind element sigil | Maxicons | CC BY 3.0 |
 
-66 icons.
+69 icons.
