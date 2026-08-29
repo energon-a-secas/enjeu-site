@@ -86,8 +86,12 @@ def render(manifest: dict, ready: list[dict]) -> str:
         "|---|---|---|---|",
     ]
     for slot in sorted(ready, key=lambda s: s["id"]):
+        # CC BY 3.0 4(b)(ii) wants the work's title when it has one, and Noun
+        # Project asks for the hyperlink to sit on the icon name. Slots whose
+        # file supplied no <title> fall back to the slot id: "if supplied".
+        name = slot.get("title") or f"`{slot['id']}`"
         lines.append(
-            f"| [`{slot['id']}`]({slot['source']}) | {slot['use']} "
+            f"| [{name}]({slot['source']}) | {slot['use']} "
             f"| {slot['creator']} | {licence_cell(slot['licence'])} |"
         )
     lines += ["", f"{len(ready)} icons.", ""]
@@ -108,9 +112,10 @@ STAMP_CLOSE = "-->"
 
 def stamp(slot: dict) -> str:
     uri = LICENCE_URI.get(slot["licence"], "")
+    title = f"\"{slot['title']}\" b" if slot.get("title") else "B"
     return (
         f"{STAMP_OPEN}\n"
-        f"  By {slot['creator']}, from Noun Project.\n"
+        f"  {title}y {slot['creator']}, from Noun Project.\n"
         f"  Source: {slot['source']}\n"
         f"  Licence: {slot['licence']}{f', {uri}' if uri else ''}\n"
         f"  Modified for Enjeu: creator credit moved to CREDITS.md and the About\n"

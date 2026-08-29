@@ -253,7 +253,12 @@ button.tbl-slot { cursor: zoom-in; }
   .plan-bar { width: 100%; }
   .plan-bar .btn { flex: 1; min-height: 48px; }
   .plan-row { flex-wrap: wrap; }
-  .plan-actions { width: 100%; margin-left: 0; }
+  /* Pinned to the thumb while its panel is on screen (sticky cannot escape
+     .fight-main, which is fine: past the panel there is nothing to resolve). */
+  .plan-actions {
+    width: 100%; margin-left: 0; position: sticky; bottom: 0;
+    background: var(--surface-1); padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
   .plan-actions .btn { flex: 1; min-height: 48px; }
 }
 

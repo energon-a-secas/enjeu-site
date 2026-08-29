@@ -581,7 +581,7 @@ function planLane(s, f, ui, plan, wait) {
       ? `<button class="plan-rune" data-action="play-rune-step" data-i="${i}" aria-pressed="${!!st.rune}" title="${escHtml(t('play.attachTo'))} ${i + 1}">${glyphSvg('adv-rune', '', 15)}</button>` : '';
     const tgt = f.boss.minions.length
       ? `<button class="plan-tgt" data-action="play-step-target" data-i="${i}">${escHtml(typeof st.target === 'number' ? `${MINION.name} ${st.target + 1}` : t('play.body'))}</button>` : '';
-    return `<li class="plan-step ${ui.awaiting === i ? 'is-now' : ''} ${i < at ? 'is-done' : ''}${settled}">
+    return `<li class="plan-step ${ui.awaiting === i ? 'is-now' : ''} ${i < at ? 'is-done' : ''}${settled}" data-inspect="${a.id}">
       <button class="plan-num" data-action="play-unqueue" data-i="${i}" aria-label="${escHtml(t('play.planStep'))} ${i + 1}" title="${escHtml(t('play.planStep'))} ${i + 1}">${i + 1}</button>
       ${cardFace(a, { size: 'mini' })}
       <span class="plan-what"><b>${escHtml(cardName(a))}</b><small>${bet ? `${escHtml(t('play.bet'))} ${bet}` : ''}${step ? ` ${riskDots(step)}` : ''}${st.rune ? ' auto' : ''}</small></span>
