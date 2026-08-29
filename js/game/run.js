@@ -14,11 +14,11 @@ export const RUN_KINDS = ['first', 'full'];
 const ELEMENT_BIOMES = ['volcano', 'river', 'mountain', 'desert'];
 
 /** Set up a run. Nothing is fought yet. */
-export function newRun(data, { kind = 'full', element = 'fire', die = 'd20', mode = 'standard', secondWind = false } = {}) {
+export function newRun(data, { kind = 'full', element = 'fire', die = 'd20', mode = 'standard', secondWind = false, simple = false } = {}) {
   const deck = [];
   for (const a of data.advantage) for (let i = 0; i < (a.copies || 1); i++) deck.push(a.id);
   return {
-    kind, element, die, mode, secondWind,
+    kind, element, die, mode, secondWind, simple,
     level: 1, klass: null,
     skills: [],                                   // card ids taken at drafts
     skillPool: data.skill.filter((c) => c.tier === 0).map((c) => c.id),  // tier 0 sits in the pool from the start
@@ -46,14 +46,19 @@ export function poolFor(run) {
 export function startLevel(run, data) {
   const roster = BOSSES.find((b) => b.level === run.level) || BOSSES[BOSSES.length - 1];
   const card = data.byId[roster.card];
+  // The simple table skips the add-on mechanics wholesale: no biome is drawn
+  // and the boss keeps to the shared reaction table (noSignatures). The core
+  // loop (bet, guard, Rage) is untouched; this is the try-out dial, not a
+  // difficulty dial.
   const biomes = run.kind === 'first' ? data.biome.filter((b) => ELEMENT_BIOMES.includes(b.id)) : data.biome;
-  const biome = biomes[Math.floor(Math.random() * biomes.length)];
+  const biome = run.simple ? null : biomes[Math.floor(Math.random() * biomes.length)];
   if (run.kind === 'full' && run.level === 1 && run.hand.length === 0) run.hand.push(run.advDeck.shift()); // setup draw
   const fight = newFight(data, {
     level: run.level,
     boss: { ...card, name: roster.name, element: roster.element },
     hero: { element: run.element, klass: run.klass, pool: poolFor(run), attacks: attacksFor(run, data) },
-    biome: { id: biome.id, element: biome.element, rule: biome.rule },
+    biome: biome ? { id: biome.id, element: biome.element, rule: biome.rule } : null,
+    noSignatures: !!run.simple,
     die: run.die, mode: run.mode,
     // The Second Wind card is put in play for the whole run or left in the box,
     // and the engine resets its ladder per fight (RULES: the first comeback is
@@ -63,7 +68,7 @@ export function startLevel(run, data) {
     secondWind: !!run.secondWind,
     advantage: run.kind === 'full' ? run.hand.splice(0) : [],
   });
-  fight.roster = roster; fight.biomeCard = biome.id; fight.minionRoster = MINION;
+  fight.roster = roster; fight.biomeCard = biome ? biome.id : null; fight.minionRoster = MINION;
   run.fight = fight; run.stage = 'fight'; run.ui = {};
   return fight;
 }

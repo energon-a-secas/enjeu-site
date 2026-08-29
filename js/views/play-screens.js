@@ -76,6 +76,12 @@ export function renderSetup(s) {
           <small class="muted">${escHtml(t('play.secondWindHint'))}</small>
         </label>
       </div>
+      <div class="sw-pick ${s.simple ? 'panel--accent' : ''}">
+        <label class="sw-pick__text">
+          <span class="row"><input type="checkbox" data-change="play-simple" ${s.simple ? 'checked' : ''}> <b>${escHtml(t('play.simpleMode'))}</b></span>
+          <small class="muted">${escHtml(t('play.simpleModeHint'))}</small>
+        </label>
+      </div>
     </div>`,
 
     `<div class="panel stack stack--tight table-slide">

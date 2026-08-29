@@ -125,12 +125,13 @@ export function onPlayAction(s, act, el, e) {
       // yank the other two away.
       case 'kind': s.runKind = d.kind; s.secondWind = secondWindDefault(d.kind); s.setupStep = 1; return true;
       case 'second-wind': s.secondWind = el.checked !== undefined ? !!el.checked : !s.secondWind; return true;
+      case 'simple': s.simple = el.checked !== undefined ? !!el.checked : !s.simple; return true;
       case 'element': s.element = d.element; s.setupStep = 2; return true;
       case 'die': s.die = d.die; return true;
       case 'mode': s.mode = d.mode; return true;
       case 'start': {
         // Remember the table so a returning family gets a one-tap fast lane.
-        s.playLast = { kind: s.runKind || 'first', element: s.element, die: s.die, mode: s.mode, secondWind: s.secondWind };
+        s.playLast = { kind: s.runKind || 'first', element: s.element, die: s.die, mode: s.mode, secondWind: s.secondWind, simple: s.simple };
         s.setupStep = 0;
         s.run = newRun(s.cards, s.playLast);
         startLevel(s.run, s.cards);
@@ -140,8 +141,8 @@ export function onPlayAction(s, act, el, e) {
       case 'setup-step': { s.setupStep = Math.max(0, Math.min(3, Number(d.step))); return true; }
       case 'setup-again': {
         const L = s.playLast;
-        if (L) { s.runKind = L.kind; s.element = L.element; s.die = L.die; s.mode = L.mode; s.secondWind = L.secondWind; }
-        s.run = newRun(s.cards, { kind: s.runKind || 'first', element: s.element, die: s.die, mode: s.mode, secondWind: s.secondWind });
+        if (L) { s.runKind = L.kind; s.element = L.element; s.die = L.die; s.mode = L.mode; s.secondWind = L.secondWind; s.simple = !!L.simple; }
+        s.run = newRun(s.cards, { kind: s.runKind || 'first', element: s.element, die: s.die, mode: s.mode, secondWind: s.secondWind, simple: s.simple });
         startLevel(s.run, s.cards);
         applyGrudges(s, s.run);
         return true;

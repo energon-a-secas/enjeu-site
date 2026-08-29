@@ -291,21 +291,35 @@ test('Resolve opens a chooser: throw each die or resolve at once, one primary ei
   assert.ok(!renderPlay(s).includes('rm-backdrop'), 'Done closes the stage');
 });
 
-test('the throw stage is a real polyhedron that lands on the engine roll', () => {
+test('the throw stage is the site die: one numeral, landing on the engine roll', () => {
   const s = session(fight());
   s.play = { tourDone: true };
   click(s, 'pick', { id: 'focus' });
   click(s, 'resolve-plan');
   click(s, 'resolve-throw');
   let html = renderPlay(s);
-  assert.ok(html.includes('die--d20'), 'a d20 fight stages a d20');
   const stage = html.slice(html.indexOf('die-stage'), html.indexOf('rm-row'));
-  assert.equal((stage.match(/<b>\d+<\/b>/g) || []).length, 20, 'all twenty faces exist on the stage');
-  assert.ok(!html.includes('data-face='), 'no face is claimed before the throw');
+  assert.ok(stage.includes('die-toss'), 'the stage draws the site die face');
+  assert.ok(!/<b>\d+<\/b>/.test(stage), 'no number is claimed before the throw: the face wears the die glyph');
+  assert.ok(stage.includes('d20'), 'the die identity is named');
   s.run.ui.typed = 14; click(s, 'go-typed');
   html = renderPlay(s);
-  assert.ok(html.includes('data-face="14"'), 'the die lands on the exact number the engine was given');
-  assert.ok(html.includes('is-thrown'), 'and the tumble class fires on that render');
+  const after = html.slice(html.indexOf('die-stage'), html.indexOf('rm-ledger'));
+  assert.ok(after.includes('<b>14</b>'), 'the die lands on the exact number the engine was given');
+  assert.equal((after.match(/<b>\d+<\/b>/g) || []).length, 1, 'and exactly ONE number exists to read');
+  assert.ok(after.includes('is-tossed'), 'the toss class fires on that render');
+});
+
+test('the simple table strips biomes and signatures, and nothing else', () => {
+  const run = newRun(data, { kind: 'full', element: 'fire', die: 'd20', mode: 'standard', simple: true });
+  startLevel(run, data);
+  const f = run.fight;
+  assert.equal(f.biome, null, 'no biome is drawn');
+  assert.equal(f.biomeCard, null);
+  assert.equal(f.boss.signature, null, 'the boss keeps to the shared reaction table');
+  assert.equal(f.boss.rage, 4, 'Rage is the core loop and stays');
+  const s = { cards: data, run, view: 'play', play: { tourDone: true } };
+  assert.ok(renderPlay(s).includes('duel--plain'), 'the board renders the plain backdrop');
 });
 
 test('the first fight offers the tour: four steps, skippable, remembered on the session', () => {

@@ -33,6 +33,7 @@ export const state = {
   element: 'fire',
   runKind: 'first',
   secondWind: true,     // the gentle-mode card in play; default follows runKind
+  simple: false,        // plain table: no biomes, no signature moves
   run: null,            // see game/engine.js newRun()
   // Board preferences. NOT in run.ui: game/run.js resets that object every
   // level, and a preference that resets every level is not a preference.
@@ -48,7 +49,7 @@ export const state = {
  */
 export const secondWindDefault = (kind) => kind === 'first';
 
-const PERSIST = ['lang', 'learnStep', 'deckFilter', 'browse', 'paper', 'printScope', 'withBacks', 'die', 'mode', 'element', 'runKind', 'secondWind', 'run', 'play', 'balance'];
+const PERSIST = ['lang', 'learnStep', 'deckFilter', 'browse', 'paper', 'printScope', 'withBacks', 'die', 'mode', 'element', 'runKind', 'secondWind', 'simple', 'run', 'play', 'balance'];
 
 // The nested settings, defaults captured before anything can overwrite them.
 const NESTED = ['balance', 'browse', 'play'];

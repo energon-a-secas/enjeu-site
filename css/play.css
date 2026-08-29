@@ -773,3 +773,47 @@ button.tbl-slot { cursor: zoom-in; }
   .rm { width: calc(100vw - 16px); padding: 12px; }
   .rm-row .btn { min-height: 48px; }
 }
+
+/* ── The throw: the site's own die, tossed ─────────────────── */
+/* One rounded square, one numeral, the same face the die-cell and the ledger
+   draw: exactly one number exists to read, so the landing cannot be misread.
+   Pre-throw the face wears the die's glyph; the throw arcs, squashes into the
+   shadow, and the numeral pops in late so it never contradicts the tumble. */
+.die-stage { display: grid; place-items: center; min-height: 92px; position: relative; }
+.die-stage::after {
+  content: ""; position: absolute; left: 50%; bottom: 6px; width: 60px; height: 11px;
+  transform: translateX(-50%); border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(80, 66, 34, 0.26), transparent);
+  pointer-events: none;
+}
+.die-stage.has-rolled::after { animation: die-shadow 620ms var(--ease-out); }
+@keyframes die-shadow {
+  0%   { transform: translateX(-50%) scaleX(0.35); opacity: 0.15; }
+  74%  { transform: translateX(-50%) scaleX(1.2); opacity: 1; }
+  100% { transform: translateX(-50%) scaleX(1); opacity: 1; }
+}
+.die-stage__dice { display: flex; gap: 14px; align-items: center; }
+.die-stage__which { position: absolute; right: 8px; bottom: 2px; font-size: 10px; }
+.die-toss {
+  width: 62px; height: 62px; border-radius: 14px;
+  border: 3px solid var(--gold-deep); background: #fffdf7;
+  display: grid; place-items: center;
+  font-size: 28px; font-weight: 900; font-variant-numeric: tabular-nums;
+  box-shadow: 0 2px 0 rgba(120, 85, 15, 0.35);
+}
+.die-toss__glyph { width: 34px; height: 34px; color: var(--gold-deep); opacity: 0.85; }
+.die-toss.is-tossed { animation: die-toss 620ms var(--ease-out); }
+.die-toss.is-tossed b { animation: die-num 620ms var(--ease-out); }
+@keyframes die-toss {
+  0%   { transform: translate3d(0, -44px, 0) rotate(-200deg) scale(0.55); }
+  74%  { transform: translate3d(0, 5px, 0) rotate(9deg) scale(1.08); }
+  100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+}
+@keyframes die-num {
+  0%, 55% { opacity: 0; }
+  76% { opacity: 1; transform: scale(1.3); }
+  100% { opacity: 1; transform: none; }
+}
+/* 2d6 / 3d6 patter in, not in lockstep. */
+.die-toss--b { animation-delay: 80ms; animation-duration: 690ms; }
+.die-toss--c { animation-delay: 160ms; animation-duration: 760ms; }

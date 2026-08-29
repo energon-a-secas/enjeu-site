@@ -331,7 +331,7 @@ export function renderFight(s, run) {
     <div class="fight-bar">
       <div class="fight-bar__who">
         <b>${escHtml(roster.name || f.boss.name)}</b>
-        <span class="muted small">${f.boss.size}${roster.element ? ` · ${escHtml(cap(roster.element))}` : ''} · ${escHtml(t('play.level'))} ${f.level} · <span class="round-chip ${ui.roundNew ? 'round-pop' : ''} ${f.round === f.boss.rage - 1 ? 'round-warn' : ''} ${raging(f) ? 'round-rage' : ''}">${escHtml(t('play.round'))} ${f.round}</span> · ${escHtml(biome?.name || '')}${biome?.rule ? ` (${escHtml(biome.rule)})` : ''}</span>
+        <span class="muted small">${f.boss.size}${roster.element ? ` · ${escHtml(cap(roster.element))}` : ''} · ${escHtml(t('play.level'))} ${f.level} · <span class="round-chip ${ui.roundNew ? 'round-pop' : ''} ${f.round === f.boss.rage - 1 ? 'round-warn' : ''} ${raging(f) ? 'round-rage' : ''}">${escHtml(t('play.round'))} ${f.round}</span>${biome ? ` · ${escHtml(biome.name)}${biome.rule ? ` (${escHtml(biome.rule)})` : ''}` : ''}</span>
       </div>
       <div class="row"><span class="chip" aria-pressed="false">${f.die} · ${escHtml(t(`play.${f.mode}`))}</span>
         <button class="btn btn--ghost btn--sm" data-action="play-log" aria-pressed="${logOpen}">${glyphSvg('book', '', 16)} ${escHtml(t(logOpen ? 'play.logHide' : 'play.logShow'))}</button>
@@ -694,9 +694,14 @@ function dieThrow(f, ui, roll = null) {
   const m = /^(\d*)d(\d+)$/.exec(f.die) || [null, '', '20'];
   const count = Number(m[1] || 1);
   const sides = Number(m[2]);
-  const thrown = n !== null ? 'is-thrown' : '';
-  const faces = (landed) => Array.from({ length: sides }, (_, k) => `<b>${k + 1}</b>`).join('');
-  const one = (landed, extra = '') => `<div class="die3d die--d${sides} ${thrown} ${extra}" ${landed !== null ? `data-face="${landed}"` : ''}>${faces(landed)}</div>`;
+  const tossed = n !== null ? 'is-tossed' : '';
+  // The site's die is a rounded square with one big numeral (the die-cell,
+  // the ledger chips, the learn slides): the throw uses the same face, so
+  // there is exactly ONE number to read. The 3D solid landed on the right
+  // face and still read wrong: neighbouring faces at this size shout as
+  // loudly as the landed one. Pre-throw the face shows the die's own glyph.
+  const one = (landed, extra = '') => `<div class="die-face die-toss ${tossed} ${extra}">
+      ${landed !== null ? `<b>${landed}</b>` : artGlyphSvg(`die-d${sides}`, 'die-toss__glyph', 34)}</div>`;
   let dice;
   if (count <= 1) {
     dice = one(n);
@@ -711,10 +716,11 @@ function dieThrow(f, ui, roll = null) {
       const v = n === null ? null : Math.max(1, Math.min(sides, left - (k - 1)));
       split.push(v); if (v !== null) left -= v;
     }
-    dice = `<div class="duo">${split.map((v, k) => one(v, k === 1 ? 'die3d--b' : k === 2 ? 'die3d--c' : '')).join('')}</div>`;
+    dice = split.map((v, k) => one(v, k === 1 ? 'die-toss--b' : k === 2 ? 'die-toss--c' : '')).join('');
   }
   return `<div class="die-stage ${n !== null ? 'has-rolled' : ''}">
-    <div class="die-tilt">${dice}</div>
+    <div class="die-stage__dice">${dice}</div>
+    <small class="muted die-stage__which">${escHtml(f.die)}</small>
   </div>`;
 }
 
