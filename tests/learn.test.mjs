@@ -12,7 +12,7 @@ import { useCards, DECKS } from '../js/data/cards.js';
 import { t } from '../js/strings.js';
 import { STEPS, COPY } from '../js/data/walkthrough.js';
 import {
-  SLIDE_DICE, SLIDE_RULEBOOK, SLIDE_COUNT, SLIDE_SLUGS, SLIDE_CHAPTERS, LAST_BASIC,
+  SLIDE_PLAY, SLIDE_DICE, SLIDE_RULEBOOK, SLIDE_COUNT, SLIDE_SLUGS, SLIDE_CHAPTERS, LAST_BASIC,
   clampSlide, slideForSlug, renderLearn, onLearnAction, onLearnKey,
 } from '../js/views/learn.js';
 
@@ -30,10 +30,11 @@ function test(name, fn) {
   catch (e) { failed++; console.log(`  FAIL ${name}\n       ${e.message}`); }
 }
 
-test('the slide count is derived from STEPS: the steps, the dice bridge, then the rulebook last', () => {
-  assert.equal(SLIDE_DICE, STEPS.length);
-  assert.equal(SLIDE_RULEBOOK, STEPS.length + 1);
-  assert.equal(SLIDE_COUNT, STEPS.length + 2);
+test('the slide count is derived from STEPS: steps, the play-now invitation, dice bridge, rulebook last', () => {
+  assert.equal(SLIDE_PLAY, STEPS.length, 'the invitation follows the lessons');
+  assert.equal(SLIDE_DICE, STEPS.length + 1);
+  assert.equal(SLIDE_RULEBOOK, STEPS.length + 2);
+  assert.equal(SLIDE_COUNT, STEPS.length + 3);
   assert.equal(SLIDE_RULEBOOK, SLIDE_COUNT - 1, 'the rulebook is the last slide');
 });
 
@@ -207,13 +208,17 @@ test('two chapters, Basics first, and nothing interleaved', () => {
   // would be told the basics end twice.
   assert.equal(SLIDE_CHAPTERS.length, SLIDE_COUNT);
   for (const st of STEPS) assert.ok(st.chapter === 'basics' || st.chapter === 'advanced', `${st.id}: ${st.chapter}`);
-  assert.equal(SLIDE_CHAPTERS.indexOf('advanced'), LAST_BASIC + 1, 'the two chapters are one run each');
+  assert.equal(SLIDE_CHAPTERS.indexOf('advanced'), LAST_BASIC + 1, 'each chapter is one unbroken run');
   assert.ok(LAST_BASIC > 0, 'Basics is not empty');
   assert.ok(SLIDE_CHAPTERS.includes('advanced'), 'Advanced is not empty');
+  // The invitation sits between the lessons and the reference: a fresh visitor
+  // used to reach the end believing the site was a manual for a physical
+  // product, so the deck now closes its teaching with "play it right now".
+  assert.equal(SLIDE_CHAPTERS[SLIDE_PLAY], 'try');
   // The dice bridge and the rulebook are reference, and neither is needed to
   // finish a first fight.
-  assert.equal(SLIDE_CHAPTERS[SLIDE_DICE], 'advanced');
-  assert.equal(SLIDE_CHAPTERS[SLIDE_RULEBOOK], 'advanced');
+  assert.equal(SLIDE_CHAPTERS[SLIDE_DICE], 'reference');
+  assert.equal(SLIDE_CHAPTERS[SLIDE_RULEBOOK], 'reference');
   assert.equal(SLIDE_SLUGS[LAST_BASIC], 'what-you-need', 'Basics ends on what you need to own');
 });
 
@@ -222,10 +227,12 @@ test('every slide names its chapter, and only the last basics slide says the bas
     const html = renderLearn(S({ learnStep: i }));
     const label = COPY.chapter[SLIDE_CHAPTERS[i]];
     assert.ok(html.includes(`<b class="deck__chapter">${label}</b>`), `slide ${i} counter omits ${label}`);
-    // Two groups, two labels: the break is drawn, not just stated.
-    assert.equal((html.match(/class="rail__group"/g) || []).length, 2, `slide ${i} rail groups`);
-    assert.ok(html.includes(`<span class="rail__label" aria-hidden="true">${COPY.chapter.basics}</span>`), `slide ${i} basics label`);
-    assert.ok(html.includes(`<span class="rail__label" aria-hidden="true">${COPY.chapter.advanced}</span>`), `slide ${i} advanced label`);
+    // Four groups, four labels, each chapter one unbroken run: the breaks are
+    // drawn, not just stated.
+    assert.equal((html.match(/class="rail__group"/g) || []).length, 4, `slide ${i} rail groups`);
+    for (const ch of ['basics', 'advanced', 'try', 'reference']) {
+      assert.ok(html.includes(`<span class="rail__label" aria-hidden="true">${COPY.chapter[ch]}</span>`), `slide ${i} ${ch} label`);
+    }
     assert.equal(html.includes('slide__handoff'), i === LAST_BASIC, `slide ${i} handoff line`);
   }
 });

@@ -55,12 +55,17 @@
    moved into the title and the 84px went to the arena. The third column is the
    log, and closing it hands its 262px over too. */
 .fight-grid {
-  display: grid; grid-template-columns: 74px minmax(0, 1fr) 262px;
+  display: grid; grid-template-columns: 74px minmax(0, 1fr);
   gap: var(--space-3); align-items: stretch;
 }
-/* Two columns, because the closed log is not rendered at all: hiding sixty
-   log lines with CSS would still build them on every single render. */
-.fight-grid[data-log="closed"] { grid-template-columns: 74px minmax(0, 1fr); }
+/* The log lives BELOW the board, full width, and only when asked for: as a
+   262px right column it taxed the board's width all game for lines most
+   players never read mid-fight. The closed log is not rendered at all:
+   hiding sixty lines with CSS would still build them on every render. */
+.fight-log-below {
+  grid-column: 1 / -1; max-height: 148px; overflow-y: auto;
+  overscroll-behavior: contain;
+}
 /* Three rows: the duel takes the slack, the turn band is content-sized but
    capped, and the resolve band collapses when empty. The cap is what stops the
    turn band eating the duel: it used to take 60 to 79 percent of the box. */
@@ -80,18 +85,15 @@
    flex:none, so the button that ends the turn is always the last thing on screen
    and always on it. */
 .fight-main > .actions { display: flex; flex-direction: column; gap: 6px; min-height: 0; }
-.fight-side { min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 4px; }
 /* The rail must NOT scroll: a hovered slot grows 4x out of its own box, and any
    overflow on this axis clips the enlargement that is the point of the hover.
    Six slots at ~64px fit the height budget without scrolling anyway. */
 .fight-table { overflow: visible; display: flex; flex-direction: column; gap: 4px; align-items: center; }
 @media (max-width: 1180px) {
-  .fight-grid { grid-template-columns: 68px minmax(0, 1fr) 210px; }
-  .fight-grid[data-log="closed"] { grid-template-columns: 68px minmax(0, 1fr); }
+  .fight-grid { grid-template-columns: 68px minmax(0, 1fr); }
 }
 @media (max-width: 900px) {
   .fight-grid, .fight-grid[data-log="closed"] { grid-template-columns: minmax(0, 1fr); }
-  .fight-side { overflow: visible; }
   .fight-table { flex-direction: row; flex-wrap: wrap; justify-content: flex-start; }
   .board-fit { --hand-w: 84px; --plan-w: 32px; --tbl-w: 30px; --fig: 72px; }
 }
@@ -158,11 +160,19 @@ button.tbl-slot { cursor: zoom-in; }
 .duel {
   display: grid; min-height: 0; overflow: hidden;
   container-type: size; container-name: duel;
-  grid-template-columns: minmax(120px, 190px) minmax(0, 1fr) minmax(120px, 190px);
+  grid-template-columns: minmax(150px, 236px) minmax(0, 1fr) minmax(120px, 190px);
   align-items: center; gap: 8px var(--space-3);
-  background: var(--surface-2); border-radius: var(--radius); padding: 8px 10px;
+  border-radius: var(--radius); padding: 8px 10px;
   border: 2px solid var(--border);
   --fig: clamp(38px, 22cqh, 88px);
+  /* The place is the light. Hero side bright, boss side sunk into the biome's
+     own colour: one diffuse sweep, no hard stop, still light enough on the
+     right for the muted text that lives there. */
+  --biome-a: #d8d2c6;
+  background: linear-gradient(100deg,
+    color-mix(in srgb, var(--biome-a) 12%, #fdfcf8) 0%,
+    color-mix(in srgb, var(--biome-a) 34%, #f6f1e7) 52%,
+    color-mix(in srgb, var(--biome-a) 62%, #7a7263) 135%);
 }
 .duel > * { display: flex; flex-direction: column; min-width: 0; min-height: 0; gap: 4px; }
 .duel__hero { align-items: flex-start; }
@@ -171,8 +181,8 @@ button.tbl-slot { cursor: zoom-in; }
 .duel .figure { gap: 0; font-size: 10px; position: relative; flex: none; }
 .duel .figure svg { width: var(--fig); height: var(--fig); }
 .duel .figure.is-missed svg { animation: shudder 400ms var(--ease-out); }
-.duel__boss.is-target .figure {
-  outline: 3px solid var(--gold-deep); outline-offset: 3px; border-radius: 10px;
+.duel__boss.is-target .figure svg {
+  filter: drop-shadow(0 0 5px var(--gold-deep)) drop-shadow(0 2px 10px rgba(180, 130, 20, 0.45));
 }
 
 /* ── The wall ──────────────────────────────────────────────
@@ -212,7 +222,13 @@ button.tbl-slot { cursor: zoom-in; }
 }
 .fx-num--bad { color: var(--danger); }
 
-@media (max-width: 700px) {
+/* Below the >=901px lock the page scrolls, so BELOW THE LOCK IS THE STACKED
+   LAYOUT: one rule, not three. This block sat at 700px and left a 701-900px
+   band where container-type: size met an auto-height page and the duel
+   collapsed to its 150px floor with most of the board cropped, a band a
+   375x812 phone lands in the moment it rotates. cq sizing lives only inside
+   the lock now. */
+@media (max-width: 900px) {
   .duel { grid-template-columns: 1fr; align-items: stretch; container-type: normal; }
   .duel > * { align-items: flex-start; text-align: left; }
   /* Order for a phone: what is coming, then what it costs you, then your gear.
@@ -222,8 +238,20 @@ button.tbl-slot { cursor: zoom-in; }
   .duel__wall { order: 2; align-items: flex-start; }
   .duel__hero { order: 3; }
   .duel__boss .targets, .duel .gear-row { justify-content: flex-start; }
-  /* Twenty cards five wide is 380px tall on a 358px column. Go wider and smaller. */
-  .wall { --wall-card: clamp(14px, calc((100% - (var(--wall-cols) - 1) * 4px) / var(--wall-cols)), 44px); }
+  /* Deterministic wall sizing: the old percentage clamp resolved against auto
+     grid tracks (a cyclic percentage browsers may treat as auto) and could
+     clip boss life cards, which are game state. Tracks share the row equally
+     and the card caps at the boss-mini size. */
+  .wall { width: 100%; max-width: 320px; grid-template-columns: repeat(var(--wall-cols), minmax(0, 1fr)); justify-items: center; }
+  .wall .lc, .wall .lc-part, .wall .lc-falls { width: 100%; max-width: 34px; }
+  /* The hand overlapped itself here: the grid's middle auto track took the
+     row and the two 1fr sides resolved to zero, painting the Advantage hand
+     over the attack cards. Flex wraps instead; cards lead on their own line. */
+  .hand-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-3); }
+  .hand-row > .hand-attacks { width: 100%; order: -1; }
+  /* One thumb-width action row. */
+  .plan-bar { width: 100%; }
+  .plan-bar .btn { flex: 1; min-height: 48px; }
 }
 
 /* ── The boss speaks ───────────────────────────────────────── */
@@ -252,7 +280,7 @@ button.tbl-slot { cursor: zoom-in; }
 .bubble.is-alarm::before { border-top-color: #b91c1c; }
 .bubble.is-alarm span { color: #991b1b; }
 .bubble.is-said { border-style: dashed; }
-@media (max-width: 700px) { .bubble { align-self: flex-start; } .bubble::before { right: auto; left: 26px; } .bubble::after { right: auto; left: 29px; } }
+@media (max-width: 900px) { .bubble { align-self: flex-start; } .bubble::before { right: auto; left: 26px; } .bubble::after { right: auto; left: 29px; } }
 
 /* ── The die in the empty cell ─────────────────────────────── */
 .die-cell .die-face {
@@ -293,6 +321,9 @@ button.tbl-slot { cursor: zoom-in; }
    so the only styling it needs is to sit back visually. A rotateY(180deg) here
    would mirror that back and undo the point of showing it. */
 .pile { display: flex; flex-wrap: wrap; gap: 4px; align-items: flex-end; --mini-w: clamp(24px, 4vh, 40px); }
+/* The hero's life IS the resource the whole game spends, so its cards get the
+   side column and a size you can read states off at a glance. */
+.duel__hero .pile { --mini-w: clamp(32px, 8.5cqh, 58px); gap: 5px; }
 .pile .lc { width: var(--mini-w); height: auto; transition: transform 400ms var(--ease-out), opacity 300ms; }
 .pile .lc.is-spent { transform: rotate(90deg) translateY(-2px); }
 .pile .lc.is-broken { opacity: 0.5; filter: saturate(0.7); }
@@ -570,14 +601,14 @@ button.tbl-slot { cursor: zoom-in; }
    Low-saturation washes so the picture stays the loud thing. Rage wins: its
    rule sits later with the same specificity, and the klaxon overrides the
    weather wherever both apply, which is the declared precedence. */
-.duel.duel--volcano { background: #f3e6dd; }
-.duel.duel--river { background: #e3ebf0; }
-.duel.duel--mountain { background: #e9ece4; }
-.duel.duel--desert { background: #f3ecdb; }
-.duel.duel--forest { background: #e5ecdf; }
-.duel.duel--village { background: #f1e9dc; }
-.duel.duel--castle { background: #eae6ee; }
-.duel.is-raging { background: #efe0da; }
+.duel.duel--volcano { --biome-a: #d99a72; }
+.duel.duel--river { --biome-a: #8fb4c9; }
+.duel.duel--mountain { --biome-a: #a9b596; }
+.duel.duel--desert { --biome-a: #d9c48a; }
+.duel.duel--forest { --biome-a: #93ad7e; }
+.duel.duel--village { --biome-a: #cbab7c; }
+.duel.duel--castle { --biome-a: #a292b8; }
+.duel.is-raging { --biome-a: #cc7a5e; }
 
 /* ── The endings land ──────────────────────────────────────── */
 .duel .figure.is-felled svg { transform: rotate(78deg) translateY(-8%); transform-origin: 50% 88%; }
@@ -598,6 +629,12 @@ button.tbl-slot { cursor: zoom-in; }
   100% { background: transparent; transform: scaleY(0); }
 }
 .verdict { animation: verdict-late 700ms var(--ease-out); }
+.verdict-row .die-face.is-rolling { animation: die-tumble 550ms var(--ease-out); }
+@keyframes die-tumble {
+  0% { transform: rotate(-100deg) scale(0.55); opacity: 0; }
+  55% { transform: rotate(14deg) scale(1.12); opacity: 1; }
+  100% { transform: rotate(0) scale(1); }
+}
 @keyframes verdict-late { 0% { opacity: 0; } 65% { opacity: 0; } 100% { opacity: 1; } }
 
 /* ── The boss's d6 in the child's hand ─────────────────────── */
@@ -645,17 +682,54 @@ button.tbl-slot { cursor: zoom-in; }
 /* ── Small fingers ─────────────────────────────────────────── */
 @media (pointer: coarse) {
   .die-chip { min-width: 72px; min-height: 56px; }
-  .action-card, .btn, .tbl-slot, .setup-step { min-height: 44px; }
-  .plan-undo { min-height: 44px; }
+  .action-card, .btn, .tbl-slot, .setup-step, .seg button { min-height: 44px; }
+  .plan-undo, .minion { min-height: 44px; }
+  .minion { padding: 4px 10px; }
+  /* The plan number stays a 24px circle but hits like 48: deleting a step is
+     the control a thumb misses most. Steps are a full row apart, no overlap. */
+  .plan-num { position: relative; }
+  .plan-num::after { content: ""; position: absolute; inset: -8px; }
+  .plan-bet button, .plan-tgt, .plan-rune { min-height: 32px; min-width: 32px; padding: 4px 8px; }
+  .typed-roll { min-height: 44px; width: 84px; }
+}
+/* Sticky hover is not hover: a tapped rail slot stayed 4x scaled over the
+   board. The zoom is a desktop affordance; tap opens the modal either way. */
+@media (hover: none) {
+  .tbl-slot:hover { transform: none; }
+  .minion:hover { transform: none; }
 }
 
 /* ── The phone column leads with the fight ─────────────────── */
 @media (max-width: 900px) {
   .fight-main { order: 1; }
   .fight-table { order: 2; }
-  .fight-side { order: 3; }
+  .fight-log-below { order: 3; }
 }
 
 /* The boss's own row on the chips wears its signature colour. */
 .die-chip--sig { border-color: var(--gold-deep); background: #fdf6e0; }
 .die-chip--sig small { color: var(--gold-deep); font-weight: 700; }
+
+/* ── The first-fight tour ──────────────────────────────────── */
+/* One floating sentence at a time, and a pulse on the region it names. The
+   callout never covers the board: it floats bottom-centre, above the fold on
+   every size the lock allows. */
+.tour-callout {
+  position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+  z-index: 80; max-width: min(440px, calc(100vw - 24px));
+  background: var(--surface-1); border: 2px solid var(--gold-deep);
+  border-radius: var(--radius); padding: 10px 14px;
+  box-shadow: 0 10px 30px rgba(40, 32, 16, 0.28);
+}
+.tour-callout p { margin: 0 0 8px; font-size: var(--text-sm); line-height: 1.5; }
+[data-tour-on="wall"] [data-tour="wall"],
+[data-tour-on="life"] [data-tour="life"],
+[data-tour-on="hand"] [data-tour="hand"],
+[data-tour-on="go"] [data-tour="go"] {
+  outline: 3px solid var(--gold-deep); outline-offset: 4px; border-radius: 8px;
+  animation: tour-pulse 1.6s var(--ease-out) infinite;
+}
+@keyframes tour-pulse {
+  0%, 100% { outline-offset: 4px; }
+  50% { outline-offset: 7px; }
+}

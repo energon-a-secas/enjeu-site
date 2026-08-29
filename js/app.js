@@ -7,6 +7,7 @@ import { setArtManifest, loadArt } from './cards/glyphs.js';
 import { syncFromHash } from './navigate.js';
 import { render, renderError } from './render.js';
 import { bindEvents } from './events.js';
+import { initInspector } from './views/inspect.js';
 import { t } from './strings.js';
 import { reattach } from './game/run.js';
 
@@ -15,6 +16,7 @@ async function init() {
   syncFromHash();
   render(state);           // "loading" until the data lands
   bindEvents();
+  initInspector();
   try {
     const [cards, manifest] = await Promise.all([
       loadCards('data/cards.json'),

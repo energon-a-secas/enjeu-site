@@ -125,6 +125,7 @@ export const STEPS = bilingual([
         'All In costs two of your three actions and bets as many cards as you like. On a coin flip it pays 100 damage per card you bet, so 1, 2, 3 or 4 cards read as 100, 200, 300 or 400.',
         'Bubble and Run each cost an action and no card. Bubble absorbs the next 25 damage you take this round.',
         'Run puts you Hidden until the boss has acted. Its Strike goes past you for no damage at all, and anything else it does still finds you, but only for half.',
+        'Invention is the wild one: invent a spell, say what it does out loud, and a long-shot roll pays 350.',
         'Say the name out loud when you play a card. The picture is the name.',
       ],
       es: [
@@ -132,6 +133,7 @@ export const STEPS = bilingual([
         'Todo o Nada cuesta dos de tus tres acciones y apuesta las cartas que quieras. Con una moneda al aire paga 100 de daño por cada carta que apostaste, así que 1, 2, 3 o 4 cartas son 100, 200, 300 o 400.',
         'Burbuja y Escape cuestan una acción y ninguna carta. Burbuja absorbe los próximos 25 de daño que recibas esta ronda.',
         'Escape te deja Escondido hasta que el jefe actúe. Su Golpe pasa de largo y no te hace nada, y todo lo demás igual te encuentra, pero solo por la mitad.',
+        'Invención es la carta loca: inventa un hechizo, di en voz alta qué hace, y una tirada difícil paga 350.',
         'Di el nombre en voz alta cuando juegues una carta. El dibujo es el nombre.',
       ],
     },
@@ -285,7 +287,9 @@ export const COPY = bilingual({
   // than abandoned: the rest is depth, not homework.
   chapter: {
     basics: { en: 'Basics', es: 'Lo básico' },
+    try: { en: 'Try it', es: 'Pruébalo' },
     advanced: { en: 'Advanced', es: 'Lo avanzado' },
+    reference: { en: 'Reference', es: 'Referencia' },
   },
   basicsEnd: {
     en: 'That is everything you need to play a whole fight. Advanced adds elements and biomes, the five-level run, and every other die.',

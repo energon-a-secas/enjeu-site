@@ -36,7 +36,7 @@ export const state = {
   run: null,            // see game/engine.js newRun()
   // Board preferences. NOT in run.ui: game/run.js resets that object every
   // level, and a preference that resets every level is not a preference.
-  play: { logOpen: true },
+  play: { logShown: false },   // the log earns its space only when asked for
   // Balance view settings
   balance: { trials: 2000, bonus: 0, legacy: false, advantage: false, klass: 'none' },
 };

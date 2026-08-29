@@ -1,1 +1,8 @@
+<!-- enjeu-credit
+  By verry poernomo, from Noun Project.
+  Source: https://thenounproject.com/icon/life-4724760/
+  Licence: CC BY 3.0, https://creativecommons.org/licenses/by/3.0/
+  Modified for Enjeu: creator credit moved to CREDITS.md and the About
+  page, viewBox cropped to the artwork. Colour is applied at render time.
+-->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" viewBox="0 0 10 10" enable-background="new 0 0 10 10" xml:space="preserve"><path d="M8.237,2.354c-0.791-0.85-2.121-0.896-2.971-0.105L5,2.512L4.733,2.248c-0.807-0.752-2.059-0.752-2.865,0  C1.018,3.039,0.972,4.371,1.763,5.22l2.988,2.992c0.002,0.001,0.002,0.001,0.002,0.001C4.89,8.35,5.112,8.35,5.249,8.212L8.237,5.22  C8.99,4.412,8.99,3.16,8.237,2.354z M4.65,6.049V5.35H3.949c-0.194,0-0.351-0.157-0.351-0.351c0-0.194,0.156-0.351,0.351-0.351H4.65  V3.947c0-0.193,0.156-0.35,0.35-0.35s0.35,0.156,0.35,0.35v0.701h0.701c0.194,0,0.352,0.156,0.352,0.351  c0,0.193-0.157,0.351-0.352,0.351H5.35v0.699C5.35,6.244,5.193,6.4,5,6.4S4.65,6.244,4.65,6.049z"/></svg>

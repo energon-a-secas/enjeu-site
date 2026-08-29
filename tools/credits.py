@@ -50,6 +50,25 @@ def audit(manifest: dict) -> tuple[list[dict], list[dict], list[dict]]:
     return ready, incomplete, gaps
 
 
+LICENCE_URI = {
+    "CC BY 3.0": "https://creativecommons.org/licenses/by/3.0/",
+    "Public Domain": "https://creativecommons.org/publicdomain/mark/1.0/",
+}
+
+# CC BY 3.0 section 3(b): an adaptation must say it was changed. One sentence,
+# stated once here and carried everywhere the files travel.
+MODIFIED_NOTE = (
+    "The downloaded files were modified: the baked-in creator credit was moved "
+    "to this page and the About page, the viewBox was cropped to the artwork, "
+    "and colour is applied at render time."
+)
+
+
+def licence_cell(licence: str) -> str:
+    uri = LICENCE_URI.get(licence)
+    return f"[{licence}]({uri})" if uri else licence
+
+
 def render(manifest: dict, ready: list[dict]) -> str:
     lines = [
         "# Credits",
@@ -59,6 +78,8 @@ def render(manifest: dict, ready: list[dict]) -> str:
         "`data/art-manifest.json` by `tools/credits.py` - edit the manifest,",
         "not this file.",
         "",
+        MODIFIED_NOTE,
+        "",
         f"Collection: {manifest.get('collection', 'n/a')}",
         "",
         "| Icon | Used for | Creator | Licence |",
@@ -67,10 +88,52 @@ def render(manifest: dict, ready: list[dict]) -> str:
     for slot in sorted(ready, key=lambda s: s["id"]):
         lines.append(
             f"| [`{slot['id']}`]({slot['source']}) | {slot['use']} "
-            f"| {slot['creator']} | {slot['licence']} |"
+            f"| {slot['creator']} | {licence_cell(slot['licence'])} |"
         )
     lines += ["", f"{len(ready)} icons.", ""]
     return "\n".join(lines)
+
+
+# ── SVG metadata headers ─────────────────────────────────────
+# CC BY 3.0 section 4(a) wants the licence URI with EVERY distributed copy, and
+# 4(b) wants the creator kept with the file. The About page does not travel
+# with an SVG someone lifts out of the repo, so each credited file carries a
+# generated header, placed BEFORE the <svg> root: normaliseArt() strips
+# everything up to the root tag, so the header can never leak into a rendered
+# card face. Sentinel-fenced and rewritten on every run: it cannot drift from
+# the manifest, and running twice is running once.
+STAMP_OPEN = "<!-- enjeu-credit"
+STAMP_CLOSE = "-->"
+
+
+def stamp(slot: dict) -> str:
+    uri = LICENCE_URI.get(slot["licence"], "")
+    return (
+        f"{STAMP_OPEN}\n"
+        f"  By {slot['creator']}, from Noun Project.\n"
+        f"  Source: {slot['source']}\n"
+        f"  Licence: {slot['licence']}{f', {uri}' if uri else ''}\n"
+        f"  Modified for Enjeu: creator credit moved to CREDITS.md and the About\n"
+        f"  page, viewBox cropped to the artwork. Colour is applied at render time.\n"
+        f"{STAMP_CLOSE}\n"
+    )
+
+
+def stamp_svgs(ready: list[dict]) -> int:
+    """Prepend (or refresh) the credit header on each credited art file."""
+    stamped = 0
+    for slot in ready:
+        path = ROOT / "art" / f"{slot['id']}.svg"
+        if not path.exists():
+            continue
+        text = path.read_text()
+        if STAMP_OPEN in text:
+            head, _, rest = text.partition(STAMP_OPEN)
+            _, _, tail = rest.partition(STAMP_CLOSE)
+            text = head + tail.lstrip("\n")
+        path.write_text(stamp(slot) + text)
+        stamped += 1
+    return stamped
 
 
 def report(ready: list, incomplete: list, gaps: list) -> None:
@@ -112,7 +175,8 @@ def main() -> None:
         raise SystemExit(0)
 
     OUTPUT.write_text(render(manifest, ready))
-    print(f"\nwrote {OUTPUT.relative_to(ROOT)} ({len(ready)} icons)")
+    n = stamp_svgs(ready)
+    print(f"\nwrote {OUTPUT.relative_to(ROOT)} ({len(ready)} icons), stamped {n} SVG headers")
 
 
 def selftest() -> int:

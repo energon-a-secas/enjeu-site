@@ -80,6 +80,7 @@ export function renderSetup(s) {
 
     `<div class="panel stack stack--tight table-slide">
       <p class="panel__lead">${escHtml(t('play.setup.tableLead'))}</p>
+      <p class="muted small">${escHtml(t('play.setup.tableSkip'))}</p>
       <ol class="table-steps">
         <li><span class="table-steps__art">${lifeMini('boss').repeat(4)}</span>${escHtml(t('play.setup.tableBoss'))}</li>
         <li><span class="table-steps__art figure">${figureSvg(heroFor(s.element || 'fire'))}</span>${escHtml(t('play.setup.tableHero'))}</li>
@@ -147,14 +148,14 @@ export function renderAdvantage(s, run) {
 }
 
 function history(run) {
-  return `<div class="table-wrap"><table class="ladder"><thead><tr><th>Level</th><th>Result</th><th>Rounds</th><th>Broken</th></tr></thead><tbody>
+  return `<div class="table-wrap"><table class="ladder"><thead><tr><th>${escHtml(t('play.hist.level'))}</th><th>${escHtml(t('play.hist.result'))}</th><th>${escHtml(t('play.hist.rounds'))}</th><th>${escHtml(t('play.hist.broken'))}</th></tr></thead><tbody>
     ${run.history.map((h) => `<tr><td>${h.level}</td><td>${h.outcome}</td><td>${h.rounds}</td><td>${h.broken}</td></tr>`).join('')}</tbody></table></div>`;
 }
 
 export function renderDone(s, run) {
   const first = run.kind === 'first';
   return `<div class="container stack">
-    <div class="banner banner--win">${escHtml(first ? 'You beat the First Game.' : t('play.runWon'))}</div>
+    <div class="banner banner--win">${escHtml(first ? t('play.firstWon') : t('play.runWon'))}</div>
     ${history(run)}
     <div class="row">${first ? `<button class="btn btn--primary btn--lg" data-action="play-go-full">${escHtml(t('play.fullRun'))}</button>` : ''}<button class="btn btn--lg" data-action="play-new-run">${escHtml(t('play.newRun'))}</button></div>
   </div>`;

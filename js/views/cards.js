@@ -305,7 +305,7 @@ function cell(c, aid, backs) {
   // faces it replaced. 'sheet' is millimetres and would print-size it on screen.
   const art = backs ? cardBack(backKind(c), { size: 'browse' }) : cardFace(c, { size: 'browse', aid });
   const copies = (c.copies || 1) > 1 ? ` <span class="copies">×${c.copies}</span>` : '';
-  return `<button class="card-btn" data-action="cards-detail" data-id="${escHtml(c.id)}" aria-label="${escHtml(cardName(c))}">
+  return `<button class="card-btn" data-action="cards-detail" data-id="${escHtml(c.id)}" data-inspect="${escHtml(c.id)}" aria-label="${escHtml(cardName(c))}">
         ${art}
         <span>${escHtml(cardName(c))}${copies}</span>
       </button>`;
@@ -368,6 +368,13 @@ export function printCards(s, deck = null) {
 // ── The detail sheet ─────────────────────────────────────────
 const CHECK_LABEL = (c) => (c ? t(`cards.check.${c}`) : t('cards.check.none'));
 
+/** The one thing the old modal never said: what the card does. The corner
+ * rows restate the numbers; this sentence is why you would play it. */
+function effectLine(c) {
+  const eff = t(`cards.effect.${c.id}`);
+  return eff.startsWith('[') ? '' : `<p class="card-effect">${escHtml(eff)}</p>`;
+}
+
 /** The tap-to-reveal panel: the name, the back, and what the face does not say. */
 export function showCardDetail(s, id) {
   const c = s.cards.byId[id];
@@ -408,6 +415,7 @@ export function showCardDetail(s, id) {
       <div>
         <p class="kicker">${escHtml(t(`cards.deck.${c.deck}`))}</p>
         <h3>${escHtml(cardName(c))}</h3>
+        ${effectLine(c)}
         <dl>${rows.join('')}</dl>
         ${say}
       </div>

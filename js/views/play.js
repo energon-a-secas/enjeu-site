@@ -117,9 +117,14 @@ export function onPlayAction(s, act, el, e) {
       // Switching run kind re-arms the safety net at that kind's default: on for
       // the First Game, off for the five-level run. Toggling it after is a
       // deliberate choice and survives, which is why the two are separate cases.
-      case 'kind': s.runKind = d.kind; s.secondWind = secondWindDefault(d.kind); return true;
+      // The two single-choice slides advance on the click itself: the option
+      // was already preselected, so a separate Next per slide was pure
+      // friction. The settings slide (die, mode, Second Wind) keeps its Next,
+      // because three controls share it and a jump on the first click would
+      // yank the other two away.
+      case 'kind': s.runKind = d.kind; s.secondWind = secondWindDefault(d.kind); s.setupStep = 1; return true;
       case 'second-wind': s.secondWind = el.checked !== undefined ? !!el.checked : !s.secondWind; return true;
-      case 'element': s.element = d.element; return true;
+      case 'element': s.element = d.element; s.setupStep = 2; return true;
       case 'die': s.die = d.die; return true;
       case 'mode': s.mode = d.mode; return true;
       case 'start': {
@@ -203,6 +208,19 @@ export function onPlayAction(s, act, el, e) {
         if (!awaitingStep(f, ui)) return false;
         return step(run, f, ui, Math.max(1, Math.min(dieMax(f.die), Math.round(ui.typed))));
       }
+      case 'tour-next': { const p = s.play ||= {}; if ((p.tourStep || 0) >= 3) { p.tourDone = true; } else p.tourStep = (p.tourStep || 0) + 1; return true; }
+      case 'tour-skip': { (s.play ||= {}).tourDone = true; return true; }
+      case 'resolve-all': {
+        // The fast lane: every remaining check in the plan rolls at once. The
+        // log keeps each roll; the board shows where the lane ended up. The
+        // guard is the lane's own length, so a rules bug cannot spin here.
+        if (!awaitingStep(f, ui)) return false;
+        let guard = (ui.plan?.length || 0) + 1;
+        while (f.phase === 'act' && awaitingStep(f, ui) && guard-- > 0) {
+          step(run, f, ui, rollDie(f.die, Math.random));
+        }
+        return true;
+      }
 
       // ── The rest of the turn ───────────────────────────────
       case 'target': ui.target = d.target === 'body' ? 'body' : Number(d.target); return true;
@@ -212,7 +230,7 @@ export function onPlayAction(s, act, el, e) {
         ui.fx = r.hit ? 'hit' : 'miss'; ui.dealt = r.dealt || 0; return true;
       }
       // A board preference, not a run one: game/run.js resets run.ui every level.
-      case 'log': { (s.play ||= { logOpen: true }).logOpen = !s.play.logOpen; return true; }
+      case 'log': { (s.play ||= {}).logShown = !s.play.logShown; return true; }
       case 'hide': hide(f); return true;
       case 'adv': {
         // Barrier is a reaction: it parks in the lane's reserved slot instead.

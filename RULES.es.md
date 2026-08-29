@@ -202,7 +202,7 @@ elección sobre las cartas sin color, que son las que te preguntan qué eres.
 | Desierto | Viento | nada |
 | Bosque | ninguno | Una vez por nivel, Esconderse no cuesta nada: ni carta ni acción. Hay dónde esconderse en todas partes. |
 | Aldea | ninguno | Empiezas el nivel con 1 carta de vida En Pie extra. |
-| Castillo | ninguno | El jefe actúa dos veces en la ronda 1. Entre golpe y golpe recuperas el aliento: las cartas Gastadas se Recuperan. |
+| Castillo | ninguno | El jefe actúa dos veces en la ronda 1. Entre golpe y golpe recuperas el aliento: las cartas De Lado se Recuperan. |
 
 ## 7. El jefe
 

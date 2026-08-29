@@ -32,7 +32,8 @@ make sim        # tools/sim.py, the published balance table
 | `js/game/sim.js` · `sim-worker.js` | the 20-cell table, off the main thread |
 | `js/game/run.js` | the campaign: First Game or 5 levels, class pick, draft 3 keep 1, Advantage draws |
 | `js/game/figures.js` · `js/data/placeholders.js` | brick-built stand-in heroes, bosses, minion (`placeholder: true`) |
-| `js/views/*.js` | learn (walkthrough + rulebook), cards (browse, tap, print), play (runner), balance |
+| `js/views/*.js` | learn (walkthrough + rulebook + play-now slide), cards (browse, tap, print scopes), play (runner + first-run tour), balance |
+| `js/views/inspect.js` | the one card popover: hover on mouse, press-and-hold on touch, fed by `cards.effect` strings |
 | `tools/*.py` | unchanged design-baseline checkers: `sim.py`, `lint_cards.py`, `dice_bridge.py`, `credits.py` |
 
 Vendored from `packages/neorgon-ui/`, never edit in place: `js/neorgon-header.js`, `js/neorgon-footer.js`, `css/neorgon-*.css`.
@@ -55,7 +56,7 @@ Vendored from `packages/neorgon-ui/`, never edit in place: `js/neorgon-header.js
 
 - **CSS beats SVG presentation attributes.** The first pass declared `fill`/`stroke` on `.face`/`.pip` in `cards.css` and every coloured life card printed white. `cards.css` sizes faces only; all colour lives inline in the SVG, which is also what the printer needs.
 - **Browsers cache plain `http.server` assets, and it looks like broken buttons.** A page can run a mix of old and new ES modules after an edit (it bit the build twice, and the user once after the rename). `make serve` now runs `tools/serve.py`, the same server plus `Cache-Control: no-cache`, so a plain reload is always current; in Playwright still clear with CDP `Network.clearBrowserCache` + `setCacheDisabled` when the server was started the old way.
-- **`legacy` is parity, not a rules mode to ship.** It reproduces three tools/sim.py simplifications (Brace never halves, Summon moves a flat 100 and the fight ends on the body alone, Roar flattens the next check to Even) so `tests/engine.test.mjs` can check BALANCE.md within 4 points. The rulebook mode is markedly harsher (adaptive 79.5/71.1/51.2/47.4/46.2 percent by level at 20,000 fights per cell, turtle 0 everywhere); that gap is a design decision recorded in `.forge/brief.md`, not a bug to "fix" in the engine.
+- **`legacy` is parity, not a rules mode to ship.** It reproduces three tools/sim.py simplifications (Brace never halves, Summon moves a flat 100 and the fight ends on the body alone, Roar flattens the next check to Even) so `tests/engine.test.mjs` can check BALANCE.md within 4 points. The rulebook mode is markedly harsher (adaptive 79.5/71.1/51.2/47.4/46.2 percent by level at 20,000 fights per cell, turtle 0 everywhere); that gap is a design decision recorded in `.forge/brief-2026-08-15-baseline.md`, not a bug to "fix" in the engine.
 - **Rulings the rulebook did not make** live in the header comment of `js/game/engine.js`, which now says which of them were promoted into RULES.md on 2026-08-28 and which four are still only in the code. Change the rulebook first, the engine second.
 - **`element_cycle` in cards.json carries a `$note` key.** Anything iterating it must skip `$`-prefixed keys (the Learn cycle drawing did not, once).
 - **Advantage cards in a fight live in `fight.hero.advantage`**, the deck in `run.advDeck`, and the between-levels hand in `run.hand`. Chest draws from the deck straight into the fight hand.

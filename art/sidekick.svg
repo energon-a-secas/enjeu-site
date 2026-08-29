@@ -1,3 +1,10 @@
+<!-- enjeu-credit
+  By Iconographer, from Noun Project.
+  Source: https://thenounproject.com/icon/friend-6929953/
+  Licence: CC BY 3.0, https://creativecommons.org/licenses/by/3.0/
+  Modified for Enjeu: creator credit moved to CREDITS.md and the About
+  page, viewBox cropped to the artwork. Colour is applied at render time.
+-->
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="-5 -10 110 110">
  <g>
   <path d="m73.645 22.715c4.1055 0.78516 8.0703-1.8945 8.8555-5.9648s-1.8945-8-6-8.7852-8.0703 1.8945-8.8555 5.9648c-0.78516 4.0703 1.8945 8 6 8.7852z"/>

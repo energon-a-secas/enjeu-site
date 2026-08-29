@@ -52,13 +52,14 @@ function ensureRulebook() {
  * itself, and the page around it never does). The count lives here because both
  * the rail and the key handler need it and neither owns it.
  */
-export const SLIDE_DICE = STEPS.length;
-export const SLIDE_RULEBOOK = STEPS.length + 1;
-export const SLIDE_COUNT = STEPS.length + 2;
+export const SLIDE_PLAY = STEPS.length;   // unnumbered: the invitation, not a lesson
+export const SLIDE_DICE = STEPS.length + 1;
+export const SLIDE_RULEBOOK = STEPS.length + 2;
+export const SLIDE_COUNT = STEPS.length + 3;
 export const clampSlide = (n) => Math.max(0, Math.min(SLIDE_COUNT - 1, Number(n) || 0));
 
 /** Deep-link slugs, one per slide: #/learn/<slug>. Derived, never a second list. */
-export const SLIDE_SLUGS = [...STEPS.map((st) => st.id), 'dice', 'rulebook'];
+export const SLIDE_SLUGS = [...STEPS.map((st) => st.id), 'play-now', 'dice', 'rulebook'];
 /** The slide a slug opens, or -1. */
 export const slideForSlug = (slug) => SLIDE_SLUGS.indexOf(String(slug || ''));
 /**
@@ -66,13 +67,13 @@ export const slideForSlug = (slug) => SLIDE_SLUGS.indexOf(String(slug || ''));
  * not a const: the last two come from the string table, and a const evaluated at
  * module load froze them in whatever language the page started in.
  */
-const slideTitles = () => [...STEPS.map((st) => st.title), t('learn.slide.dice'), t('learn.slide.rulebook')];
+const slideTitles = () => [...STEPS.map((st) => st.title), t('learn.slide.playNow'), t('learn.slide.dice'), t('learn.slide.rulebook')];
 /**
  * Which chapter each slide sits in, derived from the steps the same way the
  * titles are. The two closing slides are Advanced: the full eight-die bridge and
  * the rulebook are reference, and neither is needed to finish a first fight.
  */
-export const SLIDE_CHAPTERS = [...STEPS.map((st) => st.chapter || 'advanced'), 'advanced', 'advanced'];
+export const SLIDE_CHAPTERS = [...STEPS.map((st) => st.chapter || 'advanced'), 'try', 'reference', 'reference'];
 /** The last slide of Basics: the one that tells the reader they can stop there. */
 export const LAST_BASIC = SLIDE_CHAPTERS.lastIndexOf('basics');
 
@@ -183,7 +184,7 @@ function attacksVisual(s) {
   const wide = deck.length > 4 ? ' action-cards--wide' : '';
   return `<div class="action-cards action-cards--${deck.length === 4 ? 'four' : deck.length === 3 ? 'three' : 'five'}${wide}">${deck.map((id) => {
     const c = s.cards.byId[id];
-    return `<a class="action-card" href="#/cards/attack" data-action="go" data-view="cards" data-param="attack">${cardFace(c, { size: 'hand' })}<span>${escHtml(cardName(c))}</span></a>`;
+    return `<button type="button" class="action-card" data-action="cards-detail" data-id="${c.id}" data-inspect="${c.id}">${cardFace(c, { size: 'hand' })}<span>${escHtml(cardName(c))}</span></button>`;
   }).join('')}</div>`;
 }
 
@@ -302,7 +303,7 @@ function cycleVisual(s) {
  * its last rows off the bottom.
  */
 function levelsVisual(s) {
-  const classes = s.cards.class.map((c) => `<a class="action-card" href="#/cards/class" data-action="go" data-view="cards" data-param="class">${cardFace(c, { size: 'hand' })}<span>${escHtml(cardName(c))}</span></a>`).join('');
+  const classes = s.cards.class.map((c) => `<button type="button" class="action-card" data-action="cards-detail" data-id="${c.id}" data-inspect="${c.id}">${cardFace(c, { size: 'hand' })}<span>${escHtml(cardName(c))}</span></button>`).join('');
   const camp = s.cards.boss.filter((b) => b.rage).map((b, i) => `<tr><td>${i + 1}</td><td>${b.size}</td><td>${b.life_cards} × ${b.per_card}</td><td>${b.damage}</td><td>${b.rage}</td></tr>`).join('');
   return `<div class="action-cards action-cards--four">${classes}</div>
   <div class="table-wrap"><table class="ladder ladder--tight">
@@ -369,9 +370,30 @@ function coverSlide(s, st) {
       <h2 class="cover__title" id="slideTitle">${t('learn.heroTitle')}</h2>
       <p class="cover__lead">${escHtml(t('learn.heroLead'))}</p>
       <div class="row">
-        <a class="btn btn--primary" href="#/play">${glyphSvg('strike', '', 18)} ${escHtml(t('learn.ctaFirst'))}</a>
+        <a class="btn btn--primary" href="#/play">${glyphSvg('strike', '', 18)} ${escHtml(t('learn.ctaPlayNow'))}</a>
         <a class="btn" href="#/cards">${glyphSvg('dice', '', 18)} ${escHtml(t('learn.ctaCards'))}</a>
       </div>
+    </div>
+    <div class="slide__visual slide__visual--hero">${heroArt(s)}</div>`);
+}
+
+/**
+ * The unnumbered slide after the lessons: play it right now, nothing to print.
+ * A fresh visitor who reads the deck top to bottom used to leave believing the
+ * site was a manual for a physical product; the one mention of on-screen play
+ * was a footnote seven clicks deep.
+ */
+function playNowSlide(s) {
+  return slideShell('slide--cover', 'play-now', `
+    <div class="slide__text">
+      <p class="kicker">${escHtml(t('learn.playNowKicker'))}</p>
+      <h2 class="cover__title" id="slideTitle">${escHtml(t('learn.playNowTitle'))}</h2>
+      <p class="cover__lead">${escHtml(t('learn.playNowLead'))}</p>
+      <div class="row">
+        <a class="btn btn--primary" href="#/play">${glyphSvg('strike', '', 18)} ${escHtml(t('learn.playNowCta'))}</a>
+        <a class="btn" href="#/cards">${glyphSvg('dice', '', 18)} ${escHtml(t('learn.ctaCards'))}</a>
+      </div>
+      <p class="muted small">${escHtml(t('learn.playNowDesktop'))}</p>
     </div>
     <div class="slide__visual slide__visual--hero">${heroArt(s)}</div>`);
 }
@@ -413,6 +435,7 @@ function rulebookSlide() {
 }
 
 const slideFor = (s, i) => (i === SLIDE_RULEBOOK ? rulebookSlide()
+  : i === SLIDE_PLAY ? playNowSlide(s)
   : i === SLIDE_DICE ? diceSlide(s)
     : stepSlide(s, STEPS[i], i));
 
@@ -435,7 +458,7 @@ function deckHead(i) {
     }
     dots += `
     <button type="button" class="rail__dot" data-action="learn-step" data-step="${n}"${n === i ? ' aria-current="true"' : ''}>
-      <span aria-hidden="true">${n + 1}</span><span class="sr-only">${escHtml(chapterLabel(n))}: ${escHtml(title)}</span>
+      <span aria-hidden="true">${n === SLIDE_PLAY ? glyphSvg('strike', '', 12) : n + 1}</span><span class="sr-only">${escHtml(chapterLabel(n))}: ${escHtml(title)}</span>
     </button>`;
   });
   dots += '</div></div>';

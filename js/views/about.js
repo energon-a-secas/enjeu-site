@@ -62,7 +62,7 @@ function creditsTable() {
       <td><a href="${escHtml(s.source)}" target="_blank" rel="noopener noreferrer"><code>${escHtml(s.id)}</code></a></td>
       <td>${escHtml(s.use)}</td>
       <td>${escHtml(s.creator)}</td>
-      <td>${escHtml(s.licence)}</td>
+      <td>${s.licence === 'CC BY 3.0' ? `<a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a>` : escHtml(s.licence)}</td>
     </tr>`).join('')}</tbody>
   </table></div>`;
 }

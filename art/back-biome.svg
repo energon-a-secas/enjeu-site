@@ -1,3 +1,10 @@
+<!-- enjeu-credit
+  By Graphic Nehar, from Noun Project.
+  Source: https://thenounproject.com/icon/blocks-7983307/
+  Licence: CC BY 3.0, https://creativecommons.org/licenses/by/3.0/
+  Modified for Enjeu: creator credit moved to CREDITS.md and the About
+  page, viewBox cropped to the artwork. Colour is applied at render time.
+-->
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="-5 -10 110 110">
  <path d="m85.203 73.586h-42.332c-1.2656 0-2.293-1.0312-2.293-2.293v-15.723c0-1.2656 1.0312-2.293 2.293-2.293h42.332c1.2656 0 2.293 1.0312 2.293 2.293v15.723c0 1.2656-1.0312 2.2969-2.293 2.2969z" fill-rule="evenodd"/>
  <path d="m35.496 73.586h-20.703c-1.2656 0-2.293-1.0312-2.293-2.293v-15.723c0-1.2656 1.0312-2.293 2.293-2.293h20.703c1.2656 0 2.293 1.0312 2.293 2.293v15.723c0 1.2656-1.0312 2.2969-2.293 2.2969z" fill-rule="evenodd"/>

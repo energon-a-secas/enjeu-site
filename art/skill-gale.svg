@@ -1,3 +1,10 @@
+<!-- enjeu-credit
+  By Pandu Bramantyo, from Noun Project.
+  Source: https://thenounproject.com/icon/windy-6776957/
+  Licence: CC BY 3.0, https://creativecommons.org/licenses/by/3.0/
+  Modified for Enjeu: creator credit moved to CREDITS.md and the About
+  page, viewBox cropped to the artwork. Colour is applied at render time.
+-->
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="-5.0 -10.0 110.0 135.0">
  <g>
   <path d="m9.375 40.625h34.375c6.9062 0 12.5-5.5938 12.5-12.5s-5.5938-12.5-12.5-12.5h-3.125c-1.7188 0-3.125 1.4062-3.125 3.125s1.4062 3.125 3.125 3.125h3.125c3.4375 0 6.25 2.8125 6.25 6.25s-2.8125 6.25-6.25 6.25h-34.375c-1.7188 0-3.125 1.4062-3.125 3.125s1.4062 3.125 3.125 3.125z"/>

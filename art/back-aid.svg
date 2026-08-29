@@ -1,3 +1,10 @@
+<!-- enjeu-credit
+  By Nur Achmadi Yusuf, from Noun Project.
+  Source: https://thenounproject.com/icon/learning-7740728/
+  Licence: CC BY 3.0, https://creativecommons.org/licenses/by/3.0/
+  Modified for Enjeu: creator credit moved to CREDITS.md and the About
+  page, viewBox cropped to the artwork. Colour is applied at render time.
+-->
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="-5 -10 110 110">
  <path d="m92.301 82.816-42.188-3.125c-0.078125-0.007812-0.15234-0.003906-0.23047 0l-42.188 3.125c-0.81641 0.058594-1.4492 0.73828-1.4492 1.5586v4.6875c0 0.43359 0.17969 0.84766 0.5 1.1445 0.32031 0.29297 0.73828 0.44141 1.1797 0.41406l34.582-2.5664c0.92969 3.293 3.9648 5.6953 7.4922 5.6953 3.5234 0 6.5586-2.4023 7.4883-5.6953l34.582 2.5664c0.44141 0.035156 0.86328-0.11719 1.1797-0.41406s0.5-0.71094 0.5-1.1445v-4.6875c0-0.81641-0.63281-1.4961-1.4492-1.5586z"/>
  <path d="m54.859 67.453c-2.0938 1.6406-3.2969 4.1094-3.2969 6.7656v2.4492l37.5 2.7773v-5.6289c0-0.71875-0.48828-1.3438-1.1836-1.5156l-25.645-6.4062c-2.5781-0.65625-5.2656-0.078125-7.375 1.5625z"/>

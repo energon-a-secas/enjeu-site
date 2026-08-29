@@ -257,10 +257,33 @@ test('Enter belongs to the focused control, and only reaches the board when noth
   }
 });
 
-test('the board renders the hooks onPlayKey clicks: play-pick, play-unqueue, one primary in .actions', () => {
+test('the first fight offers the tour: four steps, skippable, remembered on the session', () => {
   const run = newRun(data, { kind: 'first', element: 'fire', die: 'd20', mode: 'standard', secondWind: true });
   startLevel(run, data);
   const s = { cards: data, run, view: 'play' };
+  let html = renderPlay(s);
+  assert.ok(html.includes('tour-callout'), 'a fresh session gets the tour');
+  assert.ok(html.includes('data-tour-on="wall"'), 'and it starts at the boss wall');
+  onPlayAction(s, 'tour-next', { dataset: {} }, null);
+  html = renderPlay(s);
+  assert.ok(html.includes('data-tour-on="life"'), 'Next walks the steps');
+  onPlayAction(s, 'tour-skip', { dataset: {} }, null);
+  assert.equal(s.play.tourDone, true, 'Skip is remembered');
+  html = renderPlay(s);
+  assert.ok(!html.includes('tour-callout'), 'and the tour never comes back');
+  // The last step closes it too.
+  const s2 = { cards: data, run, view: 'play', play: { tourStep: 3 } };
+  onPlayAction(s2, 'tour-next', { dataset: {} }, null);
+  assert.equal(s2.play.tourDone, true, 'Got it on the last step closes it');
+});
+
+test('the board renders the hooks onPlayKey clicks: play-pick, play-unqueue, one primary in .actions', () => {
+  const run = newRun(data, { kind: 'first', element: 'fire', die: 'd20', mode: 'standard', secondWind: true });
+  startLevel(run, data);
+  // tourDone: this test is about the ACTIONS panel; the first-run tour has its
+  // own test below, and its Next button lives outside .actions on purpose
+  // (Enter clicks '.actions .btn--primary', so the tour never captures it).
+  const s = { cards: data, run, view: 'play', play: { tourDone: true } };
   let html = renderPlay(s);
   assert.ok(html.includes('data-action="play-pick"'), 'a hand a digit can pick');
   assert.ok(html.includes('data-action="play-abandon"'));
@@ -323,22 +346,23 @@ test('a saved run stays small: no card, deck or rendered string rides along in t
 });
 
 // ── 5. The board ─────────────────────────────────────────────
-test('the log closes on click, keeps its last line, and the choice is not stored on the run', () => {
+test('the log starts closed, opens on click below the board, and the choice is not stored on the run', () => {
   const run = newRun(data, { kind: 'first', element: 'fire', die: 'd20', mode: 'standard', secondWind: true });
   startLevel(run, data);
   const s = { cards: data, run, view: 'play' };
   let html = renderPlay(s);
-  assert.ok(html.includes('data-log="open"'), 'the log starts open');
-  assert.ok(html.includes('<ul class="log">'));
+  assert.ok(html.includes('data-log="closed"'), 'the log starts closed: it earns its space only when asked for');
+  assert.ok(!html.includes('<ul class="log">'), 'a closed log is not even rendered');
+  assert.ok(html.includes('log-tick'), 'but the last line always shows, as one line');
 
   onPlayAction(s, 'log', { dataset: {} }, null);
-  assert.equal(s.play.logOpen, false);
+  assert.equal(s.play.logShown, true);
   html = renderPlay(s);
-  assert.ok(html.includes('data-log="closed"'), 'and the grid gives its column back');
-  assert.ok(!html.includes('<ul class="log">'), 'the history is gone');
-  assert.ok(html.includes('log-tick'), 'but the last line stays, as one line');
+  assert.ok(html.includes('data-log="open"'));
+  assert.ok(html.includes('fight-log-below'), 'the open log is a full-width row below the board, not a side column');
+  assert.ok(html.includes('<ul class="log">'));
   // run.ui is wiped every level by game/run.js, so a preference cannot live there.
-  assert.equal(run.ui.logOpen, undefined);
+  assert.equal(run.ui.logShown, undefined);
 });
 
 test('the Cover button is offered only for a Strike aimed at a standing Ally', () => {

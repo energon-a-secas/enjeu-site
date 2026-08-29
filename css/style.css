@@ -233,6 +233,7 @@ strong { font-weight: 700; }
   border-right: 2px solid var(--border);
 }
 .seg button:last-child { border-right: 0; }
+@media (max-width: 700px) { .seg { flex-wrap: wrap; } .seg button { flex: 1 0 auto; } }
 .seg button[aria-pressed="true"] { background: var(--text-primary); color: var(--surface-1); }
 
 /* The language toggle in the header. The .seg control above re-dressed for the
@@ -362,3 +363,20 @@ strong { font-weight: 700; }
   .container { padding: var(--space-6) var(--space-4) var(--space-8); }
   .toast { left: var(--space-4); right: var(--space-4); max-width: none; }
 }
+
+/* ── The inspector popover ─────────────────────────────────── */
+#inspectPop {
+  position: fixed; z-index: 90; display: flex; gap: 10px; align-items: flex-start;
+  max-width: 340px; padding: 10px 12px;
+  background: var(--surface-1); border: 2px solid var(--border-strong);
+  border-radius: var(--radius); box-shadow: 0 8px 26px rgba(40, 32, 16, 0.22);
+  pointer-events: none;
+}
+#inspectPop .inspect-card { flex: none; width: 84px; }
+#inspectPop .inspect-card .sk-card { width: 84px; height: auto; }
+#inspectPop .inspect-text { font-size: var(--text-sm); line-height: 1.45; min-width: 0; }
+#inspectPop .inspect-text b { display: block; margin-bottom: 2px; }
+#inspectPop .inspect-text p { margin: 0; color: var(--text-muted); }
+
+/* The modal's effect sentence: the answer, above the numbers. */
+.card-effect { font-size: var(--text-sm); line-height: 1.5; margin: 2px 0 8px; }

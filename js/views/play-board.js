@@ -316,13 +316,17 @@ export function renderFight(s, run) {
   const roster = f.roster || {};
   const hero = heroFor(run.element);
   const biome = s.cards.byId[f.biomeCard];
-  const logOpen = s.play?.logOpen !== false;
+  const logOpen = s.play?.logShown === true;
   const fx = ui.fx || '';
-  const bossRing = (ui.target === undefined || ui.target === 'body') ? 'is-target' : '';
+  // The gold ring answers "which target will my attacks hit". With no minions
+  // on the table there is no choice to show, and the permanent square outline
+  // around the boss read as decoration gone wrong.
+  const bossRing = f.boss.minions.length && (ui.target === undefined || ui.target === 'body') ? 'is-target' : '';
+  const tour = tourState(s, f);
   const last = f.log.length ? f.log[f.log.length - 1] : null;
 
   return `
-  <div class="container container--wide board-fit">
+  <div class="container container--wide board-fit" ${tour ? `data-tour-on="${tour.key}"` : ''}>
     <div class="fight-bar">
       <div class="fight-bar__who">
         <b>${escHtml(roster.name || f.boss.name)}</b>
@@ -342,10 +346,10 @@ export function renderFight(s, run) {
               ${fx === 'hurt' && ui.took ? `<span class="fx-num fx-num--bad">-${ui.took}</span>` : ''}
             </div>
             <div class="pile-label">${escHtml(t('play.ready'))} ${ready(f)} · ${escHtml(t('play.spent'))} ${spent(f)} · ${escHtml(t('play.broken'))} ${broken(f)}</div>
-            <div class="pile">${heroPile(f)}</div>
+            <div class="pile" data-tour="life">${heroPile(f)}</div>
             ${shelf(f, ui)}
           </div>
-          <div class="duel__wall">
+          <div class="duel__wall" data-tour="wall">
             <div class="wall-count"><b>${bossHp(f)}</b><span class="muted small">/ ${f.boss.maxHp}</span>${f.boss.braced ? '<span class="chip">Braced</span>' : ''}</div>
             ${bossWall(f, ui)}
           </div>
@@ -362,19 +366,43 @@ export function renderFight(s, run) {
         ${last ? `<p class="log-tick ${last.cls}">${escHtml(last.text)}</p>` : ''}
         <div class="panel actions">${renderActions(s, run, f, ui)}</div>
       </div>
-      ${!logOpen ? '' : `<aside class="panel panel--tight fight-side">
+      ${!logOpen ? '' : `<aside class="panel panel--tight fight-log-below">
         <p class="kicker">${escHtml(t('play.log'))}</p>
         <ul class="log">${f.log.slice(-60).reverse().map((l) => `<li class="${l.cls}">${escHtml(l.text)}</li>`).join('')}</ul>
       </aside>`}
     </div>
+    ${tour ? tourCallout(tour) : ''}
   </div>`;
 }
 
 // ── The action panel, one phase at a time ────────────────────
+/**
+ * The first-fight tour: four sentences, each pointing at the region it names.
+ * It lives on the SESSION (s.play), not the run: one tour per device, and
+ * skipping it is remembered. Only the hero's own turn shows it; the boss
+ * phase has its own teaching row.
+ */
+const TOUR_STEPS = ['wall', 'life', 'hand', 'go'];
+function tourState(s, f) {
+  const play = s.play ||= {};
+  if (play.tourDone || f.phase !== 'act') return null;
+  const step = Math.max(0, Math.min(TOUR_STEPS.length - 1, play.tourStep || 0));
+  return { key: TOUR_STEPS[step], step, last: step === TOUR_STEPS.length - 1 };
+}
+function tourCallout(tour) {
+  return `<div class="tour-callout" role="dialog" aria-label="${escHtml(t(`play.tour.${tour.key}`))}">
+    <p>${escHtml(t(`play.tour.${tour.key}`))}</p>
+    <div class="row">
+      <button class="btn btn--sm btn--primary" data-action="play-tour-next">${escHtml(t(tour.last ? 'play.tour.done' : 'play.tour.next'))}</button>
+      ${tour.last ? '' : `<button class="btn btn--sm btn--ghost" data-action="play-tour-skip">${escHtml(t('play.tour.skip'))}</button>`}
+    </div>
+  </div>`;
+}
+
 function renderActions(s, run, f, ui) {
   if (f.phase === 'won') {
     return `<div class="banner banner--win">${escHtml(t('play.won'))}</div>
-      <div class="row"><button class="btn btn--primary btn--lg" data-action="play-continue">${escHtml(run.kind === 'first' || f.level >= 5 ? 'Finish' : t('play.nextLevel'))}</button></div>`;
+      <div class="row"><button class="btn btn--primary btn--lg" data-action="play-continue">${escHtml(run.kind === 'first' || f.level >= 5 ? t('play.finish') : t('play.nextLevel'))}</button></div>`;
   }
   if (f.phase === 'lost' || f.phase === 'stall') {
     return `<div class="banner banner--lose">${escHtml(t('play.lost'))}</div>
@@ -424,6 +452,7 @@ function renderBoss(s, f, ui) {
     return `<div class="row row--between"><b>${escHtml(t('play.bossTurn'))}</b>
       <button class="btn btn--primary btn--lg" data-action="play-boss-roll">${glyphSvg('dice', '', 18)} ${escHtml(t('play.bossRollFor'))}</button></div>
       <div class="boss-ask"><span class="pile-label">${escHtml(t('play.bossAsk'))}</span>
+      <small class="muted">${escHtml(t('play.bossAskHow'))}</small>
       <div class="die-chips">${faces}</div></div>`;
   }
   const hasBarrier = f.hero.advantage.includes('barrier');
@@ -441,7 +470,7 @@ function renderBoss(s, f, ui) {
   // is the free option, and taking the hit whole instead is the deliberate one.
   const coverBtn = atAlly
     ? `<button class="btn" data-action="play-resolve" data-barrier="0" data-cover="1" title="${escHtml(t('play.coverHint'))}">${glyphSvg('shield', '', 16)} ${escHtml(t('play.cover'))}</button>` : '';
-  const letLabel = atAlly ? `${t('play.ally')}: ${ALLY_DEF} ${t('play.allyDef')}` : hasBarrier ? t('play.letItHappen') : 'Continue';
+  const letLabel = atAlly ? `${t('play.ally')}: ${ALLY_DEF} ${t('play.allyDef')}` : hasBarrier ? t('play.letItHappen') : t('play.takeIt');
   const letBtn = `<button class="btn ${parked ? '' : 'btn--primary'}" data-action="play-resolve" data-barrier="0">${escHtml(letLabel)}</button>`;
   return `<div class="row" style="gap: var(--space-4)">
       <div class="die-face is-rolling">${p.roll}</div>
@@ -490,16 +519,15 @@ function renderTurn(s, run, f, ui) {
       `${a.actions} ${a.actions > 1 ? 'actions' : 'action'}`,
       a.bet === 'any' ? `${t('play.bet')} any` : a.bet ? `${t('play.bet')} ${a.bet}` : '',
     ].filter(Boolean).join(' · ');
-    // What the card DOES, on hover and in the accessible name. The face carries
-    // no words by design, so until now the only way to learn what a Bubble was
-    // for was to read the rulebook: the board showed a picture, a cost and a
-    // number, and never the reason.
-    const what = t(`play.what.${a.id}`);
-    const explains = !what.startsWith('[');
-    return `<button class="action-card ${n ? 'is-queued' : ''}" data-action="play-pick" data-id="${a.id}"
+    // What the card DOES lives in cards.effect (all 68 cards, both languages)
+    // and reaches sighted players through the inspector popover: hover on a
+    // mouse, press-and-hold on touch. The accessible name carries the same
+    // sentence, so a screen reader hears what a hover shows. play.what keeps
+    // the six First Game tone lines as a fallback.
+    const what = [`cards.effect.${a.id}`, `play.what.${a.id}`].map((k) => t(k)).find((v) => !v.startsWith('[')) || '';
+    return `<button class="action-card ${n ? 'is-queued' : ''}" data-action="play-pick" data-id="${a.id}" data-inspect="${a.id}"
       ${can[a.id] ? '' : 'aria-disabled="true"'}
-      ${explains ? `title="${escHtml(`${cardName(a)}. ${what}`)}"` : ''}
-      aria-label="${escHtml(explains ? `${cardName(a)}. ${what}` : cardName(a))}">
+      aria-label="${escHtml(what ? `${cardName(a)}. ${what}` : cardName(a))}">
       ${cardFace(a, { size: 'hand' })}
       <span>${escHtml(cardName(a))}${n ? ` <b class="qty">x${n}</b>` : ''}</span>
       <small class="ac-meta">${escHtml(meta)}${step ? ` ${riskDots(step)}` : ''}</small></button>`;
@@ -508,8 +536,8 @@ function renderTurn(s, run, f, ui) {
   const adv = f.hero.advantage.map((id) => {
     const c = s.cards.byId[id];
     const on = id === 'barrier' && ui.reaction === 'barrier';
-    return `<button class="action-card ${on ? 'is-queued' : ''}" data-action="play-adv" data-id="${id}" aria-pressed="${on}"
-      title="${escHtml(`${cardName(c)}. ${c.effect || ''}`.trim())}" aria-label="${escHtml(`${cardName(c)}. ${c.effect || ''}`.trim())}">
+    return `<button class="action-card ${on ? 'is-queued' : ''}" data-action="play-adv" data-id="${id}" data-inspect="${id}" aria-pressed="${on}"
+      aria-label="${escHtml(`${cardName(c)}. ${c.effect || ''}`.trim())}">
       ${cardFace(c, { size: 'mini' })}<span>${escHtml(cardName(c))}</span></button>`;
   }).join('');
 
@@ -519,18 +547,17 @@ function renderTurn(s, run, f, ui) {
   // ~560px of height on a 720px screen and a redundant label costs 16 of them.
   const wait = awaitingStep(f, ui);
   return `<div class="turn-head">
-      ${slots}<div class="row">${rerollBtn}${hideBtn}
-      <button class="btn ${!plan.length && !Object.values(can).some(Boolean) ? 'btn--primary' : ''}" data-action="play-end-turn">${escHtml(t('play.endTurn'))} ${glyphSvg('skip', '', 16)}</button></div>
+      ${slots}<div class="row">${rerollBtn}${hideBtn}</div>
     </div>
     <div class="band band--cards">
       <div class="hand-row">
         ${dieCell(f, ui)}
-        <div class="action-cards hand-attacks">${hand}</div>
+        <div class="action-cards hand-attacks" data-tour="hand">${hand}</div>
         ${adv ? `<div class="adv-hand"><span class="pile-label">${escHtml(t('play.advHand'))}</span><div class="action-cards">${adv}</div></div>` : ''}
       </div>
     </div>
     <div class="band band--plan">${planLane(s, f, ui, plan)}${plan.length ? `<button class="btn btn--ghost btn--sm plan-undo" data-action="play-undo-last">${escHtml(t('play.undoLast'))}</button>` : ''}</div>
-    <div class="band band--go">${wait ? rollPanel(f, ui, wait) : planBar(f, ui, plan)}${verdict(ui)}</div>`;
+    <div class="band band--go" data-tour="go">${wait ? rollPanel(f, ui, wait) : planBar(f, ui, plan)}${verdict(ui)}</div>`;
 }
 
 function planLane(s, f, ui, plan) {
@@ -566,18 +593,27 @@ function planLane(s, f, ui, plan) {
   // The keyboard hint sits on this row, not in the table aside: that column is
   // 158px wide and the same sentence wrapped to four lines there.
   return `<div class="plan-wrap">
-    <div class="row row--between"><span class="pile-label">${escHtml(t('play.plan'))}</span><small class="muted">${escHtml(plan.length ? t('play.planHint') : t('play.planEmpty'))}</small><small class="muted plan-keys">${escHtml(t('play.keys'))}</small></div>
+    <div class="row row--between"><span class="pile-label">${escHtml(t('play.plan'))}</span><small class="muted">${escHtml(plan.length ? t('play.planHint') : f.actionsLeft <= 0 ? t('play.outOfActions') : t('play.planEmpty'))}</small><small class="muted plan-keys">${escHtml(t('play.keys'))}</small></div>
     <ul class="plan">${steps}${react}</ul>
     ${ui.error ? `<div class="plan-error">${escHtml(reasonText(ui.error))}</div>` : ''}
   </div>`;
 }
 
 function planBar(f, ui, plan) {
-  if (!plan.length) return '';
-  const v = validatePlan(f, plan);
+  // One row settles the turn either way. With a plan, Resolve is the primary
+  // and End turn waits at the end of the same line; with none, the same slot
+  // reads Skip turn and IS the primary, so the confusing lone End turn button
+  // in the header is gone and Enter always does the obvious thing.
+  const v = plan.length ? validatePlan(f, plan) : null;
+  if (!plan.length) {
+    return `<div class="row plan-bar">
+      <button class="btn btn--primary" data-action="play-end-turn">${escHtml(t('play.skipTurn'))} ${glyphSvg('skip', '', 16)}</button></div>`;
+  }
   return `<div class="row plan-bar">
     <button class="btn btn--primary btn--lg" data-action="play-resolve-plan" ${v.ok ? '' : 'aria-disabled="true"'}>${glyphSvg('dice', '', 18)} ${escHtml(t('play.resolvePlan'))}</button>
     <button class="btn btn--ghost btn--sm" data-action="play-clear-plan">${escHtml(t('play.clearPlan'))}</button>
+    <span class="grow"></span>
+    <button class="btn btn--ghost btn--sm" data-action="play-end-turn">${escHtml(t('play.endTurn'))} ${glyphSvg('skip', '', 16)}</button>
     ${v.ok ? '' : `<span class="plan-error">${escHtml(reasonText(v.reason))}</span>`}
   </div>`;
 }
@@ -596,7 +632,9 @@ function rollPanel(f, ui, wait) {
     <div class="row">
       <button class="btn btn--primary btn--lg" data-action="play-roll">${glyphSvg('dice', '', 18)} ${escHtml(t('play.roll'))}</button>
       <span class="muted small">${escHtml(t('play.typeRoll'))}</span>${typedInput(f, ui)}
-      <button class="btn btn--sm" data-action="play-go-typed">Go</button>
+      <button class="btn btn--sm" data-action="play-go-typed">${escHtml(t('play.go'))}</button>
+      <span class="grow"></span>
+      <button class="btn btn--ghost btn--sm" data-action="play-resolve-all" title="${escHtml(t('play.resolveAllHint'))}">${escHtml(t('play.resolveAll'))}</button>
     </div>
   </div>`;
 }
