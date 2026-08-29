@@ -125,6 +125,9 @@ export function newFight(data, init) {
   return f;
 }
 
+// English on purpose: this file is the sim-parity layer and the engine tests
+// pin exact lines. The DISPLAY translates (js/views/logline.js); a new line
+// here needs a pattern there and a sample in tests/logline.test.mjs.
 const say = (f, text, cls = '') => { f.log.push({ text, cls }); };
 
 export const ready = (f) => f.hero.pool.filter((c) => c.st === 'ready').length;

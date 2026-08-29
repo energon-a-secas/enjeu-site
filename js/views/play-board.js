@@ -26,6 +26,7 @@
 // a JS timer or a rAF loop here would run anyway.
 
 import { t, cardName, bossLines } from '../strings.js';
+import { logLine } from './logline.js';
 import { escHtml } from '../utils.js';
 import { cardFace, cardBack, lifeMini, riskDots } from '../cards/face.js';
 import { glyphSvg, artGlyphSvg } from '../cards/glyphs.js';
@@ -183,7 +184,7 @@ function bubble(f, ui) {
   if (f.phase === 'won') return `<p class="bubble is-said" role="status">${escHtml((say.win || [])[f.level % (say.win?.length || 1)] || '')}</p>`;
   if (f.phase === 'lost' || f.phase === 'stall') return `<p class="bubble is-said" role="status">${escHtml((say.loss || [])[f.level % (say.loss?.length || 1)] || '')}</p>`;
   if (ui.event && say.events?.[ui.event]) return `<p class="bubble is-event" role="status">${escHtml(say.events[ui.event])}</p>`;
-  if (ui.bossSaid) return `<p class="bubble is-said" role="status">${escHtml(ui.bossSaid)}</p>`;
+  if (ui.bossSaid) return `<p class="bubble is-said" role="status">${escHtml(logLine(ui.bossSaid))}</p>`;
   if (raging(f)) return `<p class="bubble is-alarm" role="status"><b>${escHtml(t('play.rage'))}</b></p>`;
   if (f.round === f.boss.rage - 1) return `<p class="bubble is-alert" role="status">${escHtml(t('play.rageSoon'))}</p>`;
   return `<p class="bubble" role="status">${escHtml(bossIdle(f))}</p>`;
@@ -363,12 +364,12 @@ export function renderFight(s, run) {
             ${targets(f, ui, roster)}
           </div>
         </div>
-        ${last ? `<p class="log-tick ${last.cls}">${escHtml(last.text)}</p>` : ''}
+        ${last ? `<p class="log-tick ${last.cls}">${escHtml(logLine(last.text))}</p>` : ''}
         <div class="panel actions">${renderActions(s, run, f, ui)}</div>
       </div>
       ${!logOpen ? '' : `<aside class="panel panel--tight fight-log-below">
         <p class="kicker">${escHtml(t('play.log'))}</p>
-        <ul class="log">${f.log.slice(-60).reverse().map((l) => `<li class="${l.cls}">${escHtml(l.text)}</li>`).join('')}</ul>
+        <ul class="log">${f.log.slice(-60).reverse().map((l) => `<li class="${l.cls}">${escHtml(logLine(l.text))}</li>`).join('')}</ul>
       </aside>`}
     </div>
     ${tour ? tourCallout(tour) : ''}

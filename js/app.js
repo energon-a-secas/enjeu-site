@@ -8,6 +8,7 @@ import { syncFromHash } from './navigate.js';
 import { render, renderError } from './render.js';
 import { bindEvents } from './events.js';
 import { initInspector } from './views/inspect.js';
+import { setLogNames } from './views/logline.js';
 import { t } from './strings.js';
 import { reattach } from './game/run.js';
 
@@ -23,6 +24,7 @@ async function init() {
       fetch('data/art-manifest.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
     ]);
     state.cards = cards;
+    setLogNames(cards);
     setArtManifest(manifest);
     // Inlined, not linked: an <image> cannot be recoloured on paper. See the
     // note above loadArt in cards/glyphs.js. Failure is survivable, the cards

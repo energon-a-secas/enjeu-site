@@ -21,7 +21,8 @@ make sim        # tools/sim.py, the published balance table
 | `js/state.js` | `state` (view, run, die, mode, filters), `localStorage['enjeu-state']` |
 | `js/navigate.js` | hash routes `#/learn` `#/cards` `#/play` `#/balance`, `reveal()` |
 | `js/render.js` · `js/events.js` | view switch; one delegated `data-action` click handler, modal a11y |
-| `js/strings.js` | every UI string (`t('play.start')`): the i18n seam, English only for now |
+| `js/strings.js` | every UI string (`t('play.start')`): the EN/ES seam, key-parity tested |
+| `js/views/logline.js` | the fight log's Spanish: engine lines stay English (sim parity), patterns translate at display time |
 | `js/data/cards.js` | fetch + index cards.json (`byId`, `physical` = copies expanded, 110) |
 | `js/cards/glyphs.js` | 59 original 24x24 stroked glyphs keyed by art-manifest slot id; `artSrc()` override |
 | `js/cards/face.js` | `cardFace(card, opts)`: the four-corner SVG on a 630x880 grid (10 units per mm) |
