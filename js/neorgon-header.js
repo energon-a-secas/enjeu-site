@@ -319,9 +319,20 @@
     } catch (e) { /* the logo must never break the header */ }
   }
 
-  /* The home control: the mark with an orbit and a satellite, replacing the
-     generic planet. The orbit is a separate group so the existing
-     .nh-orbit hover animation and its reduced-motion opt-out still apply. */
+  /* The home control: the mark at the size its neighbours run at, with a
+     satellite that laps it on hover.
+
+     The first version put the mark inside a full-radius orbit ring, and it
+     measured badly: the RING spanned the control's 18px while the identifying
+     mark rendered at 8.2px, against 18px for the GitHub octicon beside it. The
+     eye compares the shape that identifies, not the outermost pixel, so the
+     control read as an afterthought. The ring is gone and the mark takes the
+     footprint; the satellite keeps the orbit idea at no cost to size and gives
+     the existing .nh-orbit animation something to move.
+
+     transform-origin stays the viewBox centre, so the satellite laps the mark
+     rather than spinning in place, and header.css already stops it under
+     prefers-reduced-motion. */
   function upgradeHome(header) {
     try {
       var home = header.querySelector('.header-home');
@@ -333,11 +344,10 @@
         '<svg class="nh-hub-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
         'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ' +
         'aria-hidden="true" xmlns="http://www.w3.org/2000/svg">' +
-        '<g transform="translate(12,12) scale(0.44) translate(-12,-12)">' +
+        '<g transform="translate(12,12) scale(0.82) translate(-12,-12)">' +
         '<g transform="' + MARK_T + '" fill-rule="evenodd" fill="currentColor" stroke="none">' +
         '<path d="' + MARK_D + '"/></g></g>' +
-        '<circle cx="12" cy="12" r="9.4" opacity=".55"/>' +
-        '<g class="nh-orbit"><circle cx="12" cy="2.6" r="1.15" fill="currentColor" ' +
+        '<g class="nh-orbit"><circle cx="20.4" cy="4" r="1.5" fill="currentColor" ' +
         'stroke="none"/></g></svg>';
       home.replaceChild(span.firstChild, old);
     } catch (e) { /* the home control must never break the header */ }
