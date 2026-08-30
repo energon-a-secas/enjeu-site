@@ -377,6 +377,18 @@ strong { font-weight: 700; }
 #inspectPop .inspect-text { font-size: var(--text-sm); line-height: 1.45; min-width: 0; }
 #inspectPop .inspect-text b { display: block; margin-bottom: 2px; }
 #inspectPop .inspect-text p { margin: 0; color: var(--text-muted); }
+/* The card at 112px, not 84: the printed pips ARE the card's patterns and at
+   84 they were a few pixels each. The live line under the sentence is the
+   THIS-TURN version of those numbers, so it gets the ink the pips cannot. */
+#inspectPop { max-width: 380px; }
+#inspectPop .inspect-card, #inspectPop .inspect-card .sk-card { width: 112px; }
+#inspectPop .inspect-live {
+  margin-top: 5px; padding-top: 5px; border-top: 1px solid var(--border);
+  color: var(--text-primary); font-size: 12px; display: flex; align-items: center;
+  gap: 5px; flex-wrap: wrap;
+}
+#inspectPop .inspect-live .pips { vertical-align: -1px; }
+
 
 /* The modal's effect sentence: the answer, above the numbers. */
 .card-effect { font-size: var(--text-sm); line-height: 1.5; margin: 2px 0 8px; }

@@ -142,7 +142,7 @@ html[data-view="learn"] #viewRoot { min-height: 0; }
    above a table above a caption, and those three must stack. */
 .slide__visual { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-2); }
 .slide__visual > svg { width: 100%; max-width: 340px; height: auto; max-height: 40vh; }
-.slide__visual > .table-wrap, .slide__visual > .checks, .slide__visual > p, .slide__visual > .row { width: 100%; }
+.slide__visual > .table-wrap, .slide__visual > p, .slide__visual > .row { width: 100%; }
 .slide__visual--hero > svg { max-width: 380px; }
 .slide__visual--table { align-items: stretch; }
 
@@ -175,12 +175,12 @@ html[data-view="learn"] #viewRoot { min-height: 0; }
 .state p { font-size: var(--text-xs); color: var(--text-secondary); }
 
 .slide .action-cards { width: 100%; }
-.slide .action-cards--three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.slide .action-cards--four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-/* Five is the Attack deck since Run joined it. The row is derived from the data
-   in learn.js, so this is the width the deck happens to be, not a magic number. */
-.slide .action-cards--five { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-.slide .action-cards--wide .action-card span { font-size: var(--text-xs); }
+/* How many cards to a row is a NUMBER learn.js works out from the deck, not a
+   class per width. The three modifiers this replaces (--three, --four, --five)
+   had no answer for a six-card deck: the ternary fell through to five columns,
+   the sixth card was orphaned on a line of its own, and --wide shrank every
+   label to buy room the layout was never going to have. */
+.slide .action-cards--rows { grid-template-columns: repeat(var(--cards, 3), minmax(0, 1fr)); }
 .slide .action-card .sk-card { width: auto; height: clamp(96px, 19vh, 150px); }
 
 /* A campaign or components table sits under another visual in the same half
@@ -189,6 +189,17 @@ html[data-view="learn"] #viewRoot { min-height: 0; }
 
 .strip { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--space-2); width: 100%; }
 .strip--four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+/* The boss's six reactions, in the side column rather than across the slide.
+   Two abreast gives each note a full sentence's width; at six abreast the
+   longest one broke over four lines and the cells stopped reading as cards. */
+.strip--two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+/* A cell whose die, glyph and name share one baseline, with the note beneath:
+   read down a column the eye wants the number and the word together rather
+   than stacked three deep. */
+.strip .strip__cell--row { display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 4px 6px; text-align: left; padding: var(--space-2) var(--space-3); }
+.strip .strip__cell--row svg { width: 26px; height: 26px; }
+.strip .strip__cell--row b { font-size: var(--text-sm); }
+.strip .strip__cell--row > span:last-child { grid-column: 1 / -1; font-size: var(--text-xs); line-height: 1.35; }
 .strip__cell { text-align: center; padding: var(--space-3) var(--space-2); border: 2px solid var(--border-strong); border-radius: var(--radius); background: var(--surface-1); box-shadow: var(--table-edge); }
 .strip__cell svg { width: 32px; height: 32px; }
 .strip__cell b { display: block; font-size: var(--text-sm); }
@@ -224,18 +235,48 @@ html[data-view="learn"] #viewRoot { min-height: 0; }
 }
 .track__deal { font-size: var(--text-sm); font-weight: 800; }
 .slide__visual .track__snap { width: 268px; max-width: 100%; height: auto; }
+/* In the side lane the three-column row does not fit: the label alone takes
+   8.5rem of a ~500px column and the note is left about sixty pixels. Stacked,
+   the drawing is the biggest thing in each row, which is what the slide is
+   teaching. Same layout the narrow breakpoint below has always used. */
+.slide__visual .track__row { grid-template-columns: minmax(0, 1fr); justify-items: start; gap: 4px; padding: var(--space-2) var(--space-3); }
+.slide__visual .track { gap: var(--space-2); }
 .track__note { font-size: var(--text-xs); color: var(--text-secondary); }
 
-/* The four checks, in the card's own traffic light (the dots come from
-   face.js riskDots, so the page cannot teach a ramp the paper does not print). */
-.checks { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
-.checks__item {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 4px 10px; border: 2px solid var(--border); border-radius: 999px;
-  background: var(--surface-2); font-size: var(--text-xs);
+
+/* ── The two tactics, and the order that pays for them ─────────
+   Three rows, each one a name, what that turn dealt, the actions in the order
+   they are taken, and one sentence saying why. The three rows are deliberately
+   the same shape: the only difference between the last two is where Run sits
+   and the number on the right, and a row that changed layout as well would hide
+   the comparison the slide exists to make. */
+.tactics { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); width: 100%; margin: 0; padding: 0; }
+.tactic {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--border); border-radius: var(--radius); background: var(--surface-2);
 }
-.checks__item b { font-weight: 800; }
-.checks__item i { font-style: normal; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+/* The order that costs, drawn as a broken edge rather than a filled panel: it
+   is the same turn played in the wrong order, not a third tactic to learn. */
+.tactic--costly { border-style: dashed; border-color: var(--danger); }
+.tactic__head { display: flex; align-items: baseline; gap: var(--space-2); }
+.tactic__name { font-size: var(--text-sm); font-weight: 800; }
+.tactic__total { margin-left: auto; font-size: var(--text-xs); color: var(--text-muted); white-space: nowrap; }
+.tactic__total b { font-size: var(--text-lg); font-weight: 900; color: var(--gold-deep); font-variant-numeric: tabular-nums; }
+.tactic--costly .tactic__total b { color: var(--danger); }
+/* Wraps rather than scrolls: three chips and two chevrons fit beside the copy
+   in English, and "Todo o Nada" is wide enough that Spanish sometimes takes a
+   second line. A second line is fine; a row you have to drag sideways is not. */
+.tactic__seq { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.tactic__act {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 8px; border: 2px solid var(--border-strong); border-radius: 999px;
+  background: var(--surface-1); font-size: var(--text-xs); font-weight: 700;
+}
+.tactic__act svg { flex: 0 0 auto; }
+.tactic__arrow { display: inline-flex; align-items: center; color: var(--text-muted); }
+.tactic__arrow .chev { width: 12px; height: 12px; }
+.tactic__note { font-size: var(--text-xs); color: var(--text-secondary); }
 
 /* ── The rulebook, as the last slide ───────────────────────── */
 /* The one slide that scrolls: .slide is the scroller, so the heading can stay
@@ -285,8 +326,25 @@ html[data-view="learn"] #viewRoot { min-height: 0; }
   }
   .rail { gap: var(--space-3); }
   .rail__label { display: none; }
-  .rail__dots { gap: 4px; }
-  .rail__dot { width: 22px; height: 22px; border-width: 1.5px; }
+  /* The comment above was written for twelve dots and tuned to them. The deck
+     is fourteen now (the Tactics slide, 2026-08-30) and it overflowed its own
+     row by 29px at 391px wide, which is the same defect that comment describes
+     fixing, one slide later. Sizing the dots to a count is a fix that expires
+     every time a slide is added, so the row scrolls instead and the dot you are
+     on is scrolled into view. The rail stays a map: the gold dot is still
+     findable, and nothing is hidden behind the edge without a way to reach it. */
+  .rail__dots { gap: 4px; flex-wrap: nowrap; }
+  /* The RAIL scrolls, not each group: the dots are split into four chapter
+     groups and scrolling one of four does nothing for a row that overflows
+     across all of them. */
+  .rail {
+    flex-wrap: nowrap; overflow-x: auto; min-width: 0;
+    overscroll-behavior-x: contain; scroll-snap-type: x proximity;
+    scrollbar-width: none; padding-bottom: 2px;
+  }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail__group { flex: none; }
+  .rail__dot { width: 22px; height: 22px; border-width: 1.5px; flex: none; scroll-snap-align: center; }
   .deck__chapter { display: none; }
   /* The caption above, the drawing and its sentence below: at this width the
      three-column row leaves the note about eight characters wide. */
@@ -298,10 +356,15 @@ html[data-view="learn"] #viewRoot { min-height: 0; }
   .deck__btn { min-width: 0; flex: 1; }
   .strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .strip--four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .strip--two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .strip .strip__cell--row { padding: var(--space-2); }
   /* The counts are a number and one word, so they stay three across on a phone:
      two across is five rows of scroll for something meant to be scanned. */
   .strip--counts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .strip--counts .strip__cell { padding: var(--space-2) 4px; }
   .strip--counts .strip__cell b { font-size: var(--text-base); }
   .state__face { height: clamp(92px, 16vh, 130px); }
+  /* The tactic rows keep their shape at every width (the comparison between the
+     last two is the whole point), so only the padding gives way. */
+  .tactic { padding: var(--space-2); }
 }

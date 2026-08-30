@@ -144,6 +144,21 @@ castillo que armaste. Las reglas no preguntan y no les importa. Escape es la ún
 efecto describes en vez de contarlo, que es en lo que se convirtieron los hechizos inventados de
 la primera versión: el juego se queda con el número, tú te quedas con la historia.
 
+### Atacar desde el escondite, y por qué importa el orden
+
+Mover es gratis y esconderse no, y en eso está todo.
+
+**Mientras estás Escondido, cada ataque que haces hace la mitad**, redondeando hacia abajo al
+múltiplo de 25 más cercano. Estás detrás del sofá. No estás en posición de pegar como se debe.
+
+Así que Escape va al **final** del turno. Pega primero con todo el peso, después escóndete con la
+acción que te quede: esa es la táctica que vale la pena aprender, y es el único lugar del juego
+donde el orden de tus tres acciones cambia los números. Todo lo demás que hagas este turno vale
+lo mismo lo hagas cuando lo hagas.
+
+El orden que no conviene es apostar cuando ya estás a salvo. Una apuesta grande desde el
+escondite paga las cartas y cobra la mitad del daño, que es el peor negocio de la mesa.
+
 **Invención** es el hechizo que tú inventas. Antes de tirar, di el hechizo en voz alta:
 cómo se llama, cómo se ve, qué le hace a la sala. Después apuesta una carta y tira la
 prueba Loca. Si acierta hace 350, el número más grande de tu mazo, y falla la mayoría de
@@ -263,6 +278,12 @@ jefe, o sea 200. Pégale con 400 y 200 de eso caen en nada: **no** se traspasa a
 y no se traspasa a otro esbirro. Ese es el único lugar de este juego donde el daño se va a
 ninguna parte, así que apunta los ataques grandes al cuerpo y termina un esbirro con los chicos.
 
+**Cuando el jefe cae, sus esbirros se dispersan.** El jefe es la pila del medio. Sácale la última
+carta y la pelea se termina en ese mismo segundo, aunque todavía quede un esbirro parado al lado:
+los chiquitos salen corriendo y ganaste. Así que un esbirro nunca es algo que tengas que matar. Es
+una elección: límpialo y frena los 25 por turno que te cuesta, o ignóralo y corre contra la pila
+grande.
+
 ### El Aliado
 
 Si jugaste la carta de Ventaja **Aliado**, hay una segunda figura de tu lado de la mesa, y el
@@ -318,6 +339,51 @@ Burbuja absorbe 25 de lo que quedó, y lo que sobra rompe cartas.
 
 La Furia es la razón por la que no puedes ganar jugando a la segura. Aguantar detrás de Golpe te deja sobrevivir un rato, y después ya no.
 
+### Romper una parte
+
+Tu jefe está armado con bloques y no hay otro igual, así que este reglamento no te va a decir
+cuáles son sus partes. Se las pones tú. Di en voz alta a qué apuntaste, igual que ya dices dónde
+te metiste cuando Escapaste:
+
+> Le trepo por el cuello y le clavo el ojo.
+> Voy por el ala, por donde las placas no se juntan.
+> Le arranco la cola de raíz.
+
+Si se desprende, elige **una** de tres cosas:
+
+| | Qué te da una rotura |
+|---|---|
+| **Herida** | El jefe pierde **50** al instante, además del ataque que la abrió. |
+| **Lisiar** | Todo lo que haga el jefe hace **25 menos** por el resto del nivel. Nunca baja de 25. |
+| **Trofeo** | Una tirada de este nivel acierta automáticamente. En una campaña además robas una carta de Ventaja. |
+
+Dos partes por jefe. Solo puedes intentarlo **justo después de que un ataque tuyo haya
+acertado**: la rotura está donde acertó ese ataque, así que un golpe que falló no es un lugar al
+que apuntar.
+
+**Qué tan difícil es lo decide el adulto**, y esa es la regla de verdad aquí. Elige uno antes de
+empezar:
+
+| Estilo | Para romper una parte |
+|---|---|
+| **Amable** | Lo dices y pasa. Sin tirada y sin coste. |
+| **Asistido** | Tira ●●● Difícil. |
+| **Duro** | Tira ●●●● Loca, y te cuesta una de tus tres acciones. |
+
+Asistido es el punto medio y por donde empezar: la tirada es lo que hace que una parte inventada
+se sienta ganada por quien la inventó. Amable es para un jugador más chico, cuyo gusto entero es
+contar la estocada. Duro es para una mesa que quiere que romper compita con atacar por las mismas
+tres acciones.
+
+Todos los números de arriba son un ajuste, no una ley: dos partes, 50, 25, y en qué paso de la
+escalera cae la tirada son cosas que una mesa puede cambiar, y el sitio te deja cambiarlas. Pon el
+tope en cero y la regla entera desaparece, que también es una buena manera de jugar.
+
+**Por qué está aquí.** La primera versión de este juego dejaba al jugador inventar hechizos, y
+sacarlo fue lo correcto y perdió algo de verdad. Este es el pedazo que vale la pena recuperar: la
+parte de una pelea que no está en ninguna carta, con un precio puesto justo para que decirla en
+voz alta cambie un número.
+
 ### Llevar la cuenta
 
 La vida del jefe es la pila de cartas al lado de su construcción, así que la cuenta ya está en la
@@ -336,7 +402,8 @@ cambia ningún número de este reglamento.
 
 ## 8. Ganar un nivel
 
-El jefe cae cuando se le acaban las cartas de vida. Entonces, en este orden:
+El jefe cae cuando se acaban las **cartas que están bajo el jefe mismo**. Los esbirros que
+sigan en la mesa se dispersan (regla 7). Entonces, en este orden:
 
 1. Devuelve **todas** tus cartas Rotas a En Pie. Empiezas el próximo nivel entero.
 2. Toma **1** carta blanca de Vida Extra. Queda En Pie.
@@ -378,21 +445,28 @@ Una carta opcional. Ponla en juego para una partida más blanda, o déjala en la
 
 Cuando quedarías **Caído**, puedes volver en vez de eso:
 
-| Vuelta | Tirada |
-|---|---|
-| 1ª de este nivel | gratis, sin tirada |
-| 2ª | ● Segura |
-| 3ª | ●● Pareja |
-| 4ª | ●●● Difícil |
-| 5ª y siguientes | ●●●● Loca |
+| Vuelta | Tirada | Cartas que recuperas |
+|---|---|---|
+| 1ª de este nivel | gratis, sin tirada | **4** |
+| 2ª | ● Segura | **3** |
+| 3ª | ●● Pareja | **2** |
+| 4ª | ●●● Difícil | **1** |
+| 5ª y siguientes | ●●●● Loca | **1** |
 
-Vuelves con **2** de tus cartas Rotas devueltas a En Pie. Si fallas la tirada, el nivel termina
-igual que terminaría sin la carta. La cuenta se reinicia en cada nivel.
+Dos escaleras que suben juntas: la tirada se pone más difícil y el rescate se achica. La primera
+vuelta es una vuelta de verdad y te levanta del todo; la cuarta te levanta con una sola carta, y
+encima con una tirada Difícil para llegar ahí. Nunca te deja volver con cero cartas, porque una
+vuelta que no devuelve nada es una moneda al aire disfrazada de elección.
+
+Si fallas la tirada, el nivel termina igual que terminaría sin la carta. La cuenta se reinicia en
+cada nivel.
 
 Existe para que un niño no pierda quince minutos de juego por una sola ronda mala.
-Medido sobre 4.000 peleas por nivel en el motor del sitio, le sube a un jugador cuidadoso entre
-11 y 26 puntos por nivel, y una partida completa de cinco niveles de 6,1% a 28,9%; al que juega
-arriesgado es al que más lo ayuda, que es justo para lo que sirve una red de seguridad.
+Vuelto a medir sobre 4.000 peleas por nivel en el motor del sitio, después de que
+la escalera del 2026-08-30 reemplazara las dos cartas fijas: le sube a un jugador
+cuidadoso entre 12 y 28 puntos por nivel, y una partida entera de cinco niveles del
+4,0% al 19,7%; a uno imprudente entre 27 y 47 puntos, del 3,0% al 57,9%. Le sirve más
+a la imprudencia, que es para lo que está una red de seguridad.
 
 ### Jugando de a dos: el Compinche
 
@@ -435,7 +509,7 @@ Ganas la partida pasando el nivel 5. Un nivel perdido no se borra: te deja un Re
 
 ## 10. Componentes
 
-110 cartas, tamaño póker **63 × 88 mm**, en cartulina de 300gsm. En impresoras de casa: 9 por
+111 cartas, tamaño póker **63 × 88 mm**, en cartulina de 300gsm. En impresoras de casa: 9 por
 hoja A4, o sea 13 hojas, la última a medio llenar. Fueron exactamente 10 hojas hasta que la
 primera prueba de juego del 2026-08-27 pidió dos cartas más, Burbuja y Segundo Aire; el número
 redondo perdió contra cartas que un jugador de verdad quería. Esa misma prueba pidió dos ayudas
@@ -443,8 +517,8 @@ más para el jugador, la tabla de reacciones del jefe y la Pista de Daño, y 11 
 las dos. La hoja doce es el precio de dos cambios posteriores: Escape, y hacer que cada carta de
 vida del jefe valga 100, que llevó la pila de vida del jefe de 10 cartas a 20. La hoja trece paga las cartas de v1.2: Invención, Provocación, el Compinche y dos Rencores.
 No hace falta imprimir las trece. La página de Cartas del sitio ofrece dos juegos más chicos:
-**Lo esencial** (103 cartas, 12 hojas) deja fuera los siete biomas, porque cualquier objeto
-sobre la mesa puede ser el lugar, y **Primera partida** (33 cartas, 4 hojas) es exactamente lo
+**Lo esencial** (104 cartas, 12 hojas) deja fuera los siete biomas, porque cualquier objeto
+sobre la mesa puede ser el lugar, y **Primera partida** (34 cartas, 4 hojas) es exactamente lo
 que reparte la Primera partida: un jefe, seis cartas, la vida de los cuatro elementos y las ayudas.
 Cada carta se distingue **tanto** por color como por una forma o un signo, así que el mazo se
 sigue leyendo sin visión de color.
@@ -478,9 +552,9 @@ es bastante tinta en una impresora de casa.
 | Ventaja: 6 tipos × 2 | 12 |
 | Jefe: S, M, L, L, XL, UM | 6 |
 | Bioma | 7 |
-| Ayudas: tiradas, orden del turno, reacciones del jefe, pista de daño | 4 |
+| Ayudas: tiradas, orden del turno, reacciones del jefe, pista de daño, roturas | 5 |
 | Modos: Segundo Aire, Compinche, Rencor × 2 | 4 |
-| **Total** | **110** |
+| **Total** | **111** |
 
 Las dos cartas L no son un duplicado: los niveles 2 y 3 son los dos de tamaño L con distinta vida
 y distinto Daño, y la carta S existe solo como invocación. `tests/cards.test.mjs` parsea esa

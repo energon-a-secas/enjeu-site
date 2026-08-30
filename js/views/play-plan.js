@@ -134,29 +134,67 @@ export function awaitingStep(f, ui) {
  *
  * @returns {{done?:boolean, awaiting?:number, error?:string, phase?:string}}
  */
-export function advancePlan(f, ui, roll = null) {
+export function advancePlan(f, ui, roll = null, { oneStep = false } = {}) {
   ui.plan ||= [];
   ui.at ||= 0;
   ui.error = null;
+  // Every step this call resolves, in order. ui.last only ever holds the most
+  // recent one, so a caller that resolved three steps and read ui.last once
+  // reported one of them and silently dropped the other two: a lane of Focus
+  // then Bubble came back saying only "Bubble lands", which is what the owner
+  // saw and reported as the Bubble arriving weightless.
+  const played = [];
   while (ui.at < ui.plan.length) {
-    if (f.phase !== 'act') { ui.awaiting = null; return { done: true, phase: f.phase }; }
+    // One beat per step, when the caller asks for it. Without this the lane
+    // swallowed every step that needs no die and reported them together: a turn
+    // of Focus then Bubble threw one die and came back with BOTH results at
+    // once, so the Bubble arrived weightless, already resolved, in a list. A
+    // card that always works still did something, and the player should see it
+    // do it. The fast lane (resolve it all) does not pass this and still runs
+    // the whole lane in one go.
+    if (oneStep && played.length > 0) return { paused: true, at: ui.at, played };
+    if (f.phase !== 'act') { ui.awaiting = null; return { done: true, phase: f.phase, played }; }
     // Only the REMAINDER is re-checked: the fight already carries the cost of
     // every step behind us, so validating the whole lane would count it twice.
     const v = validatePlan(f, ui.plan.slice(ui.at));
-    if (!v.ok) { ui.awaiting = null; ui.error = v.reason; return { error: v.reason, at: ui.at }; }
+    if (!v.ok) { ui.awaiting = null; ui.error = v.reason; return { error: v.reason, at: ui.at, played }; }
     const st = ui.plan[ui.at];
     const a = attackFor(f, st.id);
     const step = effectiveStep(f, a);
     const useRune = !!st.rune && !!step && f.hero.rune > 0;
-    if (step && !useRune && roll === null) { ui.awaiting = ui.at; return { awaiting: ui.at, step }; }
+    if (step && !useRune && roll === null) { ui.awaiting = ui.at; return { awaiting: ui.at, step, played }; }
     const target = typeof st.target === 'number' && f.boss.minions[st.target] ? st.target : 'body';
     const r = attack(f, a, { bet: betFor(a, st), target, roll: step && !useRune ? roll : null, useRune });
-    ui.last = { name: a.name, hit: r.hit, auto: r.auto, dealt: r.dealt, roll: r.roll ?? null, need: r.need, i: ui.at };
+    // The id travels with the name so the DISPLAY can translate it. This module
+    // is deliberately free of the string table (the tests drive it with no
+    // language set), and the ledger was the one place a card name reached the
+    // screen without passing through cardName().
+    ui.last = { name: a.name, id: a.id, hit: r.hit, auto: r.auto, dealt: r.dealt, roll: r.roll ?? null, need: r.need, i: ui.at };
     ui.awaiting = null;
+    played.push(ui.last);
     ui.at += 1;
     roll = null;              // the roll belonged to that one step
   }
-  return { done: true, phase: f.phase };
+  return { done: true, phase: f.phase, played };
+}
+
+/**
+ * Move step `from` to sit at `to`. Returns the plan unchanged when the result
+ * would be illegal, which is the same refusal every other lane edit makes: the
+ * number the player sees IS the plan, so a reorder that cannot be paid for is
+ * declined rather than half-applied.
+ *
+ * Order matters since Run started halving the attacks that follow it
+ * (RULES.md section 5), so rebuilding a lane to move one card was the most
+ * common reason to clear it. Now you drag it.
+ */
+export function moveStep(f, plan, from, to) {
+  if (from === to || from < 0 || from >= plan.length) return { ok: false, reason: 'gone', plan };
+  const out = [...plan];
+  const [st] = out.splice(from, 1);
+  out.splice(Math.max(0, Math.min(to, out.length)), 0, st);
+  const v = validatePlan(f, out);
+  return v.ok ? { ok: true, plan: out } : { ok: false, reason: v.reason, plan };
 }
 
 /** Cards that can still be added to this plan, for the hand's disabled state. */

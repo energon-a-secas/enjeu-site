@@ -11,7 +11,7 @@
 // the screen is its preview: two players who print the deck have to end up with
 // the same sheets in the same order, whatever either screen was sorted by.
 
-import { t, cardName, reactionNames } from '../strings.js';
+import { t, cardName, reactionNames, breakNames, dmNames, elementName } from '../strings.js';
 import { escHtml, showToast } from '../utils.js';
 import { DECKS, CHECKS } from '../data/cards.js';
 import { cardFace, cardBack, FACE } from '../cards/face.js';
@@ -313,7 +313,7 @@ function cell(c, aid, backs) {
 
 export function renderCards(s) {
   const data = s.cards;
-  const aid = aidFor(data, reactionNames());
+  const aid = aidFor(data, reactionNames(), breakNames(), dmNames());
   const list = filterCards(data, s);
   const groups = groupCards(list, s.browse.sort);
 
@@ -359,7 +359,7 @@ export function printOrder(s, deck = null) {
 
 /** Fill the print root and open the browser's print dialog. */
 export function printCards(s, deck = null) {
-  const pages = renderPrintSheet(printOrder(s, deck), { backs: s.withBacks, paper: s.paper, aid: aidFor(s.cards, reactionNames()) });
+  const pages = renderPrintSheet(printOrder(s, deck), { backs: s.withBacks, paper: s.paper, aid: aidFor(s.cards, reactionNames(), breakNames(), dmNames()) });
   // Give the browser one frame to lay the sheet out before the dialog snapshots it.
   requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
   return pages;
@@ -379,7 +379,7 @@ function effectLine(c) {
 export function showCardDetail(s, id) {
   const c = s.cards.byId[id];
   if (!c) return;
-  const aid = aidFor(s.cards, reactionNames());
+  const aid = aidFor(s.cards, reactionNames(), breakNames(), dmNames());
   const rows = [];
   const add = (k, v) => { if (v !== undefined && v !== null && v !== '') rows.push(`<dt>${escHtml(t(`cards.corner.${k}`))}</dt><dd>${v}</dd>`); };
   if (c.deck === 'attack' || c.deck === 'skill') {
@@ -389,21 +389,20 @@ export function showCardDetail(s, id) {
     add('check', escHtml(CHECK_LABEL(c.check)));
     add('damage', c.damage === '4x bet' ? t('cards.val.xBet') : c.damage);
     add('tier', c.tier);
-    if (c.element) add('element', escHtml(cap(c.element)));
+    if (c.element) add('element', escHtml(elementName(c.element)));
     if (c.class) add('class', `${escHtml(cardName({ id: c.class, name: cap(c.class) }))} ${escHtml(t('cards.val.classOnly'))}`);
-  } else if (c.deck === 'class') add('passive', escHtml(c.passive));
-  else if (c.deck === 'advantage') { add('effect', escHtml(c.effect)); add('copies', c.copies); }
+  } else if (c.deck === 'advantage') add('copies', c.copies);
   else if (c.deck === 'boss') {
     add('size', c.size); add('life', `${c.life_cards} × ${c.per_card} = ${c.hp}`); add('damage', c.damage);
-    if (c.rage) add('rage', c.rage); if (c.note) add('rule', escHtml(c.note));
-  } else if (c.deck === 'biome') { if (c.element) add('element', escHtml(cap(c.element))); if (c.rule) add('rule', escHtml(c.rule)); }
-  else if (c.deck === 'life') { add('value', typeof c.value === 'number' ? c.value : escHtml(String(c.value))); add('copies', c.copies); if (c.element) add('element', escHtml(cap(c.element))); }
-  else if (c.deck === 'aid') add('rule', escHtml(c.content));
+    if (c.rage) add('rage', c.rage);
+  } else if (c.deck === 'biome') { if (c.element) add('element', escHtml(elementName(c.element))); }
+  else if (c.deck === 'life') { add('value', typeof c.value === 'number' ? c.value : escHtml(String(c.value))); add('copies', c.copies); if (c.element) add('element', escHtml(elementName(c.element))); }
+  
   add('icon', `<code>${escHtml(c.icon || 'none')}</code>`);
 
   const say = (c.deck === 'attack' || c.deck === 'skill')
     ? `<div class="say">${escHtml(t('common.sayIt'))}: <b>${escHtml(cardName(c))}</b></div>` : '';
-  document.getElementById('cardModalTitle').textContent = c.name;
+  document.getElementById('cardModalTitle').textContent = cardName(c);
   // Face and back together, because until now the redesigned back existed only
   // on the print sheet and nothing on screen ever showed one.
   document.getElementById('cardModalBody').innerHTML = `

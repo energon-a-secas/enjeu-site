@@ -1,811 +1,849 @@
 {
- "$schema-note": [
-  "Every card in Enjeu. 110 cards, poker size 63x88mm.",
-  "",
-  "check:   null (always lands) | sure 75% | even 50% | hard 25% | wild 15%",
-  "bet:     life cards staked, each worth 25",
-  "element: fire | water | earth | wind | null",
-  "         A skill's element decides whether it collects the +25 affinity and",
-  "         biome bonuses. That is what makes five cards with one statline into",
-  "         five different cards without printing a word on any of them.",
-  "class:   null, or the one class permitted to take this card",
-  "",
-  "'name' never appears on the card. The glyph is the name; the player says it",
-  "out loud. See docs/CARD-LAYOUT.md.",
-  "",
-  "tools/lint_cards.py checks this file against the balance ladder in",
-  "docs/BALANCE.md. Run it after editing anything here."
- ],
- "version": "0.1.0",
- "unit": 25,
- "ladder": {
-  "sure": 0.75,
-  "even": 0.5,
-  "hard": 0.25,
-  "wild": 0.15
- },
- "efficiency_bands": {
-  "$note": "Expected damage per life card bet. A new card must land in its tier's band.",
-  "0": [
-   50,
-   65
+  "$schema-note": [
+    "Every card in Enjeu. 110 cards, poker size 63x88mm.",
+    "",
+    "check:   null (always lands) | sure 75% | even 50% | hard 25% | wild 15%",
+    "bet:     life cards staked, each worth 25",
+    "element: fire | water | earth | wind | null",
+    "         A skill's element decides whether it collects the +25 affinity and",
+    "         biome bonuses. That is what makes five cards with one statline into",
+    "         five different cards without printing a word on any of them.",
+    "class:   null, or the one class permitted to take this card",
+    "",
+    "'name' never appears on the card. The glyph is the name; the player says it",
+    "out loud. See docs/CARD-LAYOUT.md.",
+    "",
+    "tools/lint_cards.py checks this file against the balance ladder in",
+    "docs/BALANCE.md. Run it after editing anything here."
   ],
-  "1": [
-   66,
-   80
+  "version": "0.1.0",
+  "unit": 25,
+  "ladder": {
+    "sure": 0.75,
+    "even": 0.5,
+    "hard": 0.25,
+    "wild": 0.15
+  },
+  "efficiency_bands": {
+    "$note": "Expected damage per life card bet. A new card must land in its tier's band.",
+    "0": [
+      50,
+      65
+    ],
+    "1": [
+      66,
+      80
+    ],
+    "2": [
+      81,
+      92
+    ],
+    "3": [
+      93,
+      112
+    ],
+    "4": [
+      113,
+      135
+    ]
+  },
+  "attack": [
+    {
+      "id": "strike",
+      "name": "Strike",
+      "icon": "strike",
+      "tier": 0,
+      "actions": 1,
+      "bet": 0,
+      "damage": 25,
+      "check": null,
+      "element": null,
+      "class": null
+    },
+    {
+      "id": "focus",
+      "name": "Focus",
+      "icon": "focus",
+      "tier": 0,
+      "actions": 1,
+      "bet": 1,
+      "damage": 75,
+      "check": "sure",
+      "element": null,
+      "class": null
+    },
+    {
+      "id": "all-in",
+      "name": "All In",
+      "icon": "all-in",
+      "tier": 0,
+      "actions": 2,
+      "bet": "any",
+      "damage": "4x bet",
+      "check": "even",
+      "element": null,
+      "class": null
+    },
+    {
+      "id": "bubble",
+      "name": "Bubble",
+      "icon": "bubble",
+      "tier": 0,
+      "actions": 1,
+      "bet": 0,
+      "damage": 0,
+      "check": null,
+      "element": null,
+      "class": null,
+      "shield": 25,
+      "$note": "Costs an action, not a card. Betting a card would be a trap: guarding with a Ready card is already free, so paying one to absorb 25 is strictly worse than guarding. Spending an ACTION makes it the mirror of Strike, attack for 25 or prevent 25, and it is the only attack card that is worth anything under Rage, where nothing can be guarded."
+    },
+    {
+      "id": "run",
+      "name": "Run",
+      "icon": "run",
+      "tier": 0,
+      "actions": 1,
+      "bet": 0,
+      "damage": 0,
+      "check": null,
+      "element": null,
+      "class": null,
+      "hides": true,
+      "$note": "Costs an action and no card, like Bubble, so the two sit on the same axis: Bubble absorbs a certain 25, Run gambles for the whole hit. It sets the same Hidden state the Forest biome grants, which is why there is one rule and not two. It is also the only card whose effect the player narrates rather than computes: you say where you ran and what you hid behind."
+    },
+    {
+      "id": "invention",
+      "name": "Invention",
+      "icon": "invention",
+      "tier": 0,
+      "actions": 1,
+      "bet": 1,
+      "damage": 350,
+      "check": "wild",
+      "element": null,
+      "class": null,
+      "$note": "The invented-spells rule wearing a number. Say the spell out loud before rolling; the game keeps the number, you keep the story. Wild pays 350 on one card, which is 52.5 expected per card: inside tier 0's band, under Focus's reliability, over everything's ceiling. Dead weight whenever the Rage clock demands certainty, which is the cost of wild magic."
+    }
   ],
-  "2": [
-   81,
-   92
+  "skill": [
+    {
+      "id": "slash",
+      "name": "Slash",
+      "icon": "skill-slash",
+      "tier": 0,
+      "actions": 1,
+      "bet": 1,
+      "damage": 75,
+      "check": "sure",
+      "element": null,
+      "class": null
+    },
+    {
+      "id": "ember",
+      "name": "Ember",
+      "icon": "skill-ember",
+      "tier": 0,
+      "actions": 1,
+      "bet": 1,
+      "damage": 75,
+      "check": "sure",
+      "element": "fire",
+      "class": null
+    },
+    {
+      "id": "torrent",
+      "name": "Torrent",
+      "icon": "skill-torrent",
+      "tier": 0,
+      "actions": 1,
+      "bet": 1,
+      "damage": 75,
+      "check": "sure",
+      "element": "water",
+      "class": null
+    },
+    {
+      "id": "tremor",
+      "name": "Tremor",
+      "icon": "skill-tremor",
+      "tier": 0,
+      "actions": 1,
+      "bet": 1,
+      "damage": 75,
+      "check": "sure",
+      "element": "earth",
+      "class": null
+    },
+    {
+      "id": "gale",
+      "name": "Gale",
+      "icon": "skill-gale",
+      "tier": 0,
+      "actions": 1,
+      "bet": 1,
+      "damage": 75,
+      "check": "sure",
+      "element": "wind",
+      "class": null
+    },
+    {
+      "id": "piercer",
+      "name": "Piercer",
+      "icon": "skill-piercer",
+      "tier": 1,
+      "actions": 1,
+      "bet": 1,
+      "damage": 100,
+      "check": "sure",
+      "element": null,
+      "class": null
+    },
+    {
+      "id": "firebolt",
+      "name": "Firebolt",
+      "icon": "skill-firebolt",
+      "tier": 1,
+      "actions": 1,
+      "bet": 1,
+      "damage": 100,
+      "check": "sure",
+      "element": "fire",
+      "class": null
+    },
+    {
+      "id": "ice-spear",
+      "name": "Ice Spear",
+      "icon": "skill-ice-spear",
+      "tier": 1,
+      "actions": 1,
+      "bet": 1,
+      "damage": 100,
+      "check": "sure",
+      "element": "water",
+      "class": "mage"
+    },
+    {
+      "id": "boulder",
+      "name": "Boulder",
+      "icon": "skill-boulder",
+      "tier": 1,
+      "actions": 1,
+      "bet": 1,
+      "damage": 100,
+      "check": "sure",
+      "element": "earth",
+      "class": null
+    },
+    {
+      "id": "cyclone",
+      "name": "Cyclone",
+      "icon": "skill-cyclone",
+      "tier": 1,
+      "actions": 1,
+      "bet": 1,
+      "damage": 100,
+      "check": "sure",
+      "element": "wind",
+      "class": null
+    },
+    {
+      "id": "slash-wave",
+      "name": "Slash Wave",
+      "icon": "skill-slash-wave",
+      "tier": 2,
+      "actions": 1,
+      "bet": 2,
+      "damage": 225,
+      "check": "sure",
+      "element": null,
+      "class": "knight"
+    },
+    {
+      "id": "nova",
+      "name": "Nova",
+      "icon": "skill-nova",
+      "tier": 2,
+      "actions": 1,
+      "bet": 2,
+      "damage": 225,
+      "check": "sure",
+      "element": "fire",
+      "class": null
+    },
+    {
+      "id": "cold-curse",
+      "name": "Cold Curse",
+      "icon": "skill-cold-curse",
+      "tier": 2,
+      "actions": 1,
+      "bet": 2,
+      "damage": 225,
+      "check": "sure",
+      "element": "water",
+      "class": null
+    },
+    {
+      "id": "earthquake",
+      "name": "Earthquake",
+      "icon": "skill-earthquake",
+      "tier": 2,
+      "actions": 1,
+      "bet": 2,
+      "damage": 225,
+      "check": "sure",
+      "element": "earth",
+      "class": null
+    },
+    {
+      "id": "tempest",
+      "name": "Tempest",
+      "icon": "skill-tempest",
+      "tier": 2,
+      "actions": 1,
+      "bet": 2,
+      "damage": 225,
+      "check": "sure",
+      "element": "wind",
+      "class": null
+    },
+    {
+      "id": "soul-strike",
+      "name": "Soul Strike",
+      "icon": "skill-soul-strike",
+      "tier": 3,
+      "actions": 1,
+      "bet": 2,
+      "damage": 400,
+      "check": "even",
+      "element": null,
+      "class": "hunter"
+    },
+    {
+      "id": "pyre",
+      "name": "Pyre",
+      "icon": "skill-pyre",
+      "tier": 3,
+      "actions": 1,
+      "bet": 2,
+      "damage": 400,
+      "check": "even",
+      "element": "fire",
+      "class": null
+    },
+    {
+      "id": "maelstrom",
+      "name": "Maelstrom",
+      "icon": "skill-maelstrom",
+      "tier": 3,
+      "actions": 1,
+      "bet": 2,
+      "damage": 400,
+      "check": "even",
+      "element": "water",
+      "class": null
+    },
+    {
+      "id": "landslide",
+      "name": "Landslide",
+      "icon": "skill-landslide",
+      "tier": 3,
+      "actions": 1,
+      "bet": 2,
+      "damage": 400,
+      "check": "even",
+      "element": "earth",
+      "class": null
+    },
+    {
+      "id": "thunderhead",
+      "name": "Thunderhead",
+      "icon": "skill-thunderhead",
+      "tier": 3,
+      "actions": 1,
+      "bet": 2,
+      "damage": 400,
+      "check": "even",
+      "element": "wind",
+      "class": null
+    },
+    {
+      "id": "meteor",
+      "name": "Meteor",
+      "icon": "skill-meteor",
+      "tier": 4,
+      "actions": 1,
+      "bet": 3,
+      "damage": 750,
+      "check": "even",
+      "element": "fire",
+      "class": null
+    },
+    {
+      "id": "deluge",
+      "name": "Deluge",
+      "icon": "skill-deluge",
+      "tier": 4,
+      "actions": 1,
+      "bet": 3,
+      "damage": 750,
+      "check": "even",
+      "element": "water",
+      "class": null
+    },
+    {
+      "id": "cataclysm",
+      "name": "Cataclysm",
+      "icon": "skill-cataclysm",
+      "tier": 4,
+      "actions": 1,
+      "bet": 3,
+      "damage": 750,
+      "check": "even",
+      "element": "earth",
+      "class": null
+    },
+    {
+      "id": "hurricane",
+      "name": "Hurricane",
+      "icon": "skill-hurricane",
+      "tier": 4,
+      "actions": 1,
+      "bet": 3,
+      "damage": 750,
+      "check": "even",
+      "element": "wind",
+      "class": null
+    },
+    {
+      "id": "reaper",
+      "name": "Reaper",
+      "icon": "skill-reaper",
+      "tier": 4,
+      "actions": 1,
+      "bet": 3,
+      "damage": 750,
+      "check": "even",
+      "element": null,
+      "class": "necromancer"
+    },
+    {
+      "id": "taunt",
+      "name": "Taunt",
+      "icon": "taunt",
+      "tier": 1,
+      "actions": 1,
+      "bet": 0,
+      "damage": 0,
+      "check": null,
+      "element": null,
+      "class": "knight",
+      "foretells": true,
+      "$note": "The Knight's active move: the boss rolls its d6 NOW, face up, and you play the rest of the turn knowing. Information for an action. bet 0 keeps it out of the efficiency-band lint on purpose: its value is knowledge, not damage."
+    }
   ],
-  "3": [
-   93,
-   112
+  "class": [
+    {
+      "id": "knight",
+      "name": "Knight",
+      "icon": "knight",
+      "passive": "Once per round, guard 25 damage without discarding a card."
+    },
+    {
+      "id": "mage",
+      "name": "Mage",
+      "icon": "mage",
+      "passive": "Your Focus deals +25."
+    },
+    {
+      "id": "hunter",
+      "name": "Hunter",
+      "icon": "hunter",
+      "passive": "Once per round, reroll one failed check."
+    },
+    {
+      "id": "necromancer",
+      "name": "Necromancer",
+      "icon": "necromancer",
+      "passive": "When a minion falls, take one of its life cards as a Ready life card of your own."
+    }
   ],
-  "4": [
-   113,
-   135
-  ]
- },
- "attack": [
-  {
-   "id": "strike",
-   "name": "Strike",
-   "icon": "strike",
-   "tier": 0,
-   "actions": 1,
-   "bet": 0,
-   "damage": 25,
-   "check": null,
-   "element": null,
-   "class": null
+  "advantage": [
+    {
+      "id": "cure",
+      "name": "Cure",
+      "icon": "adv-cure",
+      "copies": 2,
+      "effect": "Return 2 Broken life cards to Ready."
+    },
+    {
+      "id": "barrier",
+      "name": "Barrier",
+      "icon": "adv-barrier",
+      "copies": 2,
+      "effect": "Cancel one boss action entirely."
+    },
+    {
+      "id": "ally",
+      "name": "Ally",
+      "icon": "adv-ally",
+      "copies": 2,
+      "effect": "Place a companion figure. It Strikes for 25 free at the start of each of your turns. The boss's Strike hits it instead of you and it has 50 defense. You may cover it."
+    },
+    {
+      "id": "rune",
+      "name": "Rune",
+      "icon": "adv-rune",
+      "copies": 2,
+      "effect": "One check this level succeeds automatically. Declare it before rolling."
+    },
+    {
+      "id": "relic",
+      "name": "Relic",
+      "icon": "adv-relic",
+      "copies": 2,
+      "effect": "Every attack you land this level deals +25."
+    },
+    {
+      "id": "chest",
+      "name": "Chest",
+      "icon": "adv-chest",
+      "copies": 2,
+      "effect": "Draw 2 more Advantage cards."
+    }
+  ],
+  "boss": [
+    {
+      "id": "boss-s",
+      "name": "Minion",
+      "icon": "boss-s",
+      "size": "S",
+      "life_cards": 2,
+      "per_card": 100,
+      "hp": 200,
+      "damage": 25,
+      "rage": null,
+      "note": "Only appears as a summon, never fought alone. Its life IS two of the boss's own cards, so it is printed at the same 100 a boss card is worth."
+    },
+    {
+      "id": "boss-m",
+      "name": "Level 1",
+      "icon": "boss-m",
+      "size": "M",
+      "life_cards": 4,
+      "per_card": 100,
+      "hp": 400,
+      "damage": 50,
+      "rage": 4,
+      "signature": {
+        "roll": 1,
+        "id": "skitter",
+        "name": "Skitter"
+      }
+    },
+    {
+      "id": "boss-l",
+      "name": "Level 2",
+      "icon": "boss-l",
+      "size": "L",
+      "life_cards": 7,
+      "per_card": 100,
+      "hp": 700,
+      "damage": 50,
+      "rage": 4,
+      "signature": {
+        "roll": 4,
+        "id": "coil",
+        "name": "Coil"
+      }
+    },
+    {
+      "id": "boss-l2",
+      "name": "Level 3",
+      "icon": "boss-l",
+      "size": "L",
+      "life_cards": 10,
+      "per_card": 100,
+      "hp": 1000,
+      "damage": 75,
+      "rage": 4,
+      "signature": {
+        "roll": 1,
+        "id": "bedrock",
+        "name": "Bedrock"
+      }
+    },
+    {
+      "id": "boss-xl",
+      "name": "Level 4",
+      "icon": "boss-xl",
+      "size": "XL",
+      "life_cards": 12,
+      "per_card": 100,
+      "hp": 1200,
+      "damage": 100,
+      "rage": 4,
+      "signature": {
+        "roll": 6,
+        "id": "stormbreak",
+        "name": "Stormbreak"
+      }
+    },
+    {
+      "id": "boss-um",
+      "name": "Level 5",
+      "icon": "boss-um",
+      "size": "UM",
+      "life_cards": 20,
+      "per_card": 100,
+      "hp": 2000,
+      "damage": 100,
+      "rage": 5,
+      "signature": {
+        "roll": 5,
+        "id": "hoard",
+        "name": "Hoard"
+      }
+    }
+  ],
+  "boss_reaction": [
+    {
+      "roll": 1,
+      "name": "Brace",
+      "effect": "Deals no damage. Until the end of your next turn, halve all damage it takes, rounded down to the nearest 25.",
+      "id": "brace"
+    },
+    {
+      "roll": [
+        2,
+        3
+      ],
+      "name": "Strike",
+      "effect": "Deals its Damage.",
+      "id": "strike"
+    },
+    {
+      "roll": 4,
+      "name": "Summon",
+      "effect": "Moves 2 of its life cards under a new figure. With 2 or fewer cards left, or 3 minions already, it Strikes instead.",
+      "id": "summon"
+    },
+    {
+      "roll": 5,
+      "name": "Roar",
+      "effect": "Deals its Damage. Your next check is one step harder.",
+      "id": "roar"
+    },
+    {
+      "roll": 6,
+      "name": "Ruin",
+      "effect": "Deals double its Damage.",
+      "id": "ruin"
+    }
+  ],
+  "biome": [
+    {
+      "id": "volcano",
+      "name": "Volcano",
+      "icon": "biome-volcano",
+      "element": "fire",
+      "rule": null
+    },
+    {
+      "id": "river",
+      "name": "River",
+      "icon": "biome-river",
+      "element": "water",
+      "rule": null
+    },
+    {
+      "id": "mountain",
+      "name": "Mountain",
+      "icon": "biome-mountain",
+      "element": "earth",
+      "rule": null
+    },
+    {
+      "id": "desert",
+      "name": "Desert",
+      "icon": "biome-desert",
+      "element": "wind",
+      "rule": null
+    },
+    {
+      "id": "forest",
+      "name": "Forest",
+      "icon": "biome-forest",
+      "element": null,
+      "rule": "Once a level, Hide costs nothing: no card, no action. There is cover everywhere."
+    },
+    {
+      "id": "village",
+      "name": "Village",
+      "icon": "biome-village",
+      "element": null,
+      "rule": "You start the level with 1 extra Ready life card."
+    },
+    {
+      "id": "castle",
+      "name": "Castle",
+      "icon": "biome-castle",
+      "element": null,
+      "rule": "The boss acts twice on round 1. You catch your breath between swings: Spent cards Recover."
+    }
+  ],
+  "life": [
+    {
+      "id": "life-fire",
+      "name": "Fire",
+      "icon": "fire",
+      "copies": 4,
+      "value": 25,
+      "face": "red",
+      "element": "fire"
+    },
+    {
+      "id": "life-water",
+      "name": "Water",
+      "icon": "water",
+      "copies": 4,
+      "value": 25,
+      "face": "blue",
+      "element": "water"
+    },
+    {
+      "id": "life-earth",
+      "name": "Earth",
+      "icon": "earth",
+      "copies": 4,
+      "value": 25,
+      "face": "green",
+      "element": "earth"
+    },
+    {
+      "id": "life-wind",
+      "name": "Wind",
+      "icon": "wind",
+      "copies": 4,
+      "value": 25,
+      "face": "grey",
+      "element": "wind"
+    },
+    {
+      "id": "life-extra",
+      "name": "Extra",
+      "icon": "life",
+      "copies": 5,
+      "value": 25,
+      "face": "white",
+      "element": null
+    },
+    {
+      "id": "life-boss",
+      "name": "Boss",
+      "icon": "crown",
+      "copies": 20,
+      "value": 100,
+      "face": "black",
+      "element": null,
+      "$note": "Twenty, because the level 5 boss is 20 cards of 100 and that is the most ever on the table at once. It was 10 while a boss card's value changed per level; making every card 100 is what pushed the count up, and a wall of 20 that shrinks is the point rather than the cost."
+    }
+  ],
+  "mode": [
+    {
+      "id": "second-wind",
+      "name": "Second Wind",
+      "icon": "revive",
+      "copies": 1,
+      "free_revives": 1,
+      "returns": [
+        4,
+        3,
+        2,
+        1
+      ],
+      "effect": "Optional. When you would go Down, come back instead. The first time each level is free. After that, roll: the check climbs one step every time you use it, Sure then Even then Hard then Wild, and stays Wild. Each comeback returns fewer Broken cards to Ready: 4, then 3, then 2, then 1. Fail the roll and the level ends as normal.",
+      "$note": "The gentle-mode card, added 2026-08-27 so a child does not lose a 15 minute level to one bad round. It is deliberately NOT in the Advantage deck: a safety net you might never draw is not a safety net. Put it in play or leave it in the box."
+    },
+    {
+      "id": "sidekick",
+      "name": "Sidekick",
+      "icon": "sidekick",
+      "copies": 1,
+      "effect": "Two players, one table. The Sidekick owns Strike and Run: those actions are theirs to choose, say and roll. The life pool stays shared, so the maths never changes: only whose turn it is to be brave.",
+      "$note": "Pure table rules: the engine referees the shared pool exactly as in solo."
+    },
+    {
+      "id": "grudge",
+      "name": "Grudge",
+      "icon": "grudge",
+      "copies": 2,
+      "effect": "When a boss defeats you, slide a Grudge under its card. Next fight against it, each Grudge is one automatic success, declared before rolling. Max 2 per boss; beat it and they return to the box.",
+      "$note": "Campaign memory with no app state: the card under the boss card IS the save file."
+    }
+  ],
+  "aid": [
+    {
+      "id": "aid-checks",
+      "name": "Dice Bridge",
+      "content": "The four-step ladder and every die's target number. See docs/DICE-BRIDGE.md."
+    },
+    {
+      "id": "aid-turn",
+      "name": "Turn Order",
+      "content": "Recover, Act (3), Minions strike, Boss acts."
+    },
+    {
+      "id": "aid-boss",
+      "name": "Boss Reactions",
+      "content": "The d6 the boss rolls every round: 1 Brace, 2-3 Strike, 4 Summon, 5 Roar, 6 Ruin. A boss card may override a row.",
+      "$note": "Added 2026-08-27 with the second playtest. The rows are NOT written on this card: it draws boss_reaction below, so the printed aid cannot drift from the rule the engine reads."
+    },
+    {
+      "id": "aid-track",
+      "name": "Damage Track",
+      "content": "A running total in four 25s, plus a box for a die that counts hundreds. Stand a brick on the total; past 100 the brick starts again and the die turns up one. See RULES.md section 7, Keeping count.",
+      "$note": "Added 2026-08-27. A counter, not a rule: it changes no number in the rulebook, and a player who prefers to take cards off the boss's pile never needs it."
+    },
+    {
+      "id": "aid-breaks",
+      "name": "Break Points",
+      "content": "Say what you went for and take a part off it. Wound 50, Cripple 25 off its damage, or a Trophy. Two per boss. The grown-up sets how hard: friendly grants it, assisted asks for a Hard check, hardcore asks for a Wild one and charges an action.",
+      "$note": "Added 2026-08-30 after the first playtest. The card never names a part: the boss is built out of bricks and no two are the same object, so the player says what came off and this card only prices it."
+    }
+  ],
+  "element_cycle": {
+    "$note": "Each element beats the one it points at: +25 damage on every landed attack. No penalty for a bad matchup.",
+    "water": "fire",
+    "fire": "wind",
+    "wind": "earth",
+    "earth": "water"
   },
-  {
-   "id": "focus",
-   "name": "Focus",
-   "icon": "focus",
-   "tier": 0,
-   "actions": 1,
-   "bet": 1,
-   "damage": 75,
-   "check": "sure",
-   "element": null,
-   "class": null
-  },
-  {
-   "id": "all-in",
-   "name": "All In",
-   "icon": "all-in",
-   "tier": 0,
-   "actions": 2,
-   "bet": "any",
-   "damage": "4x bet",
-   "check": "even",
-   "element": null,
-   "class": null
-  },
-  {
-   "id": "bubble",
-   "name": "Bubble",
-   "icon": "bubble",
-   "tier": 0,
-   "actions": 1,
-   "bet": 0,
-   "damage": 0,
-   "check": null,
-   "element": null,
-   "class": null,
-   "shield": 25,
-   "$note": "Costs an action, not a card. Betting a card would be a trap: guarding with a Ready card is already free, so paying one to absorb 25 is strictly worse than guarding. Spending an ACTION makes it the mirror of Strike, attack for 25 or prevent 25, and it is the only attack card that is worth anything under Rage, where nothing can be guarded."
-  },
-  {
-   "id": "run",
-   "name": "Run",
-   "icon": "run",
-   "tier": 0,
-   "actions": 1,
-   "bet": 0,
-   "damage": 0,
-   "check": null,
-   "element": null,
-   "class": null,
-   "hides": true,
-   "$note": "Costs an action and no card, like Bubble, so the two sit on the same axis: Bubble absorbs a certain 25, Run gambles for the whole hit. It sets the same Hidden state the Forest biome grants, which is why there is one rule and not two. It is also the only card whose effect the player narrates rather than computes: you say where you ran and what you hid behind."
-  },
-  {
-   "id": "invention",
-   "name": "Invention",
-   "icon": "invention",
-   "tier": 0,
-   "actions": 1,
-   "bet": 1,
-   "damage": 350,
-   "check": "wild",
-   "element": null,
-   "class": null,
-   "$note": "The invented-spells rule wearing a number. Say the spell out loud before rolling; the game keeps the number, you keep the story. Wild pays 350 on one card, which is 52.5 expected per card: inside tier 0's band, under Focus's reliability, over everything's ceiling. Dead weight whenever the Rage clock demands certainty, which is the cost of wild magic."
+  "break_points": {
+    "$note": "The DM dial (RULES.md section 7, Breaking a part). js/game/engine.js DM_DEFAULTS is the running copy; this row is what the printed aid and the setup screen read.",
+    "cap": 2,
+    "step": "hard",
+    "wound": 50,
+    "cripple": 25,
+    "styles": [
+      {
+        "id": "friendly",
+        "name": "Friendly",
+        "check": null,
+        "actions": 0
+      },
+      {
+        "id": "assisted",
+        "name": "Assisted",
+        "check": "hard",
+        "actions": 0
+      },
+      {
+        "id": "hardcore",
+        "name": "Hardcore",
+        "check": "wild",
+        "actions": 1
+      }
+    ]
   }
- ],
- "skill": [
-  {
-   "id": "slash",
-   "name": "Slash",
-   "icon": "skill-slash",
-   "tier": 0,
-   "actions": 1,
-   "bet": 1,
-   "damage": 75,
-   "check": "sure",
-   "element": null,
-   "class": null
-  },
-  {
-   "id": "ember",
-   "name": "Ember",
-   "icon": "skill-ember",
-   "tier": 0,
-   "actions": 1,
-   "bet": 1,
-   "damage": 75,
-   "check": "sure",
-   "element": "fire",
-   "class": null
-  },
-  {
-   "id": "torrent",
-   "name": "Torrent",
-   "icon": "skill-torrent",
-   "tier": 0,
-   "actions": 1,
-   "bet": 1,
-   "damage": 75,
-   "check": "sure",
-   "element": "water",
-   "class": null
-  },
-  {
-   "id": "tremor",
-   "name": "Tremor",
-   "icon": "skill-tremor",
-   "tier": 0,
-   "actions": 1,
-   "bet": 1,
-   "damage": 75,
-   "check": "sure",
-   "element": "earth",
-   "class": null
-  },
-  {
-   "id": "gale",
-   "name": "Gale",
-   "icon": "skill-gale",
-   "tier": 0,
-   "actions": 1,
-   "bet": 1,
-   "damage": 75,
-   "check": "sure",
-   "element": "wind",
-   "class": null
-  },
-  {
-   "id": "piercer",
-   "name": "Piercer",
-   "icon": "skill-piercer",
-   "tier": 1,
-   "actions": 1,
-   "bet": 1,
-   "damage": 100,
-   "check": "sure",
-   "element": null,
-   "class": null
-  },
-  {
-   "id": "firebolt",
-   "name": "Firebolt",
-   "icon": "skill-firebolt",
-   "tier": 1,
-   "actions": 1,
-   "bet": 1,
-   "damage": 100,
-   "check": "sure",
-   "element": "fire",
-   "class": null
-  },
-  {
-   "id": "ice-spear",
-   "name": "Ice Spear",
-   "icon": "skill-ice-spear",
-   "tier": 1,
-   "actions": 1,
-   "bet": 1,
-   "damage": 100,
-   "check": "sure",
-   "element": "water",
-   "class": "mage"
-  },
-  {
-   "id": "boulder",
-   "name": "Boulder",
-   "icon": "skill-boulder",
-   "tier": 1,
-   "actions": 1,
-   "bet": 1,
-   "damage": 100,
-   "check": "sure",
-   "element": "earth",
-   "class": null
-  },
-  {
-   "id": "cyclone",
-   "name": "Cyclone",
-   "icon": "skill-cyclone",
-   "tier": 1,
-   "actions": 1,
-   "bet": 1,
-   "damage": 100,
-   "check": "sure",
-   "element": "wind",
-   "class": null
-  },
-  {
-   "id": "slash-wave",
-   "name": "Slash Wave",
-   "icon": "skill-slash-wave",
-   "tier": 2,
-   "actions": 1,
-   "bet": 2,
-   "damage": 225,
-   "check": "sure",
-   "element": null,
-   "class": "knight"
-  },
-  {
-   "id": "nova",
-   "name": "Nova",
-   "icon": "skill-nova",
-   "tier": 2,
-   "actions": 1,
-   "bet": 2,
-   "damage": 225,
-   "check": "sure",
-   "element": "fire",
-   "class": null
-  },
-  {
-   "id": "cold-curse",
-   "name": "Cold Curse",
-   "icon": "skill-cold-curse",
-   "tier": 2,
-   "actions": 1,
-   "bet": 2,
-   "damage": 225,
-   "check": "sure",
-   "element": "water",
-   "class": null
-  },
-  {
-   "id": "earthquake",
-   "name": "Earthquake",
-   "icon": "skill-earthquake",
-   "tier": 2,
-   "actions": 1,
-   "bet": 2,
-   "damage": 225,
-   "check": "sure",
-   "element": "earth",
-   "class": null
-  },
-  {
-   "id": "tempest",
-   "name": "Tempest",
-   "icon": "skill-tempest",
-   "tier": 2,
-   "actions": 1,
-   "bet": 2,
-   "damage": 225,
-   "check": "sure",
-   "element": "wind",
-   "class": null
-  },
-  {
-   "id": "soul-strike",
-   "name": "Soul Strike",
-   "icon": "skill-soul-strike",
-   "tier": 3,
-   "actions": 1,
-   "bet": 2,
-   "damage": 400,
-   "check": "even",
-   "element": null,
-   "class": "hunter"
-  },
-  {
-   "id": "pyre",
-   "name": "Pyre",
-   "icon": "skill-pyre",
-   "tier": 3,
-   "actions": 1,
-   "bet": 2,
-   "damage": 400,
-   "check": "even",
-   "element": "fire",
-   "class": null
-  },
-  {
-   "id": "maelstrom",
-   "name": "Maelstrom",
-   "icon": "skill-maelstrom",
-   "tier": 3,
-   "actions": 1,
-   "bet": 2,
-   "damage": 400,
-   "check": "even",
-   "element": "water",
-   "class": null
-  },
-  {
-   "id": "landslide",
-   "name": "Landslide",
-   "icon": "skill-landslide",
-   "tier": 3,
-   "actions": 1,
-   "bet": 2,
-   "damage": 400,
-   "check": "even",
-   "element": "earth",
-   "class": null
-  },
-  {
-   "id": "thunderhead",
-   "name": "Thunderhead",
-   "icon": "skill-thunderhead",
-   "tier": 3,
-   "actions": 1,
-   "bet": 2,
-   "damage": 400,
-   "check": "even",
-   "element": "wind",
-   "class": null
-  },
-  {
-   "id": "meteor",
-   "name": "Meteor",
-   "icon": "skill-meteor",
-   "tier": 4,
-   "actions": 1,
-   "bet": 3,
-   "damage": 750,
-   "check": "even",
-   "element": "fire",
-   "class": null
-  },
-  {
-   "id": "deluge",
-   "name": "Deluge",
-   "icon": "skill-deluge",
-   "tier": 4,
-   "actions": 1,
-   "bet": 3,
-   "damage": 750,
-   "check": "even",
-   "element": "water",
-   "class": null
-  },
-  {
-   "id": "cataclysm",
-   "name": "Cataclysm",
-   "icon": "skill-cataclysm",
-   "tier": 4,
-   "actions": 1,
-   "bet": 3,
-   "damage": 750,
-   "check": "even",
-   "element": "earth",
-   "class": null
-  },
-  {
-   "id": "hurricane",
-   "name": "Hurricane",
-   "icon": "skill-hurricane",
-   "tier": 4,
-   "actions": 1,
-   "bet": 3,
-   "damage": 750,
-   "check": "even",
-   "element": "wind",
-   "class": null
-  },
-  {
-   "id": "reaper",
-   "name": "Reaper",
-   "icon": "skill-reaper",
-   "tier": 4,
-   "actions": 1,
-   "bet": 3,
-   "damage": 750,
-   "check": "even",
-   "element": null,
-   "class": "necromancer"
-  },
-  {
-   "id": "taunt",
-   "name": "Taunt",
-   "icon": "taunt",
-   "tier": 1,
-   "actions": 1,
-   "bet": 0,
-   "damage": 0,
-   "check": null,
-   "element": null,
-   "class": "knight",
-   "foretells": true,
-   "$note": "The Knight's active move: the boss rolls its d6 NOW, face up, and you play the rest of the turn knowing. Information for an action. bet 0 keeps it out of the efficiency-band lint on purpose: its value is knowledge, not damage."
-  }
- ],
- "class": [
-  {
-   "id": "knight",
-   "name": "Knight",
-   "icon": "knight",
-   "passive": "Once per round, guard 25 damage without discarding a card."
-  },
-  {
-   "id": "mage",
-   "name": "Mage",
-   "icon": "mage",
-   "passive": "Your Focus deals +25."
-  },
-  {
-   "id": "hunter",
-   "name": "Hunter",
-   "icon": "hunter",
-   "passive": "Once per round, reroll one failed check."
-  },
-  {
-   "id": "necromancer",
-   "name": "Necromancer",
-   "icon": "necromancer",
-   "passive": "When a minion falls, take one of its life cards as a Ready life card of your own."
-  }
- ],
- "advantage": [
-  {
-   "id": "cure",
-   "name": "Cure",
-   "icon": "adv-cure",
-   "copies": 2,
-   "effect": "Return 2 Broken life cards to Ready."
-  },
-  {
-   "id": "barrier",
-   "name": "Barrier",
-   "icon": "adv-barrier",
-   "copies": 2,
-   "effect": "Cancel one boss action entirely."
-  },
-  {
-   "id": "ally",
-   "name": "Ally",
-   "icon": "adv-ally",
-   "copies": 2,
-   "effect": "Place a companion figure. It Strikes for 25 free at the start of each of your turns. The boss's Strike hits it instead of you and it has 50 defense. You may cover it."
-  },
-  {
-   "id": "rune",
-   "name": "Rune",
-   "icon": "adv-rune",
-   "copies": 2,
-   "effect": "One check this level succeeds automatically. Declare it before rolling."
-  },
-  {
-   "id": "relic",
-   "name": "Relic",
-   "icon": "adv-relic",
-   "copies": 2,
-   "effect": "Every attack you land this level deals +25."
-  },
-  {
-   "id": "chest",
-   "name": "Chest",
-   "icon": "adv-chest",
-   "copies": 2,
-   "effect": "Draw 2 more Advantage cards."
-  }
- ],
- "boss": [
-  {
-   "id": "boss-s",
-   "name": "Minion",
-   "icon": "boss-s",
-   "size": "S",
-   "life_cards": 2,
-   "per_card": 100,
-   "hp": 200,
-   "damage": 25,
-   "rage": null,
-   "note": "Only appears as a summon, never fought alone. Its life IS two of the boss's own cards, so it is printed at the same 100 a boss card is worth."
-  },
-  {
-   "id": "boss-m",
-   "name": "Level 1",
-   "icon": "boss-m",
-   "size": "M",
-   "life_cards": 4,
-   "per_card": 100,
-   "hp": 400,
-   "damage": 50,
-   "rage": 4,
-   "signature": {
-    "roll": 1,
-    "id": "skitter",
-    "name": "Skitter"
-   }
-  },
-  {
-   "id": "boss-l",
-   "name": "Level 2",
-   "icon": "boss-l",
-   "size": "L",
-   "life_cards": 7,
-   "per_card": 100,
-   "hp": 700,
-   "damage": 50,
-   "rage": 4,
-   "signature": {
-    "roll": 4,
-    "id": "coil",
-    "name": "Coil"
-   }
-  },
-  {
-   "id": "boss-l2",
-   "name": "Level 3",
-   "icon": "boss-l",
-   "size": "L",
-   "life_cards": 10,
-   "per_card": 100,
-   "hp": 1000,
-   "damage": 75,
-   "rage": 4,
-   "signature": {
-    "roll": 1,
-    "id": "bedrock",
-    "name": "Bedrock"
-   }
-  },
-  {
-   "id": "boss-xl",
-   "name": "Level 4",
-   "icon": "boss-xl",
-   "size": "XL",
-   "life_cards": 12,
-   "per_card": 100,
-   "hp": 1200,
-   "damage": 100,
-   "rage": 4,
-   "signature": {
-    "roll": 6,
-    "id": "stormbreak",
-    "name": "Stormbreak"
-   }
-  },
-  {
-   "id": "boss-um",
-   "name": "Level 5",
-   "icon": "boss-um",
-   "size": "UM",
-   "life_cards": 20,
-   "per_card": 100,
-   "hp": 2000,
-   "damage": 100,
-   "rage": 5,
-   "signature": {
-    "roll": 5,
-    "id": "hoard",
-    "name": "Hoard"
-   }
-  }
- ],
- "boss_reaction": [
-  {
-   "roll": 1,
-   "name": "Brace",
-   "effect": "Deals no damage. Until the end of your next turn, halve all damage it takes, rounded down to the nearest 25.",
-   "id": "brace"
-  },
-  {
-   "roll": [
-    2,
-    3
-   ],
-   "name": "Strike",
-   "effect": "Deals its Damage.",
-   "id": "strike"
-  },
-  {
-   "roll": 4,
-   "name": "Summon",
-   "effect": "Moves 2 of its life cards under a new figure. With 2 or fewer cards left, or 3 minions already, it Strikes instead.",
-   "id": "summon"
-  },
-  {
-   "roll": 5,
-   "name": "Roar",
-   "effect": "Deals its Damage. Your next check is one step harder.",
-   "id": "roar"
-  },
-  {
-   "roll": 6,
-   "name": "Ruin",
-   "effect": "Deals double its Damage.",
-   "id": "ruin"
-  }
- ],
- "biome": [
-  {
-   "id": "volcano",
-   "name": "Volcano",
-   "icon": "biome-volcano",
-   "element": "fire",
-   "rule": null
-  },
-  {
-   "id": "river",
-   "name": "River",
-   "icon": "biome-river",
-   "element": "water",
-   "rule": null
-  },
-  {
-   "id": "mountain",
-   "name": "Mountain",
-   "icon": "biome-mountain",
-   "element": "earth",
-   "rule": null
-  },
-  {
-   "id": "desert",
-   "name": "Desert",
-   "icon": "biome-desert",
-   "element": "wind",
-   "rule": null
-  },
-  {
-   "id": "forest",
-   "name": "Forest",
-   "icon": "biome-forest",
-   "element": null,
-   "rule": "Once a level, Hide costs nothing: no card, no action. There is cover everywhere."
-  },
-  {
-   "id": "village",
-   "name": "Village",
-   "icon": "biome-village",
-   "element": null,
-   "rule": "You start the level with 1 extra Ready life card."
-  },
-  {
-   "id": "castle",
-   "name": "Castle",
-   "icon": "biome-castle",
-   "element": null,
-   "rule": "The boss acts twice on round 1. You catch your breath between swings: Spent cards Recover."
-  }
- ],
- "life": [
-  {
-   "id": "life-fire",
-   "name": "Fire",
-   "icon": "fire",
-   "copies": 4,
-   "value": 25,
-   "face": "red",
-   "element": "fire"
-  },
-  {
-   "id": "life-water",
-   "name": "Water",
-   "icon": "water",
-   "copies": 4,
-   "value": 25,
-   "face": "blue",
-   "element": "water"
-  },
-  {
-   "id": "life-earth",
-   "name": "Earth",
-   "icon": "earth",
-   "copies": 4,
-   "value": 25,
-   "face": "green",
-   "element": "earth"
-  },
-  {
-   "id": "life-wind",
-   "name": "Wind",
-   "icon": "wind",
-   "copies": 4,
-   "value": 25,
-   "face": "grey",
-   "element": "wind"
-  },
-  {
-   "id": "life-extra",
-   "name": "Extra",
-   "icon": "life",
-   "copies": 5,
-   "value": 25,
-   "face": "white",
-   "element": null
-  },
-  {
-   "id": "life-boss",
-   "name": "Boss",
-   "icon": "crown",
-   "copies": 20,
-   "value": 100,
-   "face": "black",
-   "element": null,
-   "$note": "Twenty, because the level 5 boss is 20 cards of 100 and that is the most ever on the table at once. It was 10 while a boss card's value changed per level; making every card 100 is what pushed the count up, and a wall of 20 that shrinks is the point rather than the cost."
-  }
- ],
- "mode": [
-  {
-   "id": "second-wind",
-   "name": "Second Wind",
-   "icon": "revive",
-   "copies": 1,
-   "free_revives": 1,
-   "returns": 2,
-   "effect": "Optional. When you would go Down, come back instead. The first time each level is free. After that, roll: the check climbs one step every time you use it, Sure then Even then Hard then Wild, and stays Wild. Come back with 2 Broken cards returned to Ready. Fail the roll and the level ends as normal.",
-   "$note": "The gentle-mode card, added 2026-08-27 so a child does not lose a 15 minute level to one bad round. It is deliberately NOT in the Advantage deck: a safety net you might never draw is not a safety net. Put it in play or leave it in the box."
-  },
-  {
-   "id": "sidekick",
-   "name": "Sidekick",
-   "icon": "sidekick",
-   "copies": 1,
-   "effect": "Two players, one table. The Sidekick owns Strike and Run: those actions are theirs to choose, say and roll. The life pool stays shared, so the maths never changes: only whose turn it is to be brave.",
-   "$note": "Pure table rules: the engine referees the shared pool exactly as in solo."
-  },
-  {
-   "id": "grudge",
-   "name": "Grudge",
-   "icon": "grudge",
-   "copies": 2,
-   "effect": "When a boss defeats you, slide a Grudge under its card. Next fight against it, each Grudge is one automatic success, declared before rolling. Max 2 per boss; beat it and they return to the box.",
-   "$note": "Campaign memory with no app state: the card under the boss card IS the save file."
-  }
- ],
- "aid": [
-  {
-   "id": "aid-checks",
-   "name": "Dice Bridge",
-   "content": "The four-step ladder and every die's target number. See docs/DICE-BRIDGE.md."
-  },
-  {
-   "id": "aid-turn",
-   "name": "Turn Order",
-   "content": "Recover, Act (3), Minions strike, Boss acts."
-  },
-  {
-   "id": "aid-boss",
-   "name": "Boss Reactions",
-   "content": "The d6 the boss rolls every round: 1 Brace, 2-3 Strike, 4 Summon, 5 Roar, 6 Ruin. A boss card may override a row.",
-   "$note": "Added 2026-08-27 with the second playtest. The rows are NOT written on this card: it draws boss_reaction below, so the printed aid cannot drift from the rule the engine reads."
-  },
-  {
-   "id": "aid-track",
-   "name": "Damage Track",
-   "content": "A running total in four 25s, plus a box for a die that counts hundreds. Stand a brick on the total; past 100 the brick starts again and the die turns up one. See RULES.md section 7, Keeping count.",
-   "$note": "Added 2026-08-27. A counter, not a rule: it changes no number in the rulebook, and a player who prefers to take cards off the boss's pile never needs it."
-  }
- ],
- "element_cycle": {
-  "$note": "Each element beats the one it points at: +25 damage on every landed attack. No penalty for a bad matchup.",
-  "water": "fire",
-  "fire": "wind",
-  "wind": "earth",
-  "earth": "water"
- }
 }

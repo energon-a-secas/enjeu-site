@@ -35,7 +35,11 @@ function glyphBadge(id, cx, cy, r, colour) {
 function minifig(c, klass) {
   let out = brick(42, 84, 14, 26, c, 1) + brick(64, 84, 14, 26, c, 1);   // legs
   out += brick(38, 50, 44, 34, c, 3);                                      // torso
-  out += brick(26, 52, 12, 24, c, 1) + brick(82, 52, 12, 24, c, 1);        // arms
+  // Arms in their own groups, with the transform box pinned at the shoulder, so
+  // a stylesheet can raise them. That is all the cheer is: two rotations and a
+  // hop, in CSS, so prefers-reduced-motion zeroes it like every other motion here.
+  out += `<g class="fig__arm fig__arm--l" style="transform-origin:32px 54px">${brick(26, 52, 12, 24, c, 1)}</g>`
+    + `<g class="fig__arm fig__arm--r" style="transform-origin:88px 54px">${brick(82, 52, 12, 24, c, 1)}</g>`;
   out += head(60, 34, 14, c);
   out += `<rect x="50" y="16" width="20" height="6" rx="2" fill="${c}" stroke="${dark(c)}" stroke-width="1.5"/>`; // stud on top
   if (klass) out += glyphBadge(klass, 96, 30, 14, c);

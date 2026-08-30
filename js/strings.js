@@ -19,39 +19,44 @@ export const STRINGS = {
     nav: { learn: 'Learn', cards: 'Cards', play: 'Play', about: 'About', balance: 'Balance' },
     about: {
       title: 'About',
-      lead: 'Where this game came from, and who drew the pictures on the cards.',
+      lead: 'Who it was made for, what got cut, and who drew the pictures on the cards.',
 
+      // Short labels for the vertical spine beside each section. The section's
+      // real heading is a sentence and stays a sentence in the body; a spine
+      // wants a word, and a sentence stood on its edge stretched the panel to
+      // its own length and left a column of empty paper beside three lines of prose.
+      spine: { origin: 'Origin', second: 'Second', table: 'Table', spells: 'Spells', art: 'Art', licence: 'Licence' },
       originTitle: 'It was made for my niece',
-      origin1: 'She is small, she likes playing with bricks, and I am usually the one playing with her. The trouble is that made-up rules fall apart fast: they change every few minutes, nobody can lose, and the game stops being a game. So I thought I would write some down and see if that made it funnier.',
-      origin2: 'She also wanted to use the dice. All of them, not just the six-sided one. That turned out to be the useful constraint: every die from the d4 to the d20 had to work, so the game had to be built around a roll rather than around a number.',
-      origin3: 'What I was after was something shaped like a small Dungeons and Dragons session, where you get to say what happened, with enough mechanics around it that it does not collapse. Rules loose enough to leave room, tight enough to hold. Everything else was built around that.',
+      origin1: 'She likes bricks, and I am usually the one on the floor with her. The rules we invented changed every few minutes and nobody could lose. So I wrote some down.',
+      origin2: 'She also wanted the dice. All of them, not just the six-sided one. So every die from d4 to d20 has to work, and the game turns on a roll instead of a number.',
+      origin3: 'What I was after: the smallest set of rules that still lets her lose.',
 
       secondTitle: 'This is the second version',
-      second1: 'The first one had too many rules, which is the opposite failure and just as bad. We played it, and the parts she found fun were not the parts I had written the most rules for. So the rest came out.',
-      second2: 'The cutting is the design. What is left is short because it was played, not because it was hurried.',
+      second1: 'The first one had too many rules. We played it, and the parts she liked were not the ones I had written the most rules for. The rest came out.',
+      second2: 'It is short because it was played, not because it was rushed.',
 
-      tableTitle: 'It is played on the table you already have',
-      table1: 'There is no board. The boss is built out of bricks. The hero is a figure out of the same box. You put them on the table and the cards do the arithmetic.',
-      table2: 'That is also why nothing here is studded or brick shaped, and why no card names a toy. The toys are yours, whichever ones you own.',
+      tableTitle: 'There is no board',
+      table1: 'The boss is built from bricks, the hero is a figure from the same box, and the cards do the arithmetic.',
+      table2: 'No card names a toy. The bricks are yours, whichever you own.',
 
       spellsTitle: 'The spells that were cut',
-      spells1: 'An early version let the player invent spells. You wrote one, you named it, you used it. It was too complicated to keep, so it went.',
-      spells2: 'What took its place is the move tabletop roleplaying games make: hand it back to the player instead of writing another rule. No card prints its name, so you say out loud what it was. Run is the clearest of them. The card says you got away and the boss says how well; where you ran and what you hid behind is yours to invent, and the rules never ask.',
-      spells3: 'The idea is not dropped. It just does not have a rule yet.',
+      spells1: 'An early version let the player invent spells. You wrote one, named it, used it. Too much to hold up, so it went.',
+      spells2: 'In its place is the oldest tabletop move: hand it back rather than write another rule. The card never says its name. You do.',
+      spells3: 'Run says you got away and the boss says how well. Where you ran and what you hid behind, the rules never ask.',
 
       artTitle: 'The art',
-      artLead: 'Most of the card art comes from The Noun Project, downloaded under CC BY. Attribution is a condition of that licence, not a courtesy. The files were modified: the baked-in credit moved to this page and CREDITS.md, the viewBox was cropped, and colour is applied at render time. The list below is read from data/art-manifest.json when this page loads, so it cannot drift from what the cards print.',
-      artInHouse: 'The rest is drawn in house, on a 24 by 24 stroked grid. That glyph set was drawn first, so the deck could be tested and printed before there was any art at all. The boss size cards still use it on purpose: one figure that grows across five cards tells you which boss is bigger, and five unrelated stock monsters would not.',
+      artLead: 'Most of the card art is from The Noun Project, under CC BY. Attribution is a condition of that licence, not a courtesy. The files are modified: credit moved here, viewBox cropped, colour at render time. The table below is built from data/art-manifest.json, so it cannot drift from the cards.',
+      artInHouse: 'The rest I drew myself, on a 24 by 24 stroked grid. The boss size cards keep those glyphs on purpose: one figure that grows across five cards tells you which boss is bigger.',
       artLoading: 'Reading the art manifest',
       artFail: 'data/art-manifest.json did not load. Serve the folder over HTTP (make serve) and reload.',
       statCredited: 'icons credited',
       statCreators: 'creators',
       statInHouse: 'slots drawn in house',
-      creditsNote: 'The same list ships as CREDITS.md, generated from the same file by tools/credits.py. If you pass this game on, that page goes with it.',
+      creditsNote: 'The same list ships as CREDITS.md and goes with the folder.',
       cols: { icon: 'Icon', use: 'Used for', creator: 'Creator', licence: 'Licence', what: 'What' },
 
       licenceTitle: 'Licence',
-      licenceLead: 'Two halves, because they cannot be one.',
+      licenceLead: 'The code is mine to give away. The art is not.',
       licence: {
         codeWhat: 'Rules, card data, tools, site code and all the text',
         codeIs: 'MIT',
@@ -60,7 +65,7 @@ export const STRINGS = {
         glyphsWhat: 'The glyphs drawn in house',
         glyphsIs: 'MIT, original',
       },
-      licenceNote: 'A fork inherits the attribution. That is the part to know before you copy the folder.',
+      licenceNote: 'The artists let anyone use these pictures on one condition: their names go wherever the pictures go. Copy this folder and you take that on.',
     },
     footer: { version: 'v0.1.0' },
     // The page chrome that lives in index.html rather than in a view: the
@@ -86,7 +91,7 @@ export const STRINGS = {
     },
     cards: {
       title: 'The cards',
-      lead: 'A hundred and ten cards, poker size, no words on any of them. The picture is the name, the corners carry the numbers. Tap a card to see what it does.',
+      lead: 'A hundred and eleven cards, poker size, with no word printed on any of them. The corners carry the numbers. The picture is the name, and saying it out loud is your job. Tap a card for what it does.',
       // What each card DOES, one line, for the inspector and the detail modal.
       // Numbers restate data/cards.json; rules restate RULES.md. Drafted against
       // both and spot-checked: a number here that drifts from the data is a bug.
@@ -158,7 +163,8 @@ export const STRINGS = {
         'aid-checks': 'A reference: the four check steps and the target number for every die, so the die you own can play.',
         'aid-turn': 'A reference: the round in order. Recover, take your 3 actions, minions strike, the boss acts.',
         'aid-boss': 'A reference: the d6 the boss rolls each round. 1 Brace, 2-3 Strike, 4 Summon, 5 Roar, 6 Ruin.',
-        'aid-track': 'A counter, not a rule: track the damage dealt in steps of 25, with a die counting the hundreds.',
+        'aid-breaks': 'Say what part you went for and take it off: a Wound (50 gone), a Cripple (25 off everything it deals) or a Trophy (one free check). Two per boss, and the grown-up sets how hard it is to do.',
+      'aid-track': 'A counter, not a rule: track the damage dealt in steps of 25, with a die counting the hundreds.',
       },
       printBtn: 'Print',
       sheets: 'sheets',
@@ -186,7 +192,9 @@ export const STRINGS = {
       // English; the ladder needs its own words in every language.
       step: { sure: 'Sure', even: 'Even', hard: 'Hard', wild: 'Wild' },
       sort: { _: 'Sort by', deck: 'Deck', element: 'Element', tier: 'Tier', class: 'Class', check: 'Risk', damage: 'Damage', name: 'Name' },
-      element: { _: 'Element', all: 'Any element', none: 'Yours' },
+      // The four elements are spoken out loud like a card name, so they are named
+      // here rather than capitalised off their English id at seven render sites.
+      element: { _: 'Element', all: 'Any element', none: 'Yours', fire: 'Fire', water: 'Water', earth: 'Earth', wind: 'Wind' },
       tier: { _: 'Tier', all: 'Any tier' },
       klass: { _: 'Class', all: 'Any class', none: 'Open to all' },
       showBacks: 'Show backs',
@@ -200,7 +208,7 @@ export const STRINGS = {
     learn: {
       heroKicker: 'A print-and-play boss rush for one player',
       heroTitle: 'Balance your <em>attack</em> and your <em>defense</em>.',
-      heroLead: 'Build the boss out of bricks. Play your hero as a figure. Spend cards to attack, keep cards to defend, and do not be greedy. One die, a hundred and ten cards, and the toys already on the table.',
+      heroLead: 'Build the boss out of bricks. Play your hero as a figure. The cards in front of you are your attack and your defense at once: betting is free until the boss swings and you have nothing left standing. One die, a hundred and eleven cards, and the toys already on the table.',
       ctaPlay: 'Play on screen',
       ctaCards: 'Print the cards',
       ctaFirst: 'First Game: one boss, six cards',
@@ -231,7 +239,7 @@ export const STRINGS = {
       slide: { dice: 'Any die you own', rulebook: 'The rulebook', playNow: 'Try it right now' },
       playNowKicker: 'No printer needed',
       playNowTitle: 'Try it right now',
-      playNowLead: 'The Play tab runs the whole game on this screen: the same cards, a stand-in hero, and a boss built from bricks. Setup is four quick choices. When you want the real table, print the cards and bring your own bricks.',
+      playNowLead: 'The Play tab runs the whole game on this screen: the same cards, a stand-in hero, and a boss drawn as if someone had built it. Setup is four quick choices. When you want the real table, print the cards and build the boss yourself.',
       playNowCta: 'Play the First Game',
       playNowDesktop: 'Made for a desktop screen. On a phone it works for a quick try.',
       ctaPlayNow: 'Try it on screen now',
@@ -239,6 +247,14 @@ export const STRINGS = {
     play: {
       title: 'Play',
       setupTitle: 'Set up your run',
+      // The three ways in. Each says how LONG it is and who it is for, because
+      // that is the question being asked, and the two cards that used to sit
+      // here were the same shape in the same colour and read as one choice.
+      quickRun: 'Quick run',
+      quickRunLead: 'Three bosses: the first, the middle and the last. They are scaled down so three levels tell the whole story, and you get a real ending in one sitting.',
+      kindWho: { first: 'Your first time, or a new player at the table', quick: 'You want to reach the last boss today', full: 'A run you leave set up and come back to' },
+      kindLevels: { first: 'one level', quick: 'three levels', full: 'five levels' },
+      kindMinutes: { first: '15 min', quick: '45 min', full: '2 h+' },
       firstGame: 'First Game',
       firstGameLead: 'Level 1 only, with Strike, Focus, All In, Bubble, Run and Invention. No classes, no skills, no Advantage. The whole game is already in those six cards.',
       fullRun: 'Full run',
@@ -288,7 +304,65 @@ export const STRINGS = {
         fast: 'Resolve it all at once',
         back: 'Back to the plan',
         close: 'Done',
+        next: 'Next',
+        step: 'Step',
+        of: 'of',
+        throwHint: 'One die at a time. You throw, you see it land, you see what it did.',
+        fastHint: 'Every roll at once. The ledger keeps each one.',
       },
+      // Break points (RULES.md section 7). The game never names the part: the
+      // player says what came off, so every string here talks about the break
+      // and never about an eye, a wing or a tail.
+      brk: {
+        title: 'Break a part',
+        say: 'Say what you went for, then pick what it buys.',
+        wound: 'Wound',
+        woundHint: 'It loses {n} on the spot.',
+        cripple: 'Cripple',
+        crippleHint: 'Everything it deals drops by {n} for the rest of the level.',
+        trophy: 'Trophy',
+        trophyHint: 'One check this level succeeds by itself.',
+        left: 'parts left',
+        none: 'No parts left on this one.',
+        costs: 'costs an action',
+        free: 'granted',
+        held: 'The part holds.',
+        broke: 'It comes off!',
+        cancel: 'Not this time',
+      },
+      dm: {
+        enable: 'Break points',
+        enableHint: 'Say what part you went for and take it off: a Wound, a Cripple or a Trophy. Off by default, because the game is complete without it. Turn it on when your table wants to describe the fight, not just play it.',
+        title: 'Who decides a break?',
+        friendly: 'Friendly',
+        friendlyHint: 'Say it and it happens. No roll, no cost. For the youngest table.',
+        assisted: 'Assisted',
+        assistedHint: 'A Hard check decides it. The middle setting, and the one to start on.',
+        hardcore: 'Hardcore',
+        hardcoreHint: 'A Wild check, and it costs one of your three actions.',
+        cap: 'Parts per boss',
+        capOff: 'Breaking parts is off',
+        edit: 'Change the numbers',
+        wound: 'A Wound tears off',
+        cripple: 'A Cripple takes off',
+      },
+      levels5: '5 levels',
+      levelCleared: 'cleared',
+      outcome: { win: 'won', loss: 'lost' },
+      braceWhat: 'no damage, and it halves what it takes next turn',
+      summonWhat: 'of its life moves under a minion',
+      absorbed: 'absorbed',
+      oneAction: 'action', manyActions: 'actions', betAny: 'any',
+      autoStep: 'auto',
+      reorder: 'Drag to change the order',
+      moveEarlier: 'Move earlier',
+      moveLater: 'Move later',
+      abandoned: 'Run abandoned',
+      drew: 'Drew',
+      castleAgain: 'Castle: the boss acts again',
+      bossThrow: 'Throw the boss\u2019s die',
+      bossThrown: 'The boss threw',
+      bossOwnDie: 'or tap the face your own d6 showed',
       simpleMode: 'Keep the table simple',
       simpleModeHint: 'No biomes and no signature moves: the plain reaction table and nothing else. The way to learn the core game before the extras.',
       takeIt: 'Take it',
@@ -364,7 +438,7 @@ export const STRINGS = {
           'It is deciding which of you goes first.',
         ],
         events: {
-          firstBlood: 'First blood. It felt that.',
+          firstBlood: 'The first one landed. It felt that.',
           bigHit: 'The whole table shook. It is still ringing.',
           whiff: 'It watched that one sail past. It looks pleased.',
           revived: 'You got back up. It was not expecting that.',
@@ -487,39 +561,40 @@ export const STRINGS = {
     nav: { learn: 'Aprender', cards: 'Cartas', play: 'Jugar', about: 'Acerca de', balance: 'Balance' },
     about: {
       title: 'Acerca de',
-      lead: 'De dónde salió este juego, y quién dibujó las figuras de las cartas.',
+      lead: 'Para quién se hizo, qué se cortó y quién dibujó las figuras de las cartas.',
 
+      spine: { origin: 'Origen', second: 'Segunda', table: 'Mesa', spells: 'Hechizos', art: 'Arte', licence: 'Licencia' },
       originTitle: 'Lo hice para mi sobrina',
-      origin1: 'Es chica, le gusta jugar con bloques, y normalmente el que juega con ella soy yo. El problema es que las reglas inventadas se caen a pedazos rápido: cambian cada dos minutos, nadie puede perder, y el juego deja de ser un juego. Así que pensé en escribir algunas y ver si así resultaba más entretenido.',
-      origin2: 'También quería usar los dados. Todos, no solo el de seis caras. Esa terminó siendo la restricción útil: cada dado, del d4 al d20, tenía que servir, así que el juego tuvo que armarse alrededor de una tirada y no de un número.',
-      origin3: 'Lo que buscaba era algo con la forma de una partida chica de Dungeons and Dragons, donde uno cuenta lo que pasó, con la mecánica suficiente alrededor para que no se desarme. Reglas sueltas para dejar espacio, firmes para sostener. Todo lo demás se construyó alrededor de eso.',
+      origin1: 'Le gustan los bloques y casi siempre el que juega con ella en el suelo soy yo. Las reglas que inventábamos cambiaban cada cinco minutos y nadie podía perder. Así que escribí algunas.',
+      origin2: 'También quería los dados. Todos, no solo el de seis. Así que cada dado, del d4 al d20, tiene que servir, y el juego gira sobre una tirada y no sobre un número.',
+      origin3: 'Lo que buscaba: las reglas mínimas que todavía la dejen perder.',
 
       secondTitle: 'Esta es la segunda versión',
-      second1: 'La primera tenía demasiadas reglas. La jugamos, y las partes que a ella le parecieron divertidas no eran las partes para las que yo había escrito más reglas. Así que el resto se fue.',
-      second2: 'Lo que se cortó es el diseño. Lo que queda es corto porque se jugó, no porque se hizo apurado.',
+      second1: 'La primera tenía demasiadas reglas. La jugamos, y las partes que le gustaron no eran aquellas para las que yo había escrito más reglas. El resto se fue.',
+      second2: 'Es corto porque se jugó, no porque se hiciera rápido.',
 
-      tableTitle: 'Se juega en la mesa que ya tienes',
-      table1: 'No hay tablero. El jefe se arma con bloques. El héroe es una figura de la misma caja. Los pones en la mesa y las cartas hacen las cuentas.',
-      table2: 'Por eso mismo nada de esto tiene pivotes ni forma de bloque, y ninguna carta nombra un juguete. Los juguetes son tuyos, los que tengas.',
+      tableTitle: 'No hay tablero',
+      table1: 'El jefe se arma con bloques, el héroe es una figura de la misma caja, y las cartas hacen las cuentas.',
+      table2: 'Ninguna carta nombra un juguete. Los bloques son tuyos, los que tengas.',
 
       spellsTitle: 'Los hechizos que se cortaron',
-      spells1: 'Una versión temprana dejaba inventar hechizos. Escribías uno, le ponías nombre, lo usabas. Era demasiado complicado de mantener, así que se fue.',
-      spells2: 'En su lugar quedó la jugada que hacen los juegos de rol de mesa: devolvérselo al jugador en vez de escribir otra regla. Ninguna carta imprime su nombre, así que dices en voz alta cuál fue. Escape es la más clara de todas. La carta dice que te safaste y el jefe dice qué tan bien; dónde corriste y detrás de qué te escondiste lo inventas tú, y las reglas nunca preguntan.',
-      spells3: 'La idea no está botada. Solo que todavía no tiene regla.',
+      spells1: 'Una versión temprana dejaba inventar hechizos. Escribías uno, le ponías nombre, lo usabas. Era demasiado complicado de sostener, así que se fue.',
+      spells2: 'En su lugar quedó la jugada más vieja del rol de mesa: devolvérselo al jugador en vez de escribir otra regla. La carta nunca dice su nombre. Lo dices tú.',
+      spells3: 'Escape dice que te escapaste y el jefe dice qué tan bien. Dónde corriste y detrás de qué te escondiste, las reglas nunca lo preguntan.',
 
       artTitle: 'El arte',
-      artLead: 'Casi todo el arte de las cartas viene de The Noun Project, descargado bajo CC BY. La atribución es una condición de esa licencia, no un gesto de cortesía. Los archivos fueron modificados: el crédito incrustado se movió a esta página y a CREDITS.md, se recortó el viewBox, y el color se aplica al dibujar. La lista de abajo se lee de data/art-manifest.json cuando carga esta página, así que no puede alejarse de lo que imprimen las cartas.',
-      artInHouse: 'El resto está dibujado en casa, sobre una grilla trazada de 24 por 24. Ese juego de glifos se dibujó primero, para poder probar e imprimir el mazo antes de que existiera arte. Las cartas de tamaño del jefe lo siguen usando a propósito: una figura que crece a lo largo de cinco cartas te dice cuál jefe es más grande, y cinco monstruos sueltos de banco de imágenes no.',
+      artLead: 'Casi todo el arte viene de The Noun Project, bajo CC BY. La atribución es una condición de esa licencia, no una cortesía. Los archivos están modificados: el crédito se movió aquí, se recortó el viewBox, el color se aplica al dibujar. La tabla de abajo se arma con data/art-manifest.json y no puede alejarse de las cartas.',
+      artInHouse: 'El resto lo dibujé yo, sobre una cuadrícula trazada de 24 por 24. Las cartas de tamaño del jefe siguen con esos glifos a propósito: una figura que crece a lo largo de cinco cartas te dice cuál jefe es más grande.',
       artLoading: 'Leyendo el manifiesto de arte',
       artFail: 'data/art-manifest.json no cargó. Sirve la carpeta por HTTP (make serve) y recarga.',
       statCredited: 'íconos acreditados',
       statCreators: 'autores',
       statInHouse: 'espacios dibujados en casa',
-      creditsNote: 'La misma lista se publica como CREDITS.md, generada del mismo archivo por tools/credits.py. Si le pasas este juego a alguien, esa página va con él.',
+      creditsNote: 'La misma lista se publica como CREDITS.md y viaja con la carpeta.',
       cols: { icon: 'Ícono', use: 'Se usa para', creator: 'Autor', licence: 'Licencia', what: 'Qué' },
 
       licenceTitle: 'Licencia',
-      licenceLead: 'Dos mitades, porque no pueden ser una.',
+      licenceLead: 'El código es mío y lo puedo regalar. El arte no.',
       licence: {
         codeWhat: 'Las reglas, los datos de las cartas, las herramientas, el código del sitio y todo el texto',
         codeIs: 'MIT',
@@ -528,7 +603,7 @@ export const STRINGS = {
         glyphsWhat: 'Los glifos dibujados en casa',
         glyphsIs: 'MIT, original',
       },
-      licenceNote: 'Un fork hereda la atribución. Esa es la parte que hay que saber antes de copiar la carpeta.',
+      licenceNote: 'Los autores dejan que cualquiera use estos dibujos con una sola condición: sus nombres van a donde vayan los dibujos. Si copias esta carpeta, eso te toca a ti.',
     },
     footer: { version: 'v0.1.0' },
     chrome: {
@@ -549,7 +624,7 @@ export const STRINGS = {
     },
     cards: {
       title: 'Las cartas',
-      lead: 'Ciento diez cartas, tamaño póker, sin palabras en ninguna. El dibujo es el nombre, las esquinas llevan los números. Toca una carta para ver qué hace.',
+      lead: 'Ciento once cartas, tamaño póker, sin una sola palabra impresa. Las esquinas llevan los números. El dibujo es el nombre, y decirlo en voz alta te toca a ti. Toca una carta para ver qué hace.',
       effect: {
         strike: 'Una acción, sin apostar nada: haces 25 de daño. Siempre acierta.',
         focus: 'Apuesta 1 carta de vida y tira Segura: 75 de daño. La carta queda De Lado, acierte o no.',
@@ -618,7 +693,8 @@ export const STRINGS = {
         'aid-checks': 'Una referencia: los cuatro pasos de tirada y el número a igualar con cada dado, para que sirva el que tengas.',
         'aid-turn': 'Una referencia: la ronda en orden. Recupera, toma tus 3 acciones, golpean los esbirros, actúa el jefe.',
         'aid-boss': 'Una referencia: el dado que el jefe tira cada ronda. 1 Aguante, 2-3 Golpe, 4 Invocación, 5 Rugido, 6 Ruina.',
-        'aid-track': 'Un contador, no una regla: lleva el daño hecho en pasos de 25, con un dado que cuenta las centenas.',
+        'aid-breaks': 'Di a qué parte apuntaste y arráncasela: una Herida (50 menos), Lisiar (25 menos en todo lo que haga) o un Trofeo (una tirada gratis). Dos por jefe, y el adulto decide qué tan difícil es.',
+      'aid-track': 'Un contador, no una regla: lleva el daño hecho en pasos de 25, con un dado que cuenta las centenas.',
       },
       printBtn: 'Imprimir',
       sheets: 'hojas',
@@ -645,7 +721,7 @@ export const STRINGS = {
       check: { none: 'siempre acierta', sure: 'Segura, 75%', even: 'Pareja, 50%', hard: 'Difícil, 25%', wild: 'Loca, 15%' },
       step: { sure: 'Segura', even: 'Pareja', hard: 'Difícil', wild: 'Loca' },
       sort: { _: 'Ordenar por', deck: 'Mazo', element: 'Elemento', tier: 'Rango', class: 'Clase', check: 'Riesgo', damage: 'Daño', name: 'Nombre' },
-      element: { _: 'Elemento', all: 'Cualquier elemento', none: 'El tuyo' },
+      element: { _: 'Elemento', all: 'Cualquier elemento', none: 'El tuyo', fire: 'Fuego', water: 'Agua', earth: 'Tierra', wind: 'Viento' },
       tier: { _: 'Rango', all: 'Cualquier rango' },
       klass: { _: 'Clase', all: 'Cualquier clase', none: 'Para todas' },
       showBacks: 'Ver reversos',
@@ -684,13 +760,13 @@ export const STRINGS = {
         sidekick: 'Compinche',
         grudge: 'Rencor',
 
-        'aid-checks': 'Puente de Dados', 'aid-turn': 'Orden del Turno', 'aid-boss': 'Reacciones del Jefe', 'aid-track': 'Pista de Daño',
+        'aid-checks': 'Puente de Dados', 'aid-turn': 'Orden del Turno', 'aid-boss': 'Reacciones del Jefe', 'aid-track': 'Pista de Daño', 'aid-breaks': 'Roturas',
       },
     },
     learn: {
       heroKicker: 'Un desafío de jefes para imprimir y jugar, para un jugador',
       heroTitle: 'Equilibra tu <em>ataque</em> y tu <em>defensa</em>.',
-      heroLead: 'Arma el jefe con bloques. Juega tu héroe como una figura. Gasta cartas para atacar, guarda cartas para defender, y no seas ambicioso. Un dado, ciento diez cartas, y los juguetes que ya están en la mesa.',
+      heroLead: 'Arma el jefe con bloques. Juega tu héroe como una figura. Las cartas que tienes delante son tu ataque y tu defensa al mismo tiempo: apostar sale gratis hasta que el jefe golpea y no te queda ninguna en pie. Un dado, ciento once cartas, y los juguetes que ya están en la mesa.',
       ctaPlay: 'Jugar en pantalla',
       ctaCards: 'Imprimir las cartas',
       ctaFirst: 'Primera Partida: un jefe, seis cartas',
@@ -714,7 +790,7 @@ export const STRINGS = {
       slide: { dice: 'Cualquier dado que tengas', rulebook: 'El reglamento', playNow: 'Pruébalo ahora mismo' },
       playNowKicker: 'Sin impresora',
       playNowTitle: 'Pruébalo ahora mismo',
-      playNowLead: 'La pestaña Jugar tiene el juego entero en esta pantalla: las mismas cartas, un héroe provisorio y un jefe armado con bloques. Prepararlo son cuatro elecciones rápidas. Cuando quieras la mesa de verdad, imprime las cartas y trae tus propios bloques.',
+      playNowLead: 'La pestaña Jugar tiene el juego entero en esta pantalla: las mismas cartas, un héroe provisorio y un jefe dibujado como si alguien lo hubiera armado. Prepararlo son cuatro elecciones rápidas. Cuando quieras la mesa de verdad, imprime las cartas y arma el jefe tú mismo.',
       playNowCta: 'Jugar la Primera Partida',
       playNowDesktop: 'Hecho para una pantalla de escritorio. En el teléfono sirve para una probada rápida.',
       ctaPlayNow: 'Pruébalo en pantalla ahora',
@@ -722,6 +798,11 @@ export const STRINGS = {
     play: {
       title: 'Jugar',
       setupTitle: 'Prepara tu partida',
+      quickRun: 'Partida rápida',
+      quickRunLead: 'Tres jefes: el primero, el del medio y el último. Están achicados para que tres niveles cuenten la historia entera, y termines de verdad en una sola sentada.',
+      kindWho: { first: 'Tu primera vez, o alguien nuevo en la mesa', quick: 'Quieres llegar al último jefe hoy', full: 'Una partida que dejas armada y retomas' },
+      kindLevels: { first: 'un nivel', quick: 'tres niveles', full: 'cinco niveles' },
+      kindMinutes: { first: '15 min', quick: '45 min', full: '2 h+' },
       firstGame: 'Primera Partida',
       firstGameLead: 'Solo el nivel 1, con Golpe, Puntería, Todo o Nada, Burbuja, Escape e Invención. Sin clases, sin habilidades, sin Ventaja. El juego entero ya está en esas seis cartas.',
       fullRun: 'Partida completa',
@@ -769,7 +850,62 @@ export const STRINGS = {
         fast: 'Resolver todo de una',
         back: 'Volver al plan',
         close: 'Listo',
+        next: 'Siguiente',
+        step: 'Paso',
+        of: 'de',
+        throwHint: 'Un dado a la vez. Tú lanzas, lo ves caer, ves lo que hizo.',
+        fastHint: 'Todas las tiradas de una vez. El registro guarda cada una.',
       },
+      brk: {
+        title: 'Romper una parte',
+        say: 'Di a qué apuntaste y elige qué te da.',
+        wound: 'Herida',
+        woundHint: 'Pierde {n} al instante.',
+        cripple: 'Lisiar',
+        crippleHint: 'Todo lo que haga baja {n} el resto del nivel.',
+        trophy: 'Trofeo',
+        trophyHint: 'Una tirada de este nivel acierta sola.',
+        left: 'partes quedan',
+        none: 'A este ya no le quedan partes.',
+        costs: 'cuesta una acción',
+        free: 'concedido',
+        held: 'La parte aguanta.',
+        broke: '¡Se desprende!',
+        cancel: 'Ahora no',
+      },
+      dm: {
+        enable: 'Roturas',
+        enableHint: 'Di a qué parte apuntaste y arráncasela: una Herida, Lisiar o un Trofeo. Apagado por defecto, porque el juego está completo sin esto. Enciéndelo cuando tu mesa quiera contar la pelea, no solo jugarla.',
+        title: '¿Quién decide una rotura?',
+        friendly: 'Amable',
+        friendlyHint: 'Lo dices y pasa. Sin tirada y sin coste. Para la mesa más pequeña.',
+        assisted: 'Asistido',
+        assistedHint: 'Lo decide una tirada Difícil. El punto medio, y por donde empezar.',
+        hardcore: 'Duro',
+        hardcoreHint: 'Una tirada Loca, y cuesta una de tus tres acciones.',
+        cap: 'Partes por jefe',
+        capOff: 'Romper partes está apagado',
+        edit: 'Cambiar los números',
+        wound: 'Una Herida arranca',
+        cripple: 'Lisiar quita',
+      },
+      levels5: '5 niveles',
+      levelCleared: 'superado',
+      outcome: { win: 'ganado', loss: 'perdido' },
+      braceWhat: 'sin daño, y recibe la mitad el próximo turno',
+      summonWhat: 'de su vida pasa bajo un esbirro',
+      absorbed: 'absorbidos',
+      oneAction: 'acción', manyActions: 'acciones', betAny: 'la que quieras',
+      autoStep: 'auto',
+      reorder: 'Drag to change the order',
+      moveEarlier: 'Move earlier',
+      moveLater: 'Move later',
+      abandoned: 'Partida abandonada',
+      drew: 'Robaste',
+      castleAgain: 'Castillo: el jefe actúa de nuevo',
+      bossThrow: 'Lanza el dado del jefe',
+      bossThrown: 'El jefe sacó',
+      bossOwnDie: 'o toca la cara que salió en tu d6',
       simpleMode: 'Mesa simple',
       simpleModeHint: 'Sin biomas y sin movimientos de firma: la tabla de reacciones y nada más. La forma de aprender el juego base antes de los extras.',
       takeIt: 'Recibirlo',
@@ -838,7 +974,7 @@ export const STRINGS = {
           'Está decidiendo cuál de los dos parte.',
         ],
         events: {
-          firstBlood: 'Primera sangre. Eso lo sintió.',
+          firstBlood: 'El primero entró. Eso lo sintió.',
           bigHit: 'Tembló la mesa entera. Todavía retumba.',
           whiff: 'Vio pasar ese golpe de largo. Se le nota el gusto.',
           revived: 'Te volviste a parar. No se lo esperaba.',
@@ -987,6 +1123,31 @@ export function bossLines() {
 
 export function reactionNames() {
   return { ...(STRINGS[lang]?.play?.reactionName || STRINGS.en.play.reactionName) };
+}
+
+/**
+ * The Break Points aid draws its own labels, and js/cards/face.js is shared with
+ * the print path and the node tests, neither of which sets a language. So the
+ * names travel in through opts, the same way the boss reaction names already do.
+ */
+export function breakNames() {
+  const b = STRINGS[lang]?.play?.brk || STRINGS.en.play.brk;
+  return { wound: b.wound, cripple: b.cripple, trophy: b.trophy };
+}
+export function dmNames() {
+  const d = STRINGS[lang]?.play?.dm || STRINGS.en.play.dm;
+  return { friendly: d.friendly, assisted: d.assisted, hardcore: d.hardcore };
+}
+
+/**
+ * An element's name in the reader's language. RULES.es.md has said Fuego, Agua,
+ * Tierra and Viento since it was written; the screen said Fire, Water, Earth and
+ * Wind, because seven render sites each capitalised the raw id instead of asking.
+ */
+export function elementName(el) {
+  if (!el) return '';
+  const table = STRINGS[lang]?.cards?.element || STRINGS.en.cards.element;
+  return table[el] || (el.charAt(0).toUpperCase() + el.slice(1));
 }
 
 export function cardName(card) {

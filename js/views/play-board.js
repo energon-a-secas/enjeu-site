@@ -25,18 +25,32 @@
 // prefers-reduced-motion, and that rule can only protect motion the CSS owns:
 // a JS timer or a rAF loop here would run anyway.
 
-import { t, cardName, bossLines } from '../strings.js';
+import { t, cardName, bossLines, elementName } from '../strings.js';
 import { logLine } from './logline.js';
 import { escHtml } from '../utils.js';
 import { cardFace, cardBack, lifeMini, riskDots } from '../cards/face.js';
 import { glyphSvg, artGlyphSvg } from '../cards/glyphs.js';
 import { figureSvg } from '../game/figures.js';
 import { heroFor, MINION } from '../data/placeholders.js';
-import { legalAttacks, ready, spent, broken, alive, bossHp, raging, effectiveStep, attackDamage, reviveStep, ALLY_DEF } from '../game/engine.js';
+import { lastLevel } from '../game/run.js';
+import { legalAttacks, ready, spent, broken, alive, bossHp, raging, effectiveStep, attackDamage, reviveStep, ALLY_DEF, canBreak, breakStepFor, breakCost, BREAK_REWARDS } from '../game/engine.js';
 import { targetFor, dieMax, stepOdds, reactionFor } from '../game/rules.js';
 import { validatePlan, planActions, attackFor, betFor, readyAt, runeSpare, pickable, awaitingStep, betRoom } from './play-plan.js';
 
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
+/** A check step's name, in the reader's language (cards.step.<id>). */
+const stepName = (step) => (step ? t(`cards.step.${step}`) : '');
+
+/**
+ * A biome's rule, translated. cards.json carries the English sentence and the
+ * string table carries both, keyed by card id; a Spanish board used to print
+ * the English one in brackets after a Spanish name.
+ */
+const biomeRule = (b) => {
+  if (!b?.rule) return '';
+  const k = t(`cards.effect.${b.id}`);
+  return k.startsWith('[') ? b.rule : k;
+};
 
 /**
  * A boss reaction, named in the player's language. cards.json carries the
@@ -103,9 +117,17 @@ function bossWall(f, ui = {}) {
   // motion zeroes the keyframe and they are simply gone, which is the old
   // behaviour exactly.
   const falling = `<span class="lc-falls" aria-hidden="true">${lifeMini('boss')}</span>`.repeat(ui.fx === 'hit' || ui.fx === 'boss-felled' ? (ui.wallFell || 0) : 0);
+  // Every card in the wall says what it is worth on hover, and the leading one
+  // says how much of it is left. The wall is the boss's life and a player asked
+  // the obvious question of it: how much is each of those? The aria-label above
+  // still carries the total, so a screen reader hears the number without having
+  // to walk twenty cards.
+  const each = `${escHtml(t('play.bossLife'))}: ${per}`;
+  const partLabel = `${escHtml(t('play.bossLife'))}: ${part} / ${per}`;
+  const card = `<span class="lc-hit" title="${each}" aria-hidden="true">${lifeMini('boss')}</span>`;
   return `<div class="wall" style="--wall-cols:${cols};--wall-rows:${rows}"
     role="img" aria-label="${escHtml(t('play.bossLife'))}: ${f.boss.body} / ${f.boss.maxHp}"
-    >${falling}${lead}${lifeMini('boss').repeat(whole)}</div>`;
+    >${falling}${part > 0 ? `<span class="lc-hit" title="${partLabel}" aria-hidden="true">${lead}</span>` : ''}${card.repeat(whole)}</div>`;
 }
 
 /** A face-down pile as a small offset stack, never a spread: the fit is the point. */
@@ -145,11 +167,11 @@ function tablePanel(s, run, f) {
   // The boss pile is gone from here entirely: the wall in the middle of the duel
   // IS the boss pile, and drawing it twice made the smaller copy the wrong one.
   const rows = [
-    slot(t('play.biomeCard'), biome ? cardFace(biome, { size: 'mini' }) : '', biome?.name || '', biome?.id),
+    slot(t('play.biomeCard'), biome ? cardFace(biome, { size: 'mini' }) : '', biome ? cardName(biome) : '', biome?.id),
     first ? '' : slot(t('play.drawPile'), stackOf(cardBack('skill', { size: 'mini' }), run.skillPool.length), String(run.skillPool.length)),
     first ? '' : slot(t('play.advPile'), stackOf(cardBack('skill', { size: 'mini' }), run.advDeck.length), String(run.advDeck.length)),
     run.extraLives ? slot(t('play.extraPile'), stackOf(lifeMini('extra'), run.extraLives), String(run.extraLives)) : '',
-    run.secondWind && sw ? slot(t('play.secondWind'), cardFace(sw, { size: 'mini' }), 'in play', sw.id) : '',
+    run.secondWind && sw ? slot(t('play.secondWind'), cardFace(sw, { size: 'mini' }), t('play.shelf'), sw.id) : '',
   ].filter(Boolean);
   return `<aside class="panel panel--tight fight-table" aria-label="${escHtml(t('play.table'))}">${rows.join('')}</aside>`;
 }
@@ -171,9 +193,9 @@ function bubble(f, ui) {
   if (p) {
     const at = p.at === 'ally' && f.hero.ally ? t('play.aimedAtAlly') : t('play.aimedAtYou');
     const what = p.dmg
-      ? `${p.dmg} damage, ${escHtml(p.rage ? t('play.unguardable') : at)}`
-      : p.kind === 'brace' ? 'no damage, and it halves what it takes next turn'
-        : p.kind === 'summon' ? `${p.chunk} of its life moves under a minion` : '';
+      ? `${p.dmg} ${escHtml(t('play.damage'))}, ${escHtml(p.rage ? t('play.unguardable') : at)}`
+      : p.kind === 'brace' ? escHtml(t('play.braceWhat'))
+        : p.kind === 'summon' ? `${p.chunk} ${escHtml(t('play.summonWhat'))}` : '';
     return `<p class="bubble ${p.rage || p.kind === 'ruin' ? 'is-alarm' : 'is-alert'}" role="status">
       <b>${escHtml(reactionName(p))}</b><span>${what}</span></p>`;
   }
@@ -234,7 +256,7 @@ function dieCell(f, ui) {
   else if (f.foretold) { big = f.foretold; note = `d6 · ${escHtml(cardName({ id: 'taunt', name: 'Taunt' }))}`; cls = 'is-waiting'; }
   else if (wait) {
     big = `${targetFor(f.die, wait.step)}+`;
-    note = `${wait.a.name} · ${cap(wait.step)}`;
+    note = `${cardName(wait.a)} · ${stepName(wait.step)}`;
     cls = 'is-waiting';
   } else if (ui.last && ui.last.roll !== null && ui.last.roll !== undefined) {
     big = ui.last.roll;
@@ -265,7 +287,7 @@ function dieCell(f, ui) {
  * you can see.
  */
 function shelf(f, ui) {
-  const slot = (label, glyph, on, note) => `<div class="gear ${on ? 'is-on' : ''}" title="${escHtml(`${label}: ${on ? note || 'in play' : t('play.slotEmpty')}`)}">
+  const slot = (label, glyph, on, note) => `<div class="gear ${on ? 'is-on' : ''}" title="${escHtml(`${label}: ${on ? note || t('play.shelf') : t('play.slotEmpty')}`)}">
     ${glyph}<small>${escHtml(on ? note || label : label)}</small></div>`;
   const ally = f.hero.ally
     ? `<div class="gear gear--ally is-on ${ui.fx === 'ally-hit' ? 'is-struck' : ''}" title="${escHtml(`${t('play.ally')}: ${ALLY_DEF} ${t('play.allyDef')}`)}">
@@ -281,7 +303,7 @@ function shelf(f, ui) {
   const on = [
     f.hero.relic ? slot(t('play.relic'), glyphSvg('adv-relic', '', 22), true) : '',
     f.hero.rune > 0 ? slot(t('play.rune'), glyphSvg('adv-rune', '', 22), true, `${t('play.rune')} ${f.hero.rune}`) : '',
-    f.hero.shield > 0 ? slot(t('play.bubbleSlot'), glyphSvg('bubble', '', 22), true, `${f.hero.shield} absorbed`) : '',
+    f.hero.shield > 0 ? slot(t('play.bubbleSlot'), glyphSvg('bubble', '', 22), true, `${f.hero.shield} ${t('play.absorbed')}`) : '',
     f.hero.hidden ? slot(t('play.hidden'), glyphSvg('eye', '', 22), true) : '',
     f.hero.ally || ui.fx === 'ally-gone' ? ally : '',
   ].filter(Boolean).join('');
@@ -331,7 +353,7 @@ export function renderFight(s, run) {
     <div class="fight-bar">
       <div class="fight-bar__who">
         <b>${escHtml(roster.name || f.boss.name)}</b>
-        <span class="muted small">${f.boss.size}${roster.element ? ` · ${escHtml(cap(roster.element))}` : ''} · ${escHtml(t('play.level'))} ${f.level} · <span class="round-chip ${ui.roundNew ? 'round-pop' : ''} ${f.round === f.boss.rage - 1 ? 'round-warn' : ''} ${raging(f) ? 'round-rage' : ''}">${escHtml(t('play.round'))} ${f.round}</span>${biome ? ` · ${escHtml(biome.name)}${biome.rule ? ` (${escHtml(biome.rule)})` : ''}` : ''}</span>
+        <span class="muted small">${f.boss.size}${roster.element ? ` · ${escHtml(elementName(roster.element))}` : ''} · ${escHtml(t('play.level'))} ${f.level} · <span class="round-chip ${ui.roundNew ? 'round-pop' : ''} ${f.round === f.boss.rage - 1 ? 'round-warn' : ''} ${raging(f) ? 'round-rage' : ''}">${escHtml(t('play.round'))} ${f.round}</span>${biome ? ` · ${escHtml(cardName(biome))}${biomeRule(biome) ? ` (${escHtml(biomeRule(biome))})` : ''}` : ''}</span>
       </div>
       <div class="row"><span class="chip" aria-pressed="false">${f.die} · ${escHtml(t(`play.${f.mode}`))}</span>
         <button class="btn btn--ghost btn--sm" data-action="play-log" aria-pressed="${logOpen}">${glyphSvg('book', '', 16)} ${escHtml(t(logOpen ? 'play.logHide' : 'play.logShow'))}</button>
@@ -351,15 +373,15 @@ export function renderFight(s, run) {
             ${shelf(f, ui)}
           </div>
           <div class="duel__wall" data-tour="wall">
-            <div class="wall-count"><b>${bossHp(f)}</b><span class="muted small">/ ${f.boss.maxHp}</span>${f.boss.braced ? '<span class="chip">Braced</span>' : ''}</div>
+            <div class="wall-count"><b>${bossHp(f)}</b><span class="muted small">/ ${f.boss.maxHp}</span>${f.boss.braced ? `<span class="chip">${escHtml(t('play.reactionName.brace'))}</span>` : ''}</div>
             ${bossWall(f, ui)}
           </div>
           <div class="duel__boss ${bossRing}">
             ${bubble(f, ui)}
-            <div class="figure ${fx === 'hit' || fx === 'boss-felled' ? `is-hit ${hitWeight(ui.dealt)}` : ''} ${fx === 'miss' ? 'is-missed' : ''} ${f.phase === 'won' ? 'is-felled' : ''}">
+            <div class="figure ${fx === 'hit' || fx === 'boss-felled' || fx === 'break-ok' ? `is-hit ${hitWeight(ui.dealt)}` : ''} ${fx === 'miss' || fx === 'break-no' ? 'is-missed' : ''} ${f.phase === 'won' ? 'is-felled' : ''}">
               ${figureSvg(roster)}<b>${escHtml(roster.name || '')}</b>
-              ${(fx === 'hit' || fx === 'boss-felled') && ui.dealt ? `<span class="fx-num fx-num--bad ${hitWeight(ui.dealt)}">-${ui.dealt}</span>` : ''}
-              ${fx === 'miss' ? `<span class="fx-num">${escHtml(t('play.miss'))}</span>` : ''}
+              ${(fx === 'hit' || fx === 'boss-felled' || fx === 'break-ok') && ui.dealt ? `<span class="fx-num fx-num--bad ${hitWeight(ui.dealt)}">-${ui.dealt}</span>` : ''}
+              ${fx === 'miss' || fx === 'break-no' ? `<span class="fx-num">${escHtml(t('play.miss'))}</span>` : ''}
             </div>
             ${targets(f, ui, roster)}
           </div>
@@ -403,7 +425,7 @@ function tourCallout(tour) {
 function renderActions(s, run, f, ui) {
   if (f.phase === 'won') {
     return `<div class="banner banner--win">${escHtml(t('play.won'))}</div>
-      <div class="row"><button class="btn btn--primary btn--lg" data-action="play-continue">${escHtml(run.kind === 'first' || f.level >= 5 ? t('play.finish') : t('play.nextLevel'))}</button></div>`;
+      <div class="row"><button class="btn btn--primary btn--lg" data-action="play-continue">${escHtml(f.level >= lastLevel(run.kind) ? t('play.finish') : t('play.nextLevel'))}</button></div>`;
   }
   if (f.phase === 'lost' || f.phase === 'stall') {
     return `<div class="banner banner--lose">${escHtml(t('play.lost'))}</div>
@@ -423,7 +445,7 @@ function renderDown(s, f, ui) {
   const step = reviveStep(f);
   const need = step ? targetFor(f.die, step) : null;
   const line = step
-    ? `${escHtml(t('play.downLadder'))} ${riskDots(step)} <b>${escHtml(cap(step))}</b>: ${escHtml(t('play.need'))} <b>${need}+</b> on ${f.die}`
+    ? `${escHtml(t('play.downLadder'))} ${riskDots(step)} <b>${escHtml(stepName(step))}</b>: ${escHtml(t('play.need'))} <b>${need}+</b> ${escHtml(f.die)}`
     : `<b>${escHtml(t('play.downFree'))}</b>`;
   return `<div class="banner banner--lose">${escHtml(t('play.down'))} · ${escHtml(t('play.secondWind'))}</div>
     <div class="row row--between"><span>${line}</span>
@@ -434,50 +456,91 @@ function renderDown(s, f, ui) {
     </div>`;
 }
 
+/**
+ * The popup's shell, and the reason it is a function rather than three literals.
+ *
+ * render() replaces the board's markup WHOLESALE on every action, so the
+ * backdrop element is destroyed and rebuilt every time you click anything while
+ * a popup is open. Its entry animation fades the scrim up from transparent, and
+ * replaying that on every click meant each die throw flashed the full bright
+ * page for 200ms before it darkened again: reported as the page refreshing,
+ * white and hard on the eyes, which is exactly what it was.
+ *
+ * The scrim therefore does not animate at all. A one-shot entry was tried first
+ * and abandoned: gating it on "did a popup exist in the previous render" is
+ * correct on paper and could not be demonstrated in the browser, and an
+ * animation nobody can prove fires exactly once is an animation that will flash
+ * again the next time the render path changes. The fade was decoration and the
+ * decoration was the harm. The function stays because three copies of this
+ * markup is how the three popups drift apart.
+ */
+function backdrop(inner, label, cls = '') {
+  return `<div class="rm-backdrop"><div class="rm ${cls}" role="dialog" aria-modal="true"
+    aria-label="${label}">${inner}</div></div>`;
+}
+
+/**
+ * The boss's turn, in the SAME popup the hero's rolls use.
+ *
+ * It was plain in-flow markup until 2026-08-30, and on a phone that put the
+ * face it rolled 15px below the fold and the only button that continues the
+ * game 65px below it (measured at 390x844; at 360x740 it was 169px). The
+ * player tapped "roll for the boss", nothing visibly happened, and the game
+ * looked frozen. A fixed-position dialog is not decoration here: it is the
+ * difference between seeing the die and not.
+ *
+ * The button that THROWS is the primary, and the six faces are the quiet row
+ * underneath. That is the right way round: the throw is the thing to do, and
+ * typing in a result is the fallback for a table that has its own d6 on it.
+ */
 function renderBoss(s, f, ui) {
   const p = f.pending;
-  if (!p) {
-    // The child throws the REAL d6 and taps the face it shows. Hero rolls
-    // always accepted the physical die; the boss's was the one screen-only
-    // roll in the game, and it is also the single best job to hand a small
-    // child. Each chip teaches its consequence underneath, in the reaction's
-    // own name. The auto-roll stays as the primary so Enter still works and a
-    // table with no d6 loses nothing.
-    const faces = [1, 2, 3, 4, 5, 6].map((n) => {
-      const rx = f.data ? reactionFor(f.data, n) : null;
-      const sig = f.boss.signature;
-      const label = sig && sig.roll === n ? t(`play.signatureName.${sig.id}`) : rx?.id ? t(`play.reactionName.${rx.id}`) : '';
-      return `<button class="die-chip ${sig && sig.roll === n ? 'die-chip--sig' : ''}" data-action="play-boss-face" data-face="${n}" aria-label="${n}: ${escHtml(label)}">
-        <span class="die-chip__n">${n}</span><small>${escHtml(label)}</small></button>`;
-    }).join('');
-    return `<div class="row row--between"><b>${escHtml(t('play.bossTurn'))}</b>
-      <button class="btn btn--primary btn--lg" data-action="play-boss-roll">${glyphSvg('dice', '', 18)} ${escHtml(t('play.bossRollFor'))}</button></div>
-      <div class="boss-ask"><span class="pile-label">${escHtml(t('play.bossAsk'))}</span>
-      <small class="muted">${escHtml(t('play.bossAskHow'))}</small>
-      <div class="die-chips">${faces}</div></div>`;
-  }
+  return backdrop(p ? bossPending(f, ui, p) : bossThrow(f, ui), escHtml(t('play.bossTurn')), 'rm--boss');
+}
+
+/** The six faces, each teaching its consequence in the reaction's own name. */
+function faceChips(f, action) {
+  return [1, 2, 3, 4, 5, 6].map((n) => {
+    const rx = f.data ? reactionFor(f.data, n) : null;
+    const sig = f.boss.signature;
+    const label = sig && sig.roll === n ? t(`play.signatureName.${sig.id}`) : rx?.id ? t(`play.reactionName.${rx.id}`) : '';
+    return `<button class="die-chip ${sig && sig.roll === n ? 'die-chip--sig' : ''}" data-action="${action}" data-face="${n}" aria-label="${n}: ${escHtml(label)}">
+      <span class="die-chip__n">${n}</span><small>${escHtml(label)}</small></button>`;
+  }).join('');
+}
+
+function bossThrow(f, ui) {
+  return `<p class="rm-what"><b>${escHtml(t('play.bossTurn'))}</b><span>${escHtml(t('play.bossAskHow'))}</span></p>
+    <div class="rm-die">${dieThrow(f, ui, null, 'd6')}</div>
+    <div class="row rm-row rm-row--one">
+      <button class="btn btn--primary btn--lg" data-action="play-boss-roll">${glyphSvg('dice', '', 18)} ${escHtml(t('play.bossThrow'))}</button>
+    </div>
+    <div class="boss-ask"><small class="muted">${escHtml(t('play.bossOwnDie'))}</small>
+    <div class="die-chips">${faceChips(f, 'play-boss-face')}</div></div>`;
+}
+
+function bossPending(f, ui, p) {
   const hasBarrier = f.hero.advantage.includes('barrier');
   const parked = ui.reaction === 'barrier' && hasBarrier;
   const atAlly = p.at === 'ally' && f.hero.ally;
-  const what = p.dmg ? `: ${p.dmg} damage${p.rage ? ', unguardable' : ''}`
-    : p.kind === 'brace' ? ': no damage, halves what it takes next turn'
-      : p.kind === 'summon' ? `: ${p.chunk} of its life moves under a minion` : '';
+  const what = p.dmg ? `${p.dmg} ${t('play.damage')}${p.rage ? `, ${t('play.unguardable')}` : ''}`
+    : p.kind === 'brace' ? t('play.braceWhat')
+      : p.kind === 'summon' ? `${p.chunk} ${t('play.summonWhat')}` : '';
   // A parked Barrier is a declared intention, not an automatic cancel: Brace
   // deals nothing, and spending the card on it would be a waste the player
   // never chose. Parking makes it the primary button, so Enter plays it.
   const barrierBtn = hasBarrier
     ? `<button class="btn ${parked ? 'btn--primary btn--lg' : ''}" data-action="play-resolve" data-barrier="1">${glyphSvg('adv-barrier', '', 16)} ${escHtml(t('play.barrierPrompt'))}</button>` : '';
-  // Cover is never the primary button: letting the Ally's 50 defense do its job
-  // is the free option, and taking the hit whole instead is the deliberate one.
+  // Cover is never the primary: letting the Ally's defense do its job is the
+  // free option, and taking the hit whole instead is the deliberate one.
   const coverBtn = atAlly
     ? `<button class="btn" data-action="play-resolve" data-barrier="0" data-cover="1" title="${escHtml(t('play.coverHint'))}">${glyphSvg('shield', '', 16)} ${escHtml(t('play.cover'))}</button>` : '';
   const letLabel = atAlly ? `${t('play.ally')}: ${ALLY_DEF} ${t('play.allyDef')}` : hasBarrier ? t('play.letItHappen') : t('play.takeIt');
-  const letBtn = `<button class="btn ${parked ? '' : 'btn--primary'}" data-action="play-resolve" data-barrier="0">${escHtml(letLabel)}</button>`;
-  return `<div class="row" style="gap: var(--space-4)">
-      <div class="die-face is-rolling">${p.roll}</div>
-      <div class="grow"><b>${escHtml(reactionName(p))}</b>${what}${atAlly ? ` · ${escHtml(t('play.aimedAtAlly'))}` : ''}</div>
-    </div>
-    <div class="row">${parked ? barrierBtn + letBtn + coverBtn : letBtn + coverBtn + barrierBtn}</div>`;
+  const letBtn = `<button class="btn ${parked ? '' : 'btn--primary btn--lg'}" data-action="play-resolve" data-barrier="0">${escHtml(letLabel)}</button>`;
+  return `<p class="rm-what"><b>${escHtml(t('play.bossThrown'))} ${p.roll}: ${escHtml(reactionName(p))}</b>
+      <span>${escHtml(what)}${atAlly ? ` \u00b7 ${escHtml(t('play.aimedAtAlly'))}` : ''}</span></p>
+    <div class="rm-die">${dieThrow(f, ui, p.roll, 'd6', ui.fx === 'boss-die')}</div>
+    <div class="row rm-row">${parked ? barrierBtn + letBtn + coverBtn : letBtn + coverBtn + barrierBtn}</div>`;
 }
 
 const typedInput = (f, ui) => `<input type="number" min="1" max="${dieMax(f.die)}" value="${ui.typed || ''}" data-change="play-typed" class="typed-roll" aria-label="${escHtml(t('play.typeRoll'))}">`;
@@ -517,8 +580,8 @@ function renderTurn(s, run, f, ui) {
     const n = plan.filter((st) => st.id === a.id).length;
     const step = effectiveStep(f, a);
     const meta = [
-      `${a.actions} ${a.actions > 1 ? 'actions' : 'action'}`,
-      a.bet === 'any' ? `${t('play.bet')} any` : a.bet ? `${t('play.bet')} ${a.bet}` : '',
+      `${a.actions} ${a.actions > 1 ? t('play.manyActions') : t('play.oneAction')}`,
+      a.bet === 'any' ? `${t('play.bet')} ${t('play.betAny')}` : a.bet ? `${t('play.bet')} ${a.bet}` : '',
     ].filter(Boolean).join(' · ');
     // What the card DOES lives in cards.effect (all 68 cards, both languages)
     // and reaches sighted players through the inspector popover: hover on a
@@ -558,8 +621,9 @@ function renderTurn(s, run, f, ui) {
       </div>
     </div>
     <div class="band band--plan">${planLane(s, f, ui, plan, wait)}</div>
+    ${!ui.resolveOpen && !ui.breakOpen && canBreak(f) ? `<div class="band band--break">${breakOffer(f)}</div>` : ''}
     <div class="band band--go" data-tour="go">${ui.resolveOpen || plan.length ? '' : planBar(f, ui, plan)}</div>
-    ${ui.resolveOpen ? resolveModal(f, ui, plan, wait) : ''}`;
+    ${ui.resolveOpen || ui.breakOpen ? resolveModal(f, ui, plan, wait) : ''}`;
 }
 
 function planLane(s, f, ui, plan, wait) {
@@ -583,10 +647,17 @@ function planLane(s, f, ui, plan, wait) {
       ? `<button class="plan-rune" data-action="play-rune-step" data-i="${i}" aria-pressed="${!!st.rune}" title="${escHtml(t('play.attachTo'))} ${i + 1}">${glyphSvg('adv-rune', '', 15)}</button>` : '';
     const tgt = f.boss.minions.length
       ? `<button class="plan-tgt" data-action="play-step-target" data-i="${i}">${escHtml(typeof st.target === 'number' ? `${MINION.name} ${st.target + 1}` : t('play.body'))}</button>` : '';
-    return `<li class="plan-step ${ui.awaiting === i ? 'is-now' : ''} ${i < at ? 'is-done' : ''}${settled}" data-inspect="${a.id}">
+    // Draggable only before the lane starts resolving: a step already played is
+    // a thing that happened, not a thing you can re-order.
+    const movable = at === 0 && !wait && !ui.resolveOpen;
+    return `<li class="plan-step ${ui.awaiting === i ? 'is-now' : ''} ${i < at ? 'is-done' : ''}${settled}" data-inspect="${a.id}"
+      ${movable ? `draggable="true" data-step-i="${i}"` : ''}>
       <button class="plan-num" data-action="play-unqueue" data-i="${i}" aria-label="${escHtml(t('play.planStep'))} ${i + 1}" title="${escHtml(t('play.planStep'))} ${i + 1}">${i + 1}</button>
+      ${movable && plan.length > 1 ? `<span class="plan-move" aria-hidden="true" title="${escHtml(t('play.reorder'))}">${glyphSvg('grip', '', 13)}</span>
+      <button class="plan-bump" data-action="play-move-step" data-i="${i}" data-to="${i - 1}" ${i === 0 ? 'aria-disabled="true"' : ''} aria-label="${escHtml(t('play.moveEarlier'))}">\u2039</button>
+      <button class="plan-bump" data-action="play-move-step" data-i="${i}" data-to="${i + 1}" ${i === plan.length - 1 ? 'aria-disabled="true"' : ''} aria-label="${escHtml(t('play.moveLater'))}">\u203a</button>` : ''}
       ${cardFace(a, { size: 'mini' })}
-      <span class="plan-what"><b>${escHtml(cardName(a))}</b><small>${bet ? `${escHtml(t('play.bet'))} ${bet}` : ''}${step ? ` ${riskDots(step)}` : ''}${st.rune ? ' auto' : ''}</small></span>
+      <span class="plan-what"><b>${escHtml(cardName(a))}</b><small>${bet ? `${escHtml(t('play.bet'))} ${bet}` : ''}${step ? ` ${riskDots(step)}` : ''}${st.rune ? ` ${escHtml(t('play.autoStep'))}` : ''}</small></span>
       ${bets}${tgt}${rune}
     </li>`;
   }).join('');
@@ -616,6 +687,62 @@ function planLane(s, f, ui, plan, wait) {
   </div>`;
 }
 
+/**
+ * Break a part (RULES.md section 7). Only ever on screen in the window a landed
+ * attack opens, which is why it is a band that comes and goes rather than a
+ * button that greys out: a control you cannot use most of the time teaches
+ * nothing, and this one is a prompt to SAY something out loud.
+ *
+ * The three rewards are the buttons. None is the primary: picking a reward is
+ * the player's call and Enter belongs to the turn's own next step, so the
+ * one-primary contract in .actions is untouched.
+ */
+/**
+ * The board's break prompt: one line, one button, and it opens the dialog.
+ *
+ * The picker used to live here in full. On a 360x740 phone that grew the pinned
+ * action panel past the viewport, so sticky clamped it to the top of its own
+ * containing block and its opaque background covered the entire arena, with the
+ * turn's only primary 85px below the fold. The dialog already fits and is
+ * already where the player is looking one beat after the hit, so the board keeps
+ * the invitation and the dialog keeps the choice.
+ */
+function breakOffer(f) {
+  const left = Math.max(0, (f.dm?.cap || 0) - f.boss.breaks);
+  return `<div class="row brk-offer">
+    <span class="pile-label">${glyphSvg('break', '', 16)} ${escHtml(t('play.brk.title'))}</span>
+    <small class="muted">${left} ${escHtml(t('play.brk.left'))}</small>
+    <span class="grow"></span>
+    <button class="btn btn--sm" data-action="play-break-open">${escHtml(t('play.brk.say'))}</button>
+    <button class="btn btn--ghost btn--sm" data-action="play-break-skip">${escHtml(t('play.brk.cancel'))}</button>
+  </div>`;
+}
+
+function breakRow(f, ui, inModal = false) {
+  const step = breakStepFor(f);
+  const need = step ? targetFor(f.die, step) : null;
+  const cost = breakCost(f);
+  const left = Math.max(0, (f.dm?.cap || 0) - f.boss.breaks);
+  const how = step
+    ? `${riskDots(step)} ${escHtml(stepName(step))}: ${escHtml(t('play.need'))} <b>${need}+</b>`
+    : `<b>${escHtml(t('play.brk.free'))}</b>`;
+  const hint = { wound: t('play.brk.woundHint').replace('{n}', f.dm.wound), cripple: t('play.brk.crippleHint').replace('{n}', f.dm.cripple), trophy: t('play.brk.trophyHint') };
+  const glyph = { wound: 'break', cripple: 'trend-down', trophy: 'trophy' };
+  const picks = BREAK_REWARDS.map((id) => `<button class="brk-pick" data-action="play-break" data-reward="${id}">
+      ${glyphSvg(glyph[id], '', 22)}<b>${escHtml(t(`play.brk.${id}`))}</b><small>${escHtml(hint[id])}</small></button>`).join('');
+  return `<div class="brk ${inModal ? 'brk--modal' : ''}">
+    <div class="row row--between">
+      <span class="pile-label">${glyphSvg('break', '', 16)} ${escHtml(t('play.brk.title'))}</span>
+      <small class="muted">${escHtml(t('play.brk.say'))}</small>
+      <small class="muted">${how}${cost ? ` \u00b7 ${escHtml(t('play.brk.costs'))}` : ''} \u00b7 ${left} ${escHtml(t('play.brk.left'))}</small>
+    </div>
+    <div class="brk-picks">${picks}</div>
+    <div class="row">${step ? `<span class="muted small">${escHtml(t('play.typeRoll'))}</span>${typedInput(f, ui)}` : ''}
+      <span class="grow"></span>
+      <button class="btn btn--ghost btn--sm" data-action="play-break-skip">${escHtml(t('play.brk.cancel'))}</button></div>
+  </div>`;
+}
+
 function planBar(f, ui, plan) {
   // Only the EMPTY lane reaches this band now: a queued plan carries its own
   // buttons on the lane's line (planLane). With nothing queued the one thing
@@ -635,12 +762,19 @@ function planBar(f, ui, plan) {
  */
 function resolveModal(f, ui, plan, wait) {
   let body;
+  // Opened from the board's one-line offer, with no lane resolving behind it.
+  // Same picker, same dialog, so there is one place a break is ever chosen.
+  if (ui.breakOpen && !ui.resolveOpen) {
+    body = `${breakVerdict(f, ui)}${canBreak(f) ? breakRow(f, ui, true) : ''}
+      <div class="row rm-row"><button class="btn btn--primary" data-action="play-break-close">${escHtml(t('play.rm.close'))}</button></div>`;
+    return backdrop(body, escHtml(t('play.brk.title')));
+  }
   if (wait) {
     const { i, st, a, step } = wait;
     const need = targetFor(f.die, step);
     const dmg = attackDamage(f, a, betFor(a, st));
     body = `<p class="rm-what"><b>${escHtml(t('play.planStep'))} ${i + 1}: ${escHtml(cardName(a))}</b>
-        <span>${riskDots(step)} ${escHtml(cap(step))}, ${Math.round(stepOdds(step) * 100)}%: ${escHtml(t('play.need'))} <b>${need}+</b> ${escHtml(f.die)} · ${dmg} ${escHtml(t('play.damage'))}${f.boss.braced ? ` · ${escHtml(t('play.bracedHalved'))}` : ''}</span></p>
+        <span>${riskDots(step)} ${escHtml(stepName(step))}, ${Math.round(stepOdds(step) * 100)}%: ${escHtml(t('play.need'))} <b>${need}+</b> ${escHtml(f.die)} · ${dmg} ${escHtml(t('play.damage'))}${f.boss.braced ? ` · ${escHtml(t('play.bracedHalved'))}` : ''}</span></p>
       <div class="rm-die">${dieThrow(f, ui)}</div>
       <div class="row rm-row">
         <button class="btn btn--primary btn--lg" data-action="play-roll">${glyphSvg('dice', '', 18)} ${escHtml(t('play.throw'))}</button>
@@ -658,9 +792,25 @@ function resolveModal(f, ui, plan, wait) {
     // read from the ledger's own tail, gated by the one-shot fx that marks
     // "a step landed on THIS render".
     const tail = ui.results[ui.results.length - 1];
+    // A break sets its OWN fx ('break-ok'/'break-no') precisely so it cannot
+    // re-satisfy this guard: it used to set 'hit'/'miss', which replayed the
+    // last attack's die and its toss animation while the break's own roll was
+    // never shown at all.
     const justRolled = (ui.fx === 'hit' || ui.fx === 'miss' || ui.fx === 'boss-felled') && tail?.roll !== null && tail?.roll !== undefined;
-    body = `${justRolled ? `<div class="rm-die">${dieThrow(f, ui, tail.roll)}</div>` : ''}${ledger(ui, true)}
-      <div class="row rm-row"><button class="btn btn--primary" data-action="play-resolve-close">${escHtml(t('play.rm.close'))}</button></div>`;
+    // Mid-lane or finished? A lane the player is walking a beat at a time pauses
+    // here after every step, including the ones that need no die, so a Bubble
+    // gets its own moment instead of arriving already resolved in a list beside
+    // somebody else's roll.
+    const left = (ui.plan?.length || 0) - (ui.at || 0);
+    const more = ui.resolveMode === 'step' && left > 0 && f.phase === 'act';
+    body = `${justRolled ? `<div class="rm-die">${dieThrow(f, ui, tail.roll)}</div>` : ''}${ledger(ui, !more)}
+      ${breakVerdict(f, ui)}${!more && canBreak(f) ? breakRow(f, ui, true) : ''}
+      <div class="row rm-row">${more
+    ? `<button class="btn btn--primary btn--lg" data-action="play-resolve-next">${escHtml(t('play.rm.next'))} ›</button>
+         <span class="muted small">${escHtml(t('play.rm.step'))} ${(ui.at || 0) + 1} ${escHtml(t('play.rm.of'))} ${ui.plan.length}</span>
+         <span class="grow"></span>
+         <button class="btn btn--ghost btn--sm" data-action="play-resolve-all" title="${escHtml(t('play.resolveAllHint'))}">${escHtml(t('play.resolveAll'))}</button>`
+    : `<button class="btn btn--primary" data-action="play-resolve-close">${escHtml(t('play.rm.close'))}</button>`}</div>`;
   } else {
     const n = plan.filter((st) => effectiveStep(f, attackFor(f, st.id))).length;
     body = `<p class="rm-what">${escHtml(t('play.rm.lead'))}${n ? ` ${n} ${escHtml(t(n > 1 ? 'play.rm.checks' : 'play.rm.check'))}.` : ` ${escHtml(t('play.rm.noChecks'))}`}</p>
@@ -671,7 +821,21 @@ function resolveModal(f, ui, plan, wait) {
         <button class="btn btn--ghost btn--sm" data-action="play-resolve-close">${escHtml(t('play.rm.back'))}</button>
       </div>`;
   }
-  return `<div class="rm-backdrop"><div class="rm" role="dialog" aria-modal="true" aria-label="${escHtml(t('play.resolvePlan'))}">${body}</div></div>`;
+  return backdrop(body, escHtml(t('play.resolvePlan')));
+}
+
+/**
+ * What the break just did: its own die on the same stage, and one line saying
+ * whether the part came off. Before this the break silently reused the last
+ * attack's die, so the one roll the player had just asked for was the one roll
+ * the screen never showed.
+ */
+function breakVerdict(f, ui) {
+  const b = ui.breakRoll;
+  if (!b) return '';
+  return `${b.roll === null ? '' : `<div class="rm-die">${dieThrow(f, ui, b.roll)}</div>`}
+    <p class="rm-what ${b.ok ? 'is-good' : 'is-bad'}"><b>${escHtml(t(b.ok ? 'play.brk.broke' : 'play.brk.held'))}</b>
+      ${b.ok ? `<span>${escHtml(t(`play.brk.${b.reward}`))}</span>` : ''}</p>`;
 }
 
 /** The throw's ledger: what has landed so far, or the whole turn at the end. */
@@ -679,7 +843,7 @@ function ledger(ui, done) {
   if (!ui.results?.length) return '';
   const rows = ui.results.map((r) => `<li class="${r.hit ? 'good' : 'bad'}">
       ${r.roll !== null && r.roll !== undefined ? `<span class="rm-roll">${r.roll}</span>` : '<span class="rm-roll rm-roll--auto">·</span>'}
-      <b>${escHtml(r.name)}</b> ${escHtml(r.auto ? t('play.lands') : r.hit ? t('play.hit') : t('play.miss'))}${r.dealt ? `, ${r.dealt} ${escHtml(t('play.damage'))}` : ''}</li>`).join('');
+      <b>${escHtml(cardName({ id: r.id, name: r.name }))}</b> ${escHtml(r.auto ? t('play.lands') : r.hit ? t('play.hit') : t('play.miss'))}${r.dealt ? `, ${r.dealt} ${escHtml(t('play.damage'))}` : ''}</li>`).join('');
   return `<ul class="rm-ledger ${done ? 'is-done' : ''}">${rows}</ul>`;
 }
 
@@ -689,12 +853,23 @@ function ledger(ui, done) {
  * The visual is deliberately one function so the animation technique can be
  * swapped without touching the modal.
  */
-function dieThrow(f, ui, roll = null) {
-  const n = roll ?? (ui.last && ui.last.roll !== null && ui.last.roll !== undefined ? ui.last.roll : null);
-  const m = /^(\d*)d(\d+)$/.exec(f.die) || [null, '', '20'];
+function dieThrow(f, ui, roll, die = null, animate = true) {
+  const which = die || f.die;
+  // `undefined` means "show the last roll if there is one"; an explicit null
+  // means "show nothing yet". They were the same value before, so the boss's
+  // un-thrown d6 stage inherited whatever the hero had last rolled and printed
+  // a 17 on a six-sided die, tossed, above the button offering to throw it.
+  const n = roll === undefined
+    ? (ui.last && ui.last.roll !== null && ui.last.roll !== undefined ? ui.last.roll : null)
+    : roll;
+  const m = /^(\d*)d(\d+)$/.exec(which) || [null, '', '20'];
   const count = Number(m[1] || 1);
   const sides = Number(m[2]);
-  const tossed = n !== null ? 'is-tossed' : '';
+  // The tumble is a CSS animation on markup render() replaces wholesale, so it
+  // replays on EVERY render that carries a number. The hero's rolls gate it on a
+  // one-shot fx; the boss's did not, so its d6 re-threw itself every time the
+  // player toggled the log while the reaction was still pending.
+  const tossed = n !== null && animate ? 'is-tossed' : '';
   // The site's die is a rounded square with one big numeral (the die-cell,
   // the ledger chips, the learn slides): the throw uses the same face, so
   // there is exactly ONE number to read. The 3D solid landed on the right
@@ -720,7 +895,7 @@ function dieThrow(f, ui, roll = null) {
   }
   return `<div class="die-stage ${n !== null ? 'has-rolled' : ''}">
     <div class="die-stage__dice">${dice}</div>
-    <small class="muted die-stage__which">${escHtml(f.die)}</small>
+    <small class="muted die-stage__which">${escHtml(which)}</small>
   </div>`;
 }
 

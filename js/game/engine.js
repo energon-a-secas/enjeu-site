@@ -12,8 +12,12 @@
 // legacy (sim.py parity) differs from the rulebook in exactly three places:
 //   1. Brace never halves the boss's incoming damage (it only skips a hit).
 //   2. Summon moves a flat 100 hp off the body (not 2 x the boss's per-card
-//      value), needs body > 100, and the fight is won on body alone.
+//      value) and needs body > 100.
 //   3. Roar flattens the NEXT attack's check to Even, Strike included.
+// It used to differ in a fourth: the fight was won on the body alone. The
+// rulebook agrees with it now (2026-08-30), so that row is gone rather than
+// green by accident. legacy also skips break points and the Run penalty, both
+// of which arrived after tools/sim.py was last a source of truth.
 // Rulings this file made while RULES.md was silent. Most were promoted INTO the
 // rulebook on 2026-08-28, so the list below is now a map of where each one is
 // written down, not a list of things only the code knows:
@@ -26,7 +30,6 @@
 //   - tier-0 skills start in the pool: RULES.md s8
 // STILL ONLY HERE, and each is a gap worth closing in the rulebook rather than
 // leaving in a comment:
-//   - the boss falls when body AND minion cards are gone
 //   - Ally lasts the level; Relic lasts the level; Rune is one check
 //   - a minion's 25 always comes for the hero, never the Ally
 //   - the Ally's own free 25 always hits the body and can never be aimed at a
@@ -48,6 +51,15 @@ export function reviveStep(f) {
   if (f.hero.revives === 0) return null;             // the free one
   return REVIVE_LADDER[Math.min(f.hero.revives - 1, REVIVE_LADDER.length - 1)];
 }
+/**
+ * How many Broken cards a comeback stands back up. The first rescue is a real
+ * one and each after it is thinner, which is the same shape as the check
+ * climbing the ladder beside it: the card gets harder to play AND worth less,
+ * so a level cannot be farmed by falling over. It never reaches zero, because
+ * a comeback that returns nothing is a coin flip dressed up as a choice.
+ */
+export const REVIVE_RETURNS = [4, 3, 2, 1];
+export const reviveReturns = (f) => REVIVE_RETURNS[Math.min(f.hero.revives, REVIVE_RETURNS.length - 1)];
 export const canRevive = (f) => !!f.hero.secondWind;
 export const MAX_ROUNDS = 20;
 
@@ -58,6 +70,93 @@ export const MAX_ROUNDS = 20;
  * the card, so it is named here rather than written into a branch.
  */
 export const ALLY_DEF = 2 * UNIT;
+
+// ── Break points (RULES.md section 7, "Breaking a part") ─────
+/**
+ * The bosses in this game are built out of bricks on somebody's table, so no
+ * two are the same object and the rulebook cannot name their parts. It does not
+ * try. The player says what they went for out loud ("I stab it in the eye",
+ * "I go for the wing") and the game only referees whether it came off and what
+ * that buys. This is the same move the cut spell system made: hand it back to
+ * the table instead of writing another rule.
+ *
+ * The DM style is the one dial, and it is about PERMISSION, not difficulty:
+ *   friendly  the grown-up says it broke, and it broke. No check, no cost.
+ *   assisted  the site asks for a check at `step` (default Hard). The default,
+ *             because it is the one that still feels earned to the person who
+ *             invented the part.
+ *   hardcore  one rung harder than `step`, and it costs an action, so a break
+ *             competes with the attack it would have paid for.
+ * Every number below is editable at the table (js/views/play-screens.js), which
+ * is what makes this a dial and not a fourth difficulty setting.
+ */
+export const DM_STYLES = ['friendly', 'assisted', 'hardcore'];
+export const BREAK_REWARDS = ['wound', 'cripple', 'trophy'];
+export const DM_DEFAULTS = { style: 'assisted', cap: 2, step: 'hard', wound: 2 * UNIT, cripple: UNIT };
+
+/** The check a break asks for, or null when the DM simply grants it. */
+export function breakStepFor(f) {
+  if (f.legacy || !f.dm) return null;
+  if (f.dm.style === 'friendly') return null;
+  const step = f.dm.step || 'hard';
+  return f.dm.style === 'hardcore' ? shiftStep(step, 1) : step;
+}
+/** Actions a break costs. Only hardcore charges, and that is the whole of it. */
+export const breakCost = (f) => (f.dm?.style === 'hardcore' ? 1 : 0);
+
+/**
+ * A break is offered only in the window a landed attack opens, and only once
+ * per attack: `breakWindow` is set by attack() and cleared here, at endTurn and
+ * at the top of every round. Without that window the button would be a free
+ * action a player could tap all turn, and "I stabbed it in the eye" would stop
+ * describing anything that happened.
+ */
+export function canBreak(f) {
+  if (f.legacy || !f.dm || !f.dm.cap) return false;
+  return f.phase === 'act' && !!f.hero.breakWindow
+    && f.boss.breaks < f.dm.cap && f.actionsLeft >= breakCost(f);
+}
+
+/**
+ * Take a part off the boss. Pass a die `roll` (a human) or a uniform `u` (a
+ * strategy); `reward` is the player's pick from BREAK_REWARDS.
+ *
+ * Returns `{draw}` rather than drawing itself: the Advantage deck belongs to the
+ * run, not to the fight, and a First Game has no deck to draw from. The runner
+ * honours the draw only where there is one, and the Rune below is the version
+ * of the same reward every mode can pay.
+ */
+export function breakPart(f, o = {}) {
+  if (!canBreak(f)) throw new Error('nothing to break yet');
+  const reward = BREAK_REWARDS.includes(o.reward) ? o.reward : 'wound';
+  f.actionsLeft -= breakCost(f);
+  f.hero.breakWindow = false;
+  const step = breakStepFor(f);
+  let ok = true, need = null;
+  if (step) {
+    if (o.u !== undefined) ok = o.u < stepOdds(step);
+    else { need = targetFor(f.die, step); ok = (o.roll ?? 0) >= need; }
+  }
+  if (!ok) { say(f, 'The part holds. Nothing comes off.', 'bad'); return { ok: false, step, need, reward }; }
+  f.boss.breaks += 1;
+  say(f, `You break a part off the boss (${f.boss.breaks} of ${f.dm.cap}).`, 'good');
+  let draw = 0;
+  if (reward === 'cripple') {
+    f.boss.damage = Math.max(UNIT, f.boss.damage - (f.dm.cripple ?? UNIT));
+    say(f, `Crippled: the boss now deals ${f.boss.damage}.`, 'good');
+  } else if (reward === 'trophy') {
+    f.hero.rune += 1;
+    draw = 1;
+    say(f, 'Trophy: one check this level succeeds automatically.', 'good');
+  } else {
+    const w = f.dm.wound ?? 2 * UNIT;
+    say(f, `The break tears ${w} off it.`, 'good');
+    dealToBoss(f, 'body', w, 'The break');
+  }
+  return { ok: true, step, need, reward, draw };
+}
+
+
 
 /**
  * Who the boss's pending reaction is aimed at. Only a Strike, only while an Ally
@@ -98,6 +197,7 @@ export function newFight(data, init) {
       offBalance: false,
       element: b.element || null, body: b.hp ?? b.life_cards * perCard, maxHp: b.hp ?? b.life_cards * perCard,
       minions: [], braced: false, actsTwice: init.biome?.id === 'castle',
+      breaks: 0,
     },
     hero: {
       element: init.hero.element, klass: init.hero.klass || null,
@@ -109,7 +209,10 @@ export function newFight(data, init) {
       penalty: false, hidden: false, hideAvailable: init.biome?.id === 'forest',
       knightUsed: false, hunterUsed: false, lastMiss: null,
       secondWind: !!init.secondWind, revives: 0,
+      breakWindow: false,
     },
+    // The table's own settings, never the sim's: legacy ignores them wholesale.
+    dm: { ...DM_DEFAULTS, ...(init.dm || {}) },
     actionsLeft: 0,
     phase: 'act',      // act | boss | down | won | lost | stall
     pending: null,     // a rolled boss reaction awaiting resolve (Barrier window)
@@ -136,7 +239,16 @@ export const broken = (f) => f.hero.pool.filter((c) => c.st === 'broken').length
 export const alive = (f) => ready(f) + spent(f);
 export const raging = (f) => f.round >= f.boss.rage;
 export const bossHp = (f) => f.boss.body + f.boss.minions.reduce((a, m) => a + m.hp, 0);
-export const bossDown = (f) => f.legacy ? f.boss.body <= 0 : bossHp(f) <= 0;
+// The boss falls when its BODY is gone, and every minion still standing runs
+// off. It used to need the minions dead too, which is why a table that had just
+// knocked the last card off the wall was told the fight was still going: the
+// dramatic beat and the rule disagreed, and the rule was the one nobody had
+// written down (it lived in this file's header, never in RULES.md). Body alone
+// is also what tools/sim.py has always done, so `legacy` stops being a special
+// case here. The cost is that Summon now moves life OFF the body and partly
+// helps you; the answer to that is that killing a minion still stops its 25 a
+// turn, so aiming at one is a choice about incoming damage, not about arithmetic.
+export const bossDown = (f) => f.boss.body <= 0;
 
 // ── Round flow ───────────────────────────────────────────────
 export function startRound(f) {
@@ -152,6 +264,7 @@ export function startRound(f) {
   // a permanent half-damage aura, not a biome.
   f.hero.shield = 0;   // an unused Bubble pops; it guards the round it was cast in
   f.hero.knightUsed = false; f.hero.hunterUsed = false; f.hero.lastMiss = null;
+  f.hero.breakWindow = false;
   // legacy: the sim clears Brace at the top of every round after the first,
   // so the halving never applies. Rulebook: it lasts through this turn.
   if (f.legacy && f.round > 1) f.boss.braced = false;
@@ -194,13 +307,35 @@ export function attackBonus(f, a) {
   return bonus;
 }
 
-/** Damage a landed attack deals, before Brace. */
+/** Halving always lands on a whole 25: this game never asks a child to hold a 37. */
+const halve = (d) => Math.floor(d / 2 / UNIT) * UNIT;
+
+/**
+ * Damage a landed attack deals, before Brace.
+ *
+ * Hidden halves it, which is the whole answer to "does the order of my actions
+ * matter" (RULES.md section 5, Striking from cover). Movement in this game is
+ * free: you walk up to the boss, you climb it, you say where you are, and no
+ * card charges you for it. Running away is the one move that is NOT free, and
+ * before this rule it was also free to put FIRST, so the safe play was to hide
+ * and then swing with nothing at risk. Now hiding costs the rest of the turn's
+ * weight, so Run goes at the end and the tactic has a shape: hit, then hide.
+ *
+ * Deliberately here rather than in applyHit, so the preview under a queued step
+ * shows the halved number BEFORE the die is thrown. A rule the player only
+ * meets in the log is a rule they meet too late.
+ */
 export function attackDamage(f, a, bet) {
   const base = a.damage === '4x bet' ? 4 * bet * UNIT : a.damage;
-  return base + attackBonus(f, a);
+  const full = base + attackBonus(f, a);
+  if (!f.hero.hidden || f.legacy) return full;
+  // Never below one card's worth. halve() floors to a whole 25, so a Strike's
+  // 25 halved is 0: the card that "always lands" landed for nothing, took an
+  // action, counted as a hit, opened no break window, and printed "Strike:
+  // lands." with no damage clause to explain any of it. Half, or 25, whichever
+  // is more: the penalty is meant to cost you the difference, not the card.
+  return full > 0 ? Math.max(UNIT, halve(full)) : 0;
 }
-
-const halve = (d) => Math.floor(d / 2 / UNIT) * UNIT;
 
 /**
  * Resolve one attack.
@@ -264,7 +399,11 @@ export function attack(f, a, o = {}) {
 
   const dealt = hit ? applyHit(f, a, bet, o.target) : 0;
   if (hit) f.stats.hits += 1;
-  f.hero.lastMiss = (!hit && f.hero.klass === 'hunter' && !f.hero.hunterUsed) ? { a, bet, target: o.target } : null;
+  // The break window belongs to the hit that opened it: one landed attack, one
+  // chance to say where it landed. A miss closes it too, so a break can never
+  // be carried over from an earlier swing.
+  f.hero.breakWindow = hit && dealt > 0;
+  f.hero.lastMiss = (!hit && f.hero.klass === 'hunter' && !f.hero.hunterUsed) ? { a, bet, target: o.target, hidden: f.hero.hidden } : null;
   say(f, `${a.name || a.id}${bet ? ` (bet ${bet})` : ''}: ${auto ? 'lands' : hit ? 'hit' : 'miss'}${dealt ? `, ${dealt} damage` : ''}.`, hit ? 'hero' : 'bad');
   return { hit, auto, step, need, dealt, roll: rollShown, bet };
 }
@@ -274,6 +413,13 @@ export function reroll(f, o = {}) {
   const m = f.hero.lastMiss;
   if (!m || f.hero.hunterUsed) throw new Error('no reroll available');
   f.hero.hunterUsed = true; f.hero.lastMiss = null;
+  // The docstring's promise is "same odds, same damage", and effectiveStepNoPenalty
+  // already protects the odds half from a Roar landing in between. The damage half
+  // had no equivalent: applyHit re-runs attackDamage, which reads hidden AS IT IS
+  // NOW, so a Run played after the miss halved the reroll of an attack made in the
+  // open. Price it as the original attack was priced.
+  const wasHidden = f.hero.hidden;
+  f.hero.hidden = !!m.hidden;
   const step = effectiveStepNoPenalty(f, m.a);
   const odds = stepOdds(step);
   let hit, need = null;
@@ -281,6 +427,12 @@ export function reroll(f, o = {}) {
   else { need = targetFor(f.die, step); hit = (o.roll ?? 0) >= need; }
   const dealt = hit ? applyHit(f, m.a, m.bet, m.target) : 0;
   if (hit) f.stats.hits += 1;
+  // A rerolled hit is a landed attack, so it opens the break window like any
+  // other. The miss it replaces had already closed it, and the class whose
+  // whole ability is turning a miss into a hit was the one class that could
+  // never break a part.
+  f.hero.hidden = wasHidden;
+  f.hero.breakWindow = hit && dealt > 0;
   say(f, `Reroll: ${hit ? `hit, ${dealt} damage` : 'miss'}.`, hit ? 'hero' : 'bad');
   return { hit, need, dealt };
 }
@@ -313,7 +465,13 @@ function dealToBoss(f, target, amount, who) {
   } else {
     f.boss.body = Math.max(0, f.boss.body - amount);
   }
-  if (bossDown(f)) { f.phase = 'won'; say(f, 'The boss falls!', 'good'); }
+  if (bossDown(f)) {
+    f.phase = 'won';
+    say(f, 'The boss falls!', 'good');
+    // The minions were its life, carried off the wall. With the wall gone they
+    // have nothing to guard, so they scatter rather than fight on alone.
+    if (f.boss.minions.length) { say(f, `Its minions scatter.`, 'good'); f.boss.minions = []; }
+  }
 }
 
 /**
@@ -338,11 +496,14 @@ export function attemptRevive(f, o = {}) {
     if (o.u !== undefined) ok = o.u < stepOdds(step);
     else { need = targetFor(f.die, step); ok = (o.roll ?? 0) >= need; }
   }
+  // Read the ladder BEFORE the counter moves: revives is the number of comebacks
+  // already spent, so this one is the (revives + 1)th and takes the rung it stands on.
+  const owed = o.returns ?? reviveReturns(f);
   f.hero.revives += 1;
   if (!ok) { f.phase = 'lost'; say(f, 'The comeback fails. You are Down.', 'bad'); return { ok: false, step, need }; }
-  let back = o.returns ?? 2;
+  let back = owed;
   for (const c of f.hero.pool) { if (back > 0 && c.st === 'broken') { c.st = 'ready'; back--; } }
-  say(f, step ? `Second Wind holds! Back up with 2 cards.` : 'Second Wind: you come back free.', 'good');
+  say(f, `Second Wind holds! Back up with ${owed} cards.`, 'good');
   return { ok: true, step, need, resumed: resumeFall(f) };
 }
 
@@ -403,6 +564,7 @@ export function endTurn(f) {
   f.phase = 'boss';
   f.boss.braced = false; // Brace covered the hero's turn that just ended
   f.hero.hideAvailable = false;
+  f.hero.breakWindow = false;
   minionStrikes(f, f.boss.minions.length);
 }
 
@@ -435,7 +597,12 @@ export function bossFaceDamage(f, d6) {
   const base = f.boss.damage * (rage ? 2 : 1);
   const sig = f.boss.signature;
   if (sig && sig.roll === d6) {
-    return sig.id === 'stormbreak' ? base * 2 : sig.id === 'hoard' ? base : sig.id === 'coil' ? UNIT : 0;
+    if (sig.id === 'coil') {
+      const chunk = f.boss.summonCards * f.boss.perCard;
+      // A Coil that cannot summon is a Strike, and Taunt has to say so.
+      return (f.boss.body > chunk && f.boss.minions.length < 3) ? UNIT : base;
+    }
+    return sig.id === 'stormbreak' ? base * 2 : sig.id === 'hoard' ? base : 0;
   }
   const rx = reactionFor(f.data, d6);
   const kind = rx.name.toLowerCase();
@@ -464,6 +631,19 @@ export function bossRoll(f, d6) {
     const rage = raging(f);
     const base = f.boss.damage * (rage ? 2 : 1);
     const chunk = f.boss.summonCards * f.boss.perCard;
+    // Coil is a Summon that also strikes, so it obeys the Summon rule it is
+    // built on: a boss cannot carve out more wall than it has. Without this it
+    // took the body straight past zero, and since bossDown became body-only
+    // (2026-08-30) that left the boss dead by the rule with the fight still
+    // running: measured at 7.5% of level 2 fights, a tenth of which the player
+    // then LOST to a boss that had already fallen. A negative body also made
+    // bossWall repeat() a life card a negative number of times, which throws,
+    // takes renderFight down, and (because events.js saves before it renders)
+    // persists the unrenderable run to localStorage. One missing guard.
+    if (sig.id === 'coil' && !(f.boss.body > chunk && f.boss.minions.length < 3)) {
+      f.pending = { roll: d6, kind: 'strike', dmg: base, rage, at: aimedAtAlly(f, 'strike') ? 'ally' : 'hero', name: 'Strike' };
+      return f.pending;
+    }
     const dmg = sig.id === 'stormbreak' ? base * 2 : sig.id === 'hoard' ? base : 0;
     f.pending = { roll: d6, kind: 'signature', sig: sig.id, dmg, chunk, rage, at: 'hero', name: sig.name };
     return f.pending;
@@ -525,7 +705,7 @@ export function resolveBoss(f, { barrier = false, cover = false } = {}) {
     switch (p.kind) {
       case 'brace': f.boss.braced = true; say(f, 'The boss Braces: no damage, and it halves what it takes until the end of your next turn.', 'boss'); break;
       case 'summon': {
-        f.boss.body -= p.chunk; f.boss.minions.push({ hp: p.chunk, max: p.chunk });
+        f.boss.body = Math.max(0, f.boss.body - p.chunk); f.boss.minions.push({ hp: p.chunk, max: p.chunk });
         say(f, `The boss Summons: ${p.chunk} of its life moves under a minion.`, 'boss'); break;
       }
       case 'signature': {
@@ -535,7 +715,7 @@ export function resolveBoss(f, { barrier = false, cover = false } = {}) {
             say(f, 'Skitter: it darts aside, no damage, and it is off balance. Your next landed hit deals +25.', 'boss');
             break;
           case 'coil': {
-            f.boss.body -= p.chunk; f.boss.minions.push({ hp: p.chunk, max: p.chunk });
+            f.boss.body = Math.max(0, f.boss.body - p.chunk); f.boss.minions.push({ hp: p.chunk, max: p.chunk });
             say(f, `Coil: ${p.chunk} of its life moves under a minion, and the minion strikes at once.`, 'boss');
             take(f, UNIT, raging(f));
             break;

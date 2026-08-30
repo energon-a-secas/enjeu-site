@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { useCards } from '../js/data/cards.js';
-import { newFight, legalAttacks, attack, reroll, hide, endTurn, bossRoll, resolveBoss, take, playAdvantage, ready, spent, broken, bossHp, bossDown, effectiveStep, reviveStep, attemptRevive, canRevive, bossFaceDamage, MAX_ROUNDS } from '../js/game/engine.js';
+import { newFight, legalAttacks, attack, reroll, hide, endTurn, bossRoll, resolveBoss, take, playAdvantage, ready, spent, broken, bossHp, bossDown, effectiveStep, reviveStep, attemptRevive, canRevive, bossFaceDamage, attackDamage, MAX_ROUNDS, REVIVE_RETURNS, reviveReturns, canBreak, breakPart, breakStepFor, breakCost, DM_DEFAULTS } from '../js/game/engine.js';
 import { affordable, choose, pKill, wantsBarrier, STYLES } from '../js/game/strategies.js';
 import { runCell, levels, STRIKE, FOCUS, ALL_IN, TIER } from '../js/game/sim.js';
 import { reattach } from '../js/game/run.js';
@@ -94,7 +94,7 @@ test('Brace halves the next turn in rulebook mode, never in legacy mode', () => 
   }
 });
 
-test('Summon moves 2 x per-card off the body (legacy: flat 100); capped at 3 minions; boss falls only when all cards are gone', () => {
+test('Summon moves 2 x per-card off the body (legacy: flat 100); capped at 3 minions; the boss falls on its body alone and its minions scatter', () => {
   // Every boss life card is 100 since 2026-08-28, so two of them is 200 at every
   // level. That uniformity is the point of the change: a minion is the same size
   // wherever you meet it, and the player never divides.
@@ -102,8 +102,10 @@ test('Summon moves 2 x per-card off the body (legacy: flat 100); capped at 3 min
   endTurn(f); bossRoll(f, 4); resolveBoss(f);
   assert.equal(f.boss.minions.length, 1); assert.equal(f.boss.minions[0].hp, 200); assert.equal(f.boss.body, 200);
   assert.equal(bossHp(f), 400);
+  // The rule the first playtest asked for: the wall is the boss. Take the last
+  // card off it and the fight is over, whatever is still standing beside it.
   f.boss.body = 0;
-  assert.equal(bossDown(f), false, 'a minion still carries the boss\'s life');
+  assert.equal(bossDown(f), true, 'the body IS the boss');
   const g = basic({ legacy: true, boss: data.byId['boss-um'] });
   endTurn(g); bossRoll(g, 4); resolveBoss(g);
   assert.equal(g.boss.minions[0].hp, 100, 'legacy: sim.py moves a flat 100');
@@ -117,7 +119,22 @@ test('Summon moves 2 x per-card off the body (legacy: flat 100); capped at 3 min
   endTurn(h);
   const p = bossRoll(h, 4);
   assert.equal(p.kind, 'strike', 'a fourth Summon Strikes instead');
+  // And when the body goes, the three of them leave rather than fight on. The
+  // board reads the array, so a minion left in it is a figure still on the table.
+  h.phase = 'act';
+  attack(h, legalAttacks(h).find((a) => a.id === 'all-in'), { bet: 4, target: 'body', roll: 20 });
+  h.boss.body = 0; dealBodyOut(h);
+  assert.equal(h.phase, 'won');
+  assert.deepEqual(h.boss.minions, [], 'the minions scatter with the boss');
+  assert.ok(h.log.some((l) => l.text === 'Its minions scatter.'), 'and the table is told');
 });
+
+/** Knock the last point off the body through the engine's own damage path. */
+function dealBodyOut(f) {
+  f.boss.body = 1; f.phase = 'act'; f.actionsLeft = 3;
+  const c = f.hero.pool.find((x) => x.st !== 'ready'); if (c) c.st = 'ready';
+  attack(f, legalAttacks(f).find((a) => a.id === 'strike'), { target: 'body' });
+}
 
 test('a minion strikes each round for 25; felling it stops that, and a Necromancer pockets a card', () => {
   const f = basic({ hero: { element: 'fire', klass: 'necromancer', pool: ['fire', 'fire', 'fire', 'fire'], attacks: [STRIKE, FOCUS, ALL_IN] } });
@@ -439,8 +456,15 @@ test('Second Wind: first comeback free, then the ladder climbs, and it resets ea
   assert.equal(f.phase, 'down', 'not lost yet');
   const r1 = attemptRevive(f, {});
   assert.equal(r1.ok, true); assert.equal(r1.step, null);
-  assert.equal(ready(f), 2, 'back up with 2 cards');
+  assert.equal(ready(f), 4, 'the first rescue is a real one: four cards back');
   assert.notEqual(f.phase, 'lost');
+
+  // Two ladders climb together: the check gets harder AND the rescue gets
+  // thinner, so falling over cannot be farmed.
+  assert.deepEqual(REVIVE_RETURNS, [4, 3, 2, 1]);
+  const back = [];
+  for (let n = 0; n < 6; n++) { const g = basic({ secondWind: true }); g.hero.revives = n; back.push(reviveReturns(g)); }
+  assert.deepEqual(back, [4, 3, 2, 1, 1, 1], 'it thins to one and never to none');
 
   // the ladder from here: Sure, Even, Hard, Wild, then Wild forever
   assert.equal(reviveStep(f), 'sure');
@@ -649,6 +673,186 @@ test('Taunt: the foretold die binds bossRoll, and choose() spends the knowledge'
   endTurn(f); bossRoll(f, 6);
   assert.equal(f.pending.roll, 1, 'the boss is bound by the die everyone saw');
   assert.equal(f.foretold, null, 'and the foretelling is spent');
+});
+
+// ── Order of actions, and the parts you knock off ────────────
+test('Run halves every attack that follows it in the same turn, which is why Run goes last', () => {
+  const f = basic();
+  const run = legalAttacks(f).find((a) => a.id === 'run');
+  const focus = f.hero.attacks.find((a) => a.id === 'focus');
+  assert.equal(attackDamage(f, focus, 1), 75, 'at full weight, out in the open');
+  attack(f, run, {});
+  assert.equal(f.hero.hidden, true);
+  assert.equal(attackDamage(f, focus, 1), 25, 'from cover it is halved, to the nearest 25');
+  // The preview the board shows is this same function, so the number a player
+  // reads under a queued step is already the halved one.
+  const before = f.boss.body;
+  attack(f, focus, { bet: 1, roll: 20 });
+  assert.equal(before - f.boss.body, 25, 'and that is what actually lands');
+
+  // Hit first, then hide: the whole tactic, and the reason order is a choice.
+  const g = basic();
+  attack(g, g.hero.attacks.find((a) => a.id === 'focus'), { bet: 1, roll: 20 });
+  attack(g, legalAttacks(g).find((a) => a.id === 'run'), {});
+  assert.equal(400 - g.boss.body, 75, 'the same two cards, the other way round, deal three times as much');
+  assert.equal(g.hero.hidden, true, 'and you are still hidden when the boss looks');
+
+  // legacy is the sim-parity layer and has never heard of this rule.
+  const h = basic({ legacy: true });
+  h.hero.hidden = true;
+  assert.equal(attackDamage(h, h.hero.attacks.find((a) => a.id === 'focus'), 1), 75);
+});
+
+test('a break needs a landed attack to hang off, and closes with the turn', () => {
+  const f = basic();
+  assert.deepEqual({ ...DM_DEFAULTS }, { style: 'assisted', cap: 2, step: 'hard', wound: 50, cripple: 25 });
+  assert.equal(canBreak(f), false, 'nothing has landed yet');
+  attack(f, legalAttacks(f).find((a) => a.id === 'strike'), { target: 'body' });
+  assert.equal(canBreak(f), true, 'a landed Strike opens the window');
+  assert.throws(() => breakPart(f, { reward: 'wound', roll: 20 }) && breakPart(f, { reward: 'wound', roll: 20 }),
+    /nothing to break yet/, 'one attack, one break: the window closes behind it');
+  // A miss opens nothing at all.
+  const g = basic();
+  attack(g, g.hero.attacks.find((a) => a.id === 'focus'), { bet: 1, roll: 1 });
+  assert.equal(canBreak(g), false, 'a miss is not a place to aim');
+  // And the window does not survive the turn it was opened in.
+  const h = basic();
+  attack(h, legalAttacks(h).find((a) => a.id === 'strike'), { target: 'body' });
+  endTurn(h);
+  assert.equal(canBreak(h), false);
+});
+
+test('the DM dial changes permission, not damage: friendly grants, assisted checks, hardcore charges an action', () => {
+  const opened = (dm) => { const f = basic({ dm }); attack(f, legalAttacks(f).find((a) => a.id === 'strike'), { target: 'body' }); return f; };
+
+  const friendly = opened({ style: 'friendly' });
+  assert.equal(breakStepFor(friendly), null, 'no check to make');
+  assert.equal(breakCost(friendly), 0);
+  assert.equal(breakPart(friendly, { reward: 'wound', roll: 1 }).ok, true, 'a 1 on the die still breaks it');
+
+  const assisted = opened({ style: 'assisted' });
+  assert.equal(breakStepFor(assisted), 'hard');
+  assert.equal(breakPart(assisted, { reward: 'wound', roll: 1 }).ok, false, 'Hard on a d20 needs 16+');
+  assert.equal(assisted.boss.breaks, 0, 'a failed break takes no part off');
+
+  const hard = opened({ style: 'hardcore' });
+  assert.equal(breakStepFor(hard), 'wild', 'one rung harder than the dial');
+  assert.equal(breakCost(hard), 1);
+  const left = hard.actionsLeft;
+  breakPart(hard, { reward: 'wound', roll: 20 });
+  assert.equal(hard.actionsLeft, left - 1, 'and it competes with the attack it would have paid for');
+
+  // The step itself is a dial, not a constant.
+  const soft = opened({ style: 'assisted', step: 'sure' });
+  assert.equal(breakStepFor(soft), 'sure');
+  // cap 0 turns the whole system off, which is what a table that does not want
+  // it should be able to do without a second rule.
+  const off = opened({ cap: 0 });
+  assert.equal(canBreak(off), false);
+});
+
+test('the three break rewards each do one thing, and the cap holds', () => {
+  const opened = (dm = {}) => { const f = basic({ dm: { style: 'friendly', ...dm } }); attack(f, legalAttacks(f).find((a) => a.id === 'strike'), { target: 'body' }); return f; };
+
+  const wound = opened();
+  const body = wound.boss.body;
+  assert.equal(breakPart(wound, { reward: 'wound' }).ok, true);
+  assert.equal(body - wound.boss.body, 50, 'a wound tears the dial off its life');
+
+  const crippled = opened();
+  assert.equal(crippled.boss.damage, 50);
+  breakPart(crippled, { reward: 'cripple' });
+  assert.equal(crippled.boss.damage, 25, 'crippling takes 25 off what it deals');
+  attack(crippled, legalAttacks(crippled).find((a) => a.id === 'strike'), { target: 'body' });
+  breakPart(crippled, { reward: 'cripple' });
+  assert.equal(crippled.boss.damage, 25, 'and it never crosses zero: a boss always deals something');
+
+  const trophy = opened();
+  const r = breakPart(trophy, { reward: 'trophy' });
+  assert.equal(trophy.hero.rune, 1, 'one automatic check, which every mode can pay');
+  assert.equal(r.draw, 1, 'and the runner draws where there is a deck to draw from');
+
+  // The cap is per fight, and it is the dial's own number.
+  const capped = opened({ cap: 1 });
+  breakPart(capped, { reward: 'wound' });
+  attack(capped, legalAttacks(capped).find((a) => a.id === 'strike'), { target: 'body' });
+  assert.equal(canBreak(capped), false, 'one part is all this table allows');
+
+  // Nothing about breaks reaches the simulator's parity layer.
+  const legacy = basic({ legacy: true, dm: { style: 'friendly' } });
+  attack(legacy, legalAttacks(legacy).find((a) => a.id === 'strike'), { target: 'body' });
+  assert.equal(canBreak(legacy), false);
+  assert.throws(() => breakPart(legacy, {}), /nothing to break yet/);
+});
+
+test('a Coil the boss cannot afford is a Strike: nothing carves the wall past zero', () => {
+  // The defect this pins: Coil subtracted its chunk straight off the body with
+  // no affordability check. Once the boss started falling on its body ALONE,
+  // that left the fight dead by the rule and still running, and a negative body
+  // took the board's renderer down with it.
+  const f = basic({ level: 2, boss: data.byId['boss-l'] });
+  f.boss.body = 200;                                  // exactly the chunk
+  endTurn(f);
+  const p = bossRoll(f, 4);
+  assert.equal(p.kind, 'strike', 'it cannot afford to coil, so it hits you instead');
+  assert.equal(p.name, 'Strike');
+  resolveBoss(f);
+  assert.equal(f.boss.body, 200, 'and the wall is untouched');
+  assert.deepEqual(f.boss.minions, []);
+
+  // Exhaustive: no body value on a coiling boss can produce a body below zero,
+  // or a body at zero with the fight still going.
+  for (let body = 25; body <= 700; body += 25) {
+    for (let minions = 0; minions <= 3; minions++) {
+      const g = basic({ level: 2, boss: data.byId['boss-l'] });
+      g.boss.body = body;
+      for (let m = 0; m < minions; m++) g.boss.minions.push({ hp: 200, max: 200 });
+      endTurn(g);
+      if (g.phase !== 'boss') continue;
+      bossRoll(g, 4); resolveBoss(g);
+      assert.ok(g.boss.body >= 0, `body ${body}, ${minions} minions: wall went to ${g.boss.body}`);
+      assert.equal(bossDown(g) && !['won', 'lost', 'stall'].includes(g.phase), false,
+        `body ${body}, ${minions} minions: dead by the rule and still fighting`);
+    }
+  }
+  // Taunt has to price the downgrade too, or the card it costs an action to play lies.
+  const h = basic({ level: 2, boss: data.byId['boss-l'] });
+  h.boss.body = 200;
+  assert.equal(bossFaceDamage(h, 4), h.boss.damage, 'a foretold Coil that cannot coil is a Strike');
+  h.boss.body = 700;
+  assert.equal(bossFaceDamage(h, 4), 25, 'and a real one is the minion\u2019s single 25');
+});
+
+test('an attack from cover is halved but never erased: a Hidden Strike still lands its 25', () => {
+  const f = basic();
+  const strike = f.hero.attacks.find((a) => a.id === 'strike');
+  assert.equal(attackDamage(f, strike, 0), 25);
+  attack(f, legalAttacks(f).find((a) => a.id === 'run'), {});
+  // halve() floors to a whole 25, so the naive halving of 25 is 0: the card that
+  // always lands landed for nothing and said "Strike: lands." with no number.
+  assert.equal(attackDamage(f, strike, 0), 25, 'half, or one card, whichever is more');
+  const before = f.boss.body;
+  const r = attack(f, strike, { target: 'body' });
+  assert.equal(before - f.boss.body, 25);
+  assert.equal(r.dealt, 25);
+  assert.equal(f.hero.breakWindow, true, 'and it is a landed hit, so it opens the window');
+  // The rule still bites where there is something to take: Focus 75 -> 25.
+  assert.equal(attackDamage(f, f.hero.attacks.find((a) => a.id === 'focus'), 1), 25);
+});
+
+test('a Hunter\u2019s reroll is priced as the attack it repeats, and opens the break window', () => {
+  const f = basic({ hero: { element: 'fire', klass: 'hunter', pool: ['fire', 'fire', 'fire', 'fire'], attacks: data.attack } });
+  const focus = f.hero.attacks.find((a) => a.id === 'focus');
+  attack(f, focus, { bet: 1, roll: 1 });                 // a miss, made in the open
+  assert.equal(f.hero.breakWindow, false, 'a miss is not somewhere to aim');
+  attack(f, legalAttacks(f).find((a) => a.id === 'run'), {});   // now hide
+  const before = f.boss.body;
+  const r = reroll(f, { roll: 20 });
+  assert.equal(r.hit, true);
+  assert.equal(before - f.boss.body, 75, 'the reroll repeats the attack, at the price it was made at');
+  assert.equal(r.dealt, 75);
+  assert.equal(f.hero.hidden, true, 'and pricing it does not spend the hiding');
+  assert.equal(f.hero.breakWindow, true, 'a rerolled hit is a landed hit');
 });
 
 console.log(`\n${passed} passed, ${failed} failed`);

@@ -92,10 +92,14 @@ export const ladderForAid = (data) => ladderTable(data?.ladder || DEFAULT_LADDER
  * Spanish sheet and Brace on an English one, and matches whichever rulebook is
  * on the table. The card renderer itself never imports the string table.
  */
-export const aidFor = (data, names = null) => ({
+export const aidFor = (data, names = null, breakNames = null, dmNames = null) => ({
   ladder: ladderForAid(data),
   reactions: data?.boss_reaction || [],
   reactionNames: names,
+  // The Break Points card draws itself from the same dial the engine defaults
+  // from, so a table that reads 'Wound 50' off the card is reading cards.json.
+  breaks: data?.break_points || null,
+  breakNames, dmNames,
 });
 
 /** Worst gap between stated and real odds, per die, for the fidelity list. */

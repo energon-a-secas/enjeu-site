@@ -165,7 +165,7 @@ test('Second Wind: the run puts the card in play and the fight reaches Down inst
   assert.equal(reviveStep(f), null, 'the first comeback each level is free');
 });
 
-test('Second Wind: the first comeback is free, returns 2 Broken as Ready, then the ladder climbs', () => {
+test('Second Wind: the first comeback is free, returns 4 Broken as Ready, then both ladders climb', () => {
   const run = newRun(data, { kind: 'first', element: 'fire', die: 'd20', mode: 'standard', secondWind: true });
   startLevel(run, data);
   const f = run.fight;
@@ -175,8 +175,8 @@ test('Second Wind: the first comeback is free, returns 2 Broken as Ready, then t
 
   click(s, 'revive');                              // free: no die is thrown
   assert.equal(f.hero.revives, 1);
-  assert.equal(ready(f), 2, 'back up with 2 cards standing');
-  assert.equal(broken(f), 2);
+  assert.equal(ready(f), 4, 'the first rescue stands all four back up');
+  assert.equal(broken(f), 0);
   assert.equal(f.phase, 'act');
   assert.equal(reviveStep(f), 'sure', 'the ladder starts climbing for the next one');
 
@@ -185,7 +185,7 @@ test('Second Wind: the first comeback is free, returns 2 Broken as Ready, then t
   run.ui.typed = 6;                                // Sure on d20 needs 6+, typed so it is not a coin flip
   click(s, 'revive');
   assert.equal(f.hero.revives, 2);
-  assert.equal(ready(f), 2);
+  assert.equal(ready(f), 3, 'the second is thinner: three');
   assert.equal(reviveStep(f), 'even', 'and again');
 
   take(f, 5 * 25, true);
@@ -585,9 +585,193 @@ test('draft and class picks need a confirm; undo-last is a visible button', () =
 });
 
 
+// ── The boss's die, and the parts you knock off ──────────────
+test("the boss's turn is a popup with the THROW as its primary, and the six faces underneath", () => {
+  const run = newRun(data, { kind: 'first', element: 'fire', die: 'd20', mode: 'standard', secondWind: true });
+  startLevel(run, data);
+  const s = { cards: data, run, view: 'play', play: { tourDone: true } };
+  click(s, 'end-turn');
+  assert.equal(run.fight.phase, 'boss');
+
+  let html = renderPlay(s);
+  // The defect this replaced: the boss's die was plain in-flow markup and on a
+  // 360x740 phone the face it rolled, and the only button that continues the
+  // game, were 169px below the fold. A fixed dialog is the fix.
+  assert.ok(html.includes('rm-backdrop'), 'the boss rolls inside the same popup the hero does');
+  assert.ok(html.includes('die-stage'), 'and the die is on a stage, not a bare numeral');
+  const panel = () => renderPlay(s).slice(renderPlay(s).indexOf('<div class="panel actions">'));
+  const before = panel();
+  assert.equal(before.split('btn--primary').length - 1, 1, 'one primary while it waits to be thrown');
+  // The throw is the primary; setting the result by hand is the quiet row.
+  const primaryAt = before.indexOf('btn--primary');
+  assert.ok(before.slice(primaryAt, primaryAt + 240).includes('play-boss-roll'), 'the primary THROWS the die');
+  assert.ok(before.indexOf('play-boss-face') > primaryAt, 'the six faces come after it');
+
+  click(s, 'boss-face', { face: '5' });
+  const after = panel();
+  assert.ok(after.includes('is-tossed'), 'the die tumbles on the render the throw caused');
+  // ...and only on that one. render() replaces the markup wholesale, so a CSS
+  // animation left ungated replays on every unrelated click (toggling the log,
+  // for one) and the boss appears to re-throw a die it has already thrown.
+  click(s, 'log');
+  assert.equal(panel().includes('is-tossed'), false, 'and not again on an unrelated re-render');
+  assert.equal(after.split('btn--primary').length - 1, 1, 'and one primary once it has landed');
+  assert.ok(after.includes('die-stage'), 'the face it rolled is on the stage');
+  assert.ok(!after.includes('[play.'), 'no unresolved string key in either state');
+});
+
+test('breaking a part: the row appears only in the window a landed hit opens, and buys one thing', () => {
+  const run = newRun(data, { kind: 'first', element: 'fire', die: 'd20', mode: 'standard', secondWind: true, dm: { style: 'friendly', cap: 2, step: 'hard', wound: 50, cripple: 25 } });
+  startLevel(run, data);
+  const f = run.fight;
+  const s = { cards: data, run, view: 'play', play: { tourDone: true } };
+  assert.equal(f.dm.style, 'friendly', 'the table\u2019s dial reaches the fight');
+  assert.ok(!renderPlay(s).includes('play-break'), 'nothing has landed, so there is nowhere to aim');
+
+  click(s, 'pick', { id: 'strike' });
+  click(s, 'resolve-plan');
+  click(s, 'resolve-fast');
+  // The offer is in the ledger, one beat after the hit that opened it.
+  const ledger = renderPlay(s);
+  assert.ok(ledger.includes('data-action="play-break"'), 'a landed Strike opens the window');
+  for (const r of ['wound', 'cripple', 'trophy']) assert.ok(ledger.includes(`data-reward="${r}"`), r);
+  assert.equal(ledger.slice(ledger.indexOf('<div class="panel actions">')).split('btn--primary').length - 1, 1,
+    'the three rewards are not primaries: Enter still belongs to the turn');
+
+  click(s, 'resolve-close');
+  // On the board it is ONE line and one button, because the full picker made the
+  // pinned panel taller than a phone and buried the arena behind it.
+  const board = renderPlay(s);
+  assert.ok(board.includes('data-action="play-break-open"'), 'the board invites, it does not pick');
+  assert.equal(board.includes('data-reward="wound"'), false, 'the picker is not on the board');
+  click(s, 'break-open');
+  const dialog = renderPlay(s);
+  assert.ok(dialog.includes('rm-backdrop') && dialog.includes('data-reward="wound"'), 'and the dialog holds it');
+
+  const body = f.boss.body;
+  click(s, 'break', { reward: 'wound' });
+  assert.equal(body - f.boss.body, 50, 'a Wound tears the dial off its life');
+  assert.equal(f.boss.breaks, 1);
+  // The break reports its OWN roll and its own effect, never the last attack's.
+  assert.equal(s.run.ui.fx, 'break-ok', 'a break is not a hit');
+  assert.equal(s.run.ui.dealt, 50, 'and the number over the boss is the break\u2019s own');
+  assert.ok(s.run.ui.breakRoll && s.run.ui.breakRoll.ok === true);
+  click(s, 'break-close');
+  assert.ok(!renderPlay(s).includes('data-action="play-break-open"'), 'and the window closes behind it');
+
+  // Declining closes the window too, rather than leaving the prompt up.
+  click(s, 'pick', { id: 'strike' });
+  click(s, 'resolve-plan'); click(s, 'resolve-fast'); click(s, 'resolve-close');
+  assert.ok(renderPlay(s).includes('data-action="play-break-open"'));
+  click(s, 'break-skip');
+  assert.ok(!renderPlay(s).includes('data-action="play-break-open"'), 'saying no puts it away');
+});
+
+test('break points are opt-in: the dial is folded away until the table switches it on', () => {
+  const s = { cards: data, run: null, view: 'play', setupStep: 2, runKind: 'first', element: 'fire',
+    die: 'd20', mode: 'standard', secondWind: true, simple: true,
+    dm: { on: false, style: 'assisted', cap: 2, step: 'hard', wound: 50, cripple: 25 } };
+  let html = renderPlay(s);
+  // A family meets this game without break points at all. The switch is on the
+  // settings slide; everything it controls stays out of sight until it is on.
+  assert.ok(html.includes('data-change="play-dm-on"'), 'the switch is on the settings slide');
+  assert.equal(html.includes('data-action="play-dm-style"'), false, 'and the dial is not, while it is off');
+  assert.ok(!html.includes('[play.'), 'no unresolved string key on the switch');
+
+  onPlayAction(s, 'dm-on', { dataset: {}, checked: true }, null);
+  assert.equal(s.dm.on, true);
+  html = renderPlay(s);
+  assert.ok(html.includes('data-action="play-dm-style"'), 'switching it on reveals the three styles');
+  assert.ok(html.includes('data-action="play-dm-cap"'), 'and the cap, down to zero');
+  assert.ok(html.includes('pips pips--risk'), 'each style shows the check it asks for as dots, not a word');
+
+  click(s, 'dm-style', { style: 'hardcore' });
+  assert.equal(s.dm.style, 'hardcore');
+  click(s, 'dm-cap', { cap: '0' });
+  assert.equal(s.dm.cap, 0, 'zero turns the whole rule off from inside the dial too');
+  onPlayAction(s, 'dm-num', { dataset: { key: 'wound' }, value: '90' }, null);
+  assert.equal(s.dm.wound, 100, 'numbers snap to a whole 25, because every number in this game does');
+
+  // And a run started with the switch off carries a cap of 0, so canBreak is
+  // false in the fight no matter what the cap was left at.
+  s.dm = { on: false, style: 'assisted', cap: 2, step: 'hard', wound: 50, cripple: 25 };
+  click(s, 'start');
+  assert.equal(s.run.fight.dm.cap, 0, 'off means off, all the way into the fight');
+});
+
+test('the three ways in are three distinct cards, each saying how long it is', () => {
+  const s = { cards: data, run: null, view: 'play', setupStep: 0, runKind: 'first', element: 'fire',
+    die: 'd20', mode: 'standard', secondWind: true, simple: true,
+    dm: { on: false, style: 'assisted', cap: 2, step: 'hard', wound: 50, cripple: 25 } };
+  const html = renderPlay(s);
+  for (const k of ['first', 'quick', 'full']) {
+    assert.ok(html.includes(`data-kind="${k}"`), `${k} is offered`);
+  }
+  // The defect this pins: two panels of identical shape and colour with the same
+  // three lines, which read as one thing and got overlooked.
+  const pipRows = (html.match(/class="kind__pips"/g) || []).length;
+  assert.equal(pipRows, 3, 'each card shows its length as pips');
+  const on = (html.match(/class="kind is-on"/g) || []).length;
+  assert.equal(on, 1, 'exactly one is selected');
+  assert.ok(!html.includes('[play.'), 'no unresolved string key on the menu');
+
+  // The Start button has to name the kind you actually picked. It was written as
+  // a two-way ternary and called a Quick run a Full run the moment there were
+  // three kinds, which the screen showed and no test did.
+  for (const [k, want] of [['first', 'First Game'], ['quick', 'Quick run'], ['full', 'Full run']]) {
+    const start = renderPlay({ ...s, runKind: k, setupStep: 3 });
+    const i = start.indexOf('data-action="play-start"');
+    assert.ok(i > 0, `${k}: no start button`);
+    // 520, not 220: the button opens with an inline SVG glyph and the label is
+    // past it. A window that stops inside the svg tag never sees the words.
+    assert.ok(start.slice(i, i + 520).includes(want), `${k}: the button offers "${want}"`);
+  }
+});
+
+test('the throw door walks the lane a beat at a time, so a card that always works still gets its moment', () => {
+  const s = session(fight());
+  s.play = { tourDone: true };
+  // Focus needs a die; Bubble does not. The defect this pins: the lane swallowed
+  // every dieless step and reported them together, so the Bubble arrived already
+  // resolved, in a list, beside somebody else's roll.
+  click(s, 'pick', { id: 'focus' });
+  click(s, 'pick', { id: 'bubble' });
+  click(s, 'resolve-plan');
+  click(s, 'resolve-throw');
+  const f = s.run.fight, ui = s.run.ui;
+  assert.equal(ui.awaiting, 0, 'it stops on the step that needs a die');
+
+  click(s, 'roll');
+  assert.equal(ui.results.length, 1, 'ONE result so far, not both');
+  assert.equal(ui.at, 1, 'and the lane is parked before the Bubble');
+  let html = renderPlay(s);
+  assert.ok(html.includes('data-action="play-resolve-next"'), 'the player asks for the next beat');
+  assert.equal(html.includes('data-action="play-resolve-close"'), false, 'the lane is not over yet');
+  assert.equal(html.slice(html.indexOf('<div class="panel actions">')).split('btn--primary').length - 1, 1,
+    'still exactly one primary, so Enter is never ambiguous');
+
+  click(s, 'resolve-next');
+  assert.equal(ui.results.length, 2, 'the Bubble lands on its own beat');
+  assert.equal(f.hero.shield, 25, 'and it actually did its job');
+  html = renderPlay(s);
+  assert.ok(html.includes('data-action="play-resolve-close"'), 'now the lane is over');
+  assert.equal(html.includes('data-action="play-resolve-next"'), false);
+
+  // The fast lane still resolves everything in one go: this beat is the throw
+  // door's, and the other door exists precisely for people who do not want it.
+  const q = session(fight());
+  q.play = { tourDone: true };
+  click(q, 'pick', { id: 'focus' });
+  click(q, 'pick', { id: 'bubble' });
+  click(q, 'resolve-plan');
+  click(q, 'resolve-fast');
+  assert.equal(q.run.ui.results.length, 2, 'resolve it all still means all of it');
+});
+
 for (const [name, fn] of queue) {
   try { await fn(); passed++; console.log(`  ok   ${name}`); }
   catch (e) { failed++; console.log(`  FAIL ${name}\n       ${e.message}`); }
 }
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

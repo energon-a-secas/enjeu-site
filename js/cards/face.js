@@ -454,6 +454,50 @@ function aidCard(c, opts) {
       out += numeral((opts.aid?.reactionNames?.[r.id]) || r.name, 314, y + 82, 58, 'start');
       if (i < rows.length - 1) out += `<line x1="40" y1="${y + rowH - 16}" x2="${W - 40}" y2="${y + rowH - 16}" stroke="#ddd6c3" stroke-width="3"/>`;
     });
+  } else if (c.id === 'aid-breaks' && opts.aid?.breaks) {
+    // Break Points. Two blocks: what a break buys, and how hard this table
+    // makes it. Every number is read from cards.json through opts.aid.breaks,
+    // the same row js/game/engine.js defaults from, so the printed card cannot
+    // promise a 50 while the engine tears off a 75. The part itself is never
+    // drawn or named: the boss is somebody's brick tower and the player says
+    // what came off it.
+    //
+    // The vertical rhythm is tight on purpose and every number below is spent.
+    // The first draft laid the three style rows at 96-unit steps from 680 and
+    // put the Hardcore row's baseline at 924 on an 880-unit card: its label,
+    // its pips and its action dot were outside the viewBox and the SVG clipped
+    // them away silently, on screen and in print, in both languages. The card
+    // has 880 units and the layout has to spend them, not overrun them.
+    const bp = opts.aid.breaks;
+    const rewards = [
+      ['break', String(bp.wound), 'wound'],
+      ['trend-down', `-${bp.cripple}`, 'cripple'],
+      ['trophy', '', 'trophy'],
+    ];
+    rewards.forEach(([g, n, id], i) => {
+      const y = 76 + i * 126;
+      out += glyphAt(g, 46, y, 96, { stroke: '#111' });
+      out += numeral((opts.aid?.breakNames?.[id]) || id, 168, y + 58, 54, 'start');
+      if (n) out += numeral(n, W - 46, y + 62, 66, 'end');
+      if (i < rewards.length - 1) out += `<line x1="40" y1="${y + 110}" x2="${W - 40}" y2="${y + 110}" stroke="#ddd6c3" stroke-width="3"/>`;
+    });
+    // The cap, in gold, because it is the one number that is not a reward.
+    const capY = 448;
+    out += `<rect x="42" y="${capY}" width="${W - 84}" height="84" rx="18" fill="#fdf3d3" stroke="${FACE.gold}" stroke-width="6"/>`;
+    out += glyphAt('break', 64, capY + 10, 64, { stroke: '#a16207' });
+    out += numeral(`x${bp.cap}`, W - 64, capY + 60, 58, 'end', '#78350f');
+    // How hard, per style: the pips ARE the answer, and friendly has none
+    // because the grown-up simply says yes.
+    const styles = bp.styles || [];
+    styles.forEach((st, i) => {
+      const y = 556 + i * 98;
+      out += numeral((opts.aid?.dmNames?.[st.id]) || st.name, 46, y + 50, 50, 'start');
+      if (st.check) out += riskPips(st.check, W - 186, y + 10, { r: 11, gap: 30 });
+      else out += `<line x1="${W - 186}" y1="${y + 32}" x2="${W - 126}" y2="${y + 32}" stroke="#a8a29e" stroke-width="6" stroke-linecap="round"/>`;
+      // One dot for the action a hardcore break costs; nothing where it is free.
+      if (st.actions) out += `<circle cx="${W - 66}" cy="${y + 32}" r="15" fill="#111"/>`;
+      else out += `<circle cx="${W - 66}" cy="${y + 32}" r="15" fill="none" stroke="#d6d3d1" stroke-width="5"/>`;
+    });
   } else if (c.id === 'aid-track') {
     // Four bands of 25 and a home for the die that counts hundreds. The bands are
     // 128 units (12.8mm) tall and full width because a real 1x1 brick stands on
@@ -535,7 +579,7 @@ export function cardFace(card, opts = {}) {
     default: body = frame('#fff', '#111', false);
   }
   const label = opts.title ? `<title>${esc(opts.title)}</title>` : '';
-  return `<svg class="sk-card sk-card--${size} ${opts.cls || ''}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(card.name || card.id)}" data-card="${esc(card.id)}">${label}${body}</svg>`;
+  return `<svg class="sk-card sk-card--${size} ${opts.cls || ''}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(opts.title || card.name || card.id)}" data-card="${esc(card.id)}">${label}${body}</svg>`;
 }
 
 /**

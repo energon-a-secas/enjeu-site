@@ -106,43 +106,73 @@ export function renderAbout(s) {
       <p class="panel__lead">${escHtml(t('about.lead'))}</p>
     </header>
 
-    <section class="panel stack stack--tight about-prose">
-      <h2 class="panel__title">${escHtml(t('about.originTitle'))}</h2>
+    <section class="panel stack stack--tight about-prose about-sec">
+      <div class="spine spine--sec" aria-hidden="true"><span>${escHtml(t('about.spine.origin'))}</span></div>
+
+      <div class="about-sec__body">
+
+        <h2 class="panel__title">${escHtml(t('about.originTitle'))}</h2>
       <p>${escHtml(t('about.origin1'))}</p>
       <p>${escHtml(t('about.origin2'))}</p>
       <p>${escHtml(t('about.origin3'))}</p>
+    </div>
     </section>
 
-    <section class="panel stack stack--tight about-prose">
-      <h2 class="panel__title">${escHtml(t('about.secondTitle'))}</h2>
+    <section class="panel stack stack--tight about-prose about-sec">
+      <div class="spine spine--sec" aria-hidden="true"><span>${escHtml(t('about.spine.second'))}</span></div>
+
+      <div class="about-sec__body">
+
+        <h2 class="panel__title">${escHtml(t('about.secondTitle'))}</h2>
       <p>${escHtml(t('about.second1'))}</p>
       <p>${escHtml(t('about.second2'))}</p>
+    </div>
     </section>
 
-    <section class="panel stack stack--tight about-prose">
-      <h2 class="panel__title">${escHtml(t('about.tableTitle'))}</h2>
+    <section class="panel stack stack--tight about-prose about-sec">
+      <div class="spine spine--sec" aria-hidden="true"><span>${escHtml(t('about.spine.table'))}</span></div>
+
+      <div class="about-sec__body">
+
+        <h2 class="panel__title">${escHtml(t('about.tableTitle'))}</h2>
       <p>${escHtml(t('about.table1'))}</p>
       <p>${escHtml(t('about.table2'))}</p>
+    </div>
     </section>
 
-    <section class="panel stack stack--tight about-prose">
-      <h2 class="panel__title">${escHtml(t('about.spellsTitle'))}</h2>
+    <section class="panel stack stack--tight about-prose about-sec">
+      <div class="spine spine--sec" aria-hidden="true"><span>${escHtml(t('about.spine.spells'))}</span></div>
+
+      <div class="about-sec__body">
+
+        <h2 class="panel__title">${escHtml(t('about.spellsTitle'))}</h2>
       <p>${escHtml(t('about.spells1'))}</p>
       <p>${escHtml(t('about.spells2'))}</p>
       <p>${escHtml(t('about.spells3'))}</p>
+    </div>
     </section>
 
-    <section class="panel stack stack--tight about-prose">
-      <h2 class="panel__title">${escHtml(t('about.artTitle'))}</h2>
+    <section class="panel stack stack--tight about-prose about-sec">
+      <div class="spine spine--sec" aria-hidden="true"><span>${escHtml(t('about.spine.art'))}</span></div>
+
+      <div class="about-sec__body">
+
+        <h2 class="panel__title">${escHtml(t('about.artTitle'))}</h2>
       <p>${escHtml(t('about.artLead'))}</p>
       ${artPanel()}
+    </div>
     </section>
 
-    <section class="panel panel--sunk stack stack--tight about-prose">
-      <h2 class="panel__title">${escHtml(t('about.licenceTitle'))}</h2>
+    <section class="panel panel--sunk stack stack--tight about-prose about-sec">
+      <div class="spine spine--sec" aria-hidden="true"><span>${escHtml(t('about.spine.licence'))}</span></div>
+
+      <div class="about-sec__body">
+
+        <h2 class="panel__title">${escHtml(t('about.licenceTitle'))}</h2>
       <p>${escHtml(t('about.licenceLead'))}</p>
       ${licenceTable()}
       <p class="small muted">${escHtml(t('about.licenceNote'))}</p>
+    </div>
     </section>
   </div>`;
 }

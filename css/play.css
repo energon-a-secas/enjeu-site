@@ -384,6 +384,15 @@ button.tbl-slot { cursor: zoom-in; }
 .ac-meta { display: flex; align-items: center; justify-content: center; gap: 3px; flex-wrap: wrap; font-size: 9px; font-weight: 700; color: var(--text-muted); line-height: 1.1; }
 .ac-meta .pips { transform: scale(0.85); }
 .action-card.is-queued { outline: 3px solid var(--gold-deep); outline-offset: 2px; transform: translateY(-4px); }
+/* A queued card carries its OWN patterns forward: the count badge and the risk
+   dots go gold with it, so the hand answers "which of these am I playing, and
+   at what odds" without reading the lane underneath. Hover (or press and hold)
+   opens the inspector, which turns those same patterns into this turn's real
+   numbers: the mode dial and a Roar move the check, Hidden halves the damage. */
+.action-card.is-queued { background: #fdf3d3; }
+.action-card.is-queued .qty { background: var(--gold-deep); color: #fffdf7; border-radius: 999px; padding: 0 6px; }
+.action-card.is-queued .ac-meta { color: var(--text-primary); font-weight: 700; }
+.action-card.is-queued .pips--risk { transform: scale(1.15); transform-origin: left center; }
 .action-card .qty { color: var(--gold-deep); }
 .adv-hand { display: flex; flex-direction: column; gap: 2px; }
 .adv-hand .action-cards { display: flex; flex-wrap: wrap; gap: 6px; --mini-w: calc(var(--hand-w) * 0.62); }
@@ -747,15 +756,18 @@ button.tbl-slot { cursor: zoom-in; }
   position: fixed; inset: 0; z-index: 70;
   background: rgba(50, 42, 26, 0.38);
   display: grid; place-items: center;
-  animation: rm-in 200ms var(--ease-out);
 }
+/* No entry animation, deliberately. render() rebuilds this element on every
+   click, so a fade from transparent replayed every time: throwing a die showed
+   the whole bright page for 200ms and then darkened again, which is what the
+   owner reported as the page refreshing white and hard on the eyes. The scrim
+   is simply there, at one opacity, for as long as the popup is. */
 .rm {
   width: min(520px, calc(100vw - 28px));
   background: var(--surface-1); border: 2px solid var(--border-strong);
   border-radius: var(--radius); padding: 16px 18px;
   box-shadow: 0 18px 50px rgba(40, 32, 16, 0.35);
 }
-@keyframes rm-in { 0% { opacity: 0; } 100% { opacity: 1; } }
 .rm-what { margin: 0 0 10px; display: flex; flex-direction: column; gap: 3px; }
 .rm-what span { font-size: var(--text-sm); color: var(--text-muted); }
 .rm-row { margin-top: 12px; }
@@ -817,3 +829,260 @@ button.tbl-slot { cursor: zoom-in; }
 /* 2d6 / 3d6 patter in, not in lockstep. */
 .die-toss--b { animation-delay: 80ms; animation-duration: 690ms; }
 .die-toss--c { animation-delay: 160ms; animation-duration: 760ms; }
+
+/* ── Break points, and the dial that prices them ────────────
+   RULES.md section 7. The row is only ever on screen inside the window a
+   landed attack opens, so it is styled as a prompt rather than as a toolbar:
+   it appears, you say what you went for, you pick, it goes. */
+.band--break { border-top: 1px solid var(--gold-deep); padding-top: 5px; }
+.brk { display: flex; flex-direction: column; gap: 6px; }
+.brk-picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }
+.brk-pick {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer;
+  border: 2px solid var(--gold-deep); background: #fffdf7; font: inherit; text-align: left;
+}
+.brk-pick svg { color: var(--gold-deep); }
+.brk-pick b { font-size: var(--text-sm); }
+.brk-pick small { color: var(--text-secondary); font-size: 11px; line-height: 1.25; }
+.brk-pick:hover, .brk-pick:focus-visible { background: #fdf3d3; transform: translateY(-1px); }
+
+.dm-dial { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-3); border: 2px solid var(--border); border-radius: var(--radius); }
+.dm-styles { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-3); }
+.dm-style {
+  display: flex; flex-direction: column; gap: 3px; align-items: flex-start;
+  padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer;
+  border: 2px solid var(--border); background: var(--surface-1); font: inherit; text-align: left;
+}
+.dm-style.is-on { border-color: var(--gold-deep); background: #fdf3d3; }
+.dm-style small { line-height: 1.3; }
+
+/* The boss's popup: one button, centred, because there is exactly one thing
+   to do and a lone control floating left reads as half a row. */
+.rm-row--one { justify-content: center; }
+.rm--boss .boss-ask { margin-top: 6px; }
+.brk--modal { border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; }
+
+/* ── The phone ──────────────────────────────────────────────
+   Measured 2026-08-30 on a real page at 390x844 and 360x740. Four things were
+   wrong and three of them were dead CSS: rules that were written, are correct,
+   and never applied. They are re-stated here, at the bottom of the file and at
+   a specificity that does not depend on source order, which is what defeated
+   two of them the first time. */
+@media (max-width: 900px) {
+  /* 1. The action panel began 45px BELOW the fold at 360x740: the board opened
+        with no hand, no plan and no button on screen, and the arena above it
+        was 537px of figures. Pinning the panel is the fix that also makes the
+        plan lane's sticky work, since sticky can only pin inside a containing
+        block the viewport can see. */
+  .fight-main > .panel.actions {
+    /* min-width:0 because .fight-main is a GRID and a grid item defaults to
+       min-width:auto: the panel measured 552px inside a 328px track and took
+       the page sideways with it. Releasing the flex chain below was not enough;
+       the growth simply happened one level up. */
+    min-width: 0;
+    position: sticky; bottom: 0; z-index: 3;
+    background: var(--surface-1);
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    box-shadow: 0 -10px 20px -14px rgba(0, 0, 0, 0.45);
+  }
+  /* The lane no longer pins itself: its panel is the thing that is pinned. */
+  .board-fit .plan-actions { position: static; padding-bottom: 0; }
+
+  /* 2. The arena yields instead of the panel. cqh cannot be used here
+        (container-type is normal below the lock), so the figures take a flat
+        size and the wall takes a flat cap. */
+  .board-fit .duel { --fig: 64px; gap: 6px; padding: 6px 8px; }
+  .board-fit .duel .bubble { max-width: none; align-self: stretch; }
+  .board-fit .wall .lc, .board-fit .wall .lc-part, .board-fit .wall .lc-falls { max-width: 28px; }
+
+  /* 3. The hand row: the ">=901px" grid was declared later in the file at equal
+        specificity, so the phone got a three-column grid, the die readout was
+        auto-placed outside its own parent, 36px of it hung off the right edge
+        and the page scrolled sideways. Specificity, not order, decides now. */
+  .board-fit .hand-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-3); }
+  .board-fit .hand-row > .die-cell { flex: none; }
+
+  /* 5. The hand scrolls sideways instead of wrapping. Measured: six cards at
+        84px wrapped to two rows, the panel came to 539px of a 740px screen,
+        and the pinned panel then covered the boss it was pinned in front of.
+        One row of 78px cards is 150px, and the arena gets its 190px back.
+        The cards you have QUEUED carry a gold ring, so a card scrolled out of
+        sight is still accounted for on the lane underneath. */
+  .board-fit { --hand-w: 78px; }
+  /* min-width:0 is the load-bearing line. A flex item defaults to
+     min-width:auto, so a nowrap row of six cards sets its own base size from
+     its content: the scroller measured 528px inside a 304px column and the
+     PAGE scrolled sideways instead of the strip. Every ancestor between here
+     and .fight-main needs the same release or the growth just moves up a level. */
+  .board-fit .fight-main, .board-fit .band, .board-fit .hand-row { min-width: 0; }
+  .board-fit .hand-row > .hand-attacks {
+    width: 100%; min-width: 0; max-width: 100%; order: -1;
+    flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain;
+    justify-content: flex-start; scroll-snap-type: x proximity;
+    padding-bottom: 3px;
+  }
+  .board-fit .hand-attacks .action-card { flex: none; scroll-snap-align: start; }
+
+  /* 4. Nothing scrolls under an open dialog. Without this a touch-drag on the
+        backdrop scrolled the board out from under a modal marked aria-modal. */
+  /* 6. The three rewards stay a ROW on a phone, and drop their hint lines.
+        Stacking them read better and measured 289px, which pushed the pinned
+        panel past the viewport and put the whole prompt below the fold: the
+        exact defect the pinning exists to prevent. The hint is one hold away
+        on the card itself, and the reward names are the short words. */
+  .brk-picks { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .brk-pick { align-items: center; text-align: center; gap: 2px; padding: 7px 4px; min-height: 46px; }
+  .brk-pick small { display: none; }
+  .brk-pick b { font-size: 12px; }
+  /* Inside the dialog there is room, so the hints come back. */
+  .brk--modal .brk-picks { grid-template-columns: 1fr; }
+  .brk--modal .brk-pick { flex-direction: row; align-items: center; text-align: left; gap: var(--space-3); }
+  .brk--modal .brk-pick small { display: block; flex: 1; }
+}
+
+/* The dialog owns the screen while it is up, at every width. */
+html[data-view="play"] body:has(.rm-backdrop) { overflow: hidden; }
+
+/* ── The way in ─────────────────────────────────────────────
+   Three cards, not two panels of the same shape in the same colour. The owner
+   read the old pair as one thing and said so: a menu you can overlook is not a
+   menu. What separates them is LENGTH, because that is the question actually
+   being asked at a table on a Saturday, so the pips and the clock come first
+   and each card takes its own accent from the boss it ends on. */
+.kind-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: var(--space-4); }
+.kind {
+  --kind-accent: var(--border-strong);
+  display: grid; grid-template-rows: auto auto auto auto 1fr; gap: 4px;
+  padding: var(--space-4); text-align: left; font: inherit; cursor: pointer;
+  border: 2px solid var(--border); border-radius: var(--radius);
+  background: var(--surface-1); border-top: 5px solid var(--kind-accent);
+  transition: transform 140ms var(--ease-out), box-shadow 140ms var(--ease-out), border-color 140ms var(--ease-out);
+}
+.kind[data-kind-id="first"] { --kind-accent: #16a34a; }
+.kind[data-kind-id="quick"] { --kind-accent: #2563eb; }
+.kind[data-kind-id="full"]  { --kind-accent: #b91c1c; }
+.kind:hover, .kind:focus-visible { transform: translateY(-3px); box-shadow: 0 10px 22px -14px rgba(40, 32, 16, 0.55); }
+.kind.is-on { border-color: var(--kind-accent); background: color-mix(in srgb, var(--kind-accent) 7%, var(--surface-1)); }
+.kind__len { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.kind__len b { font-size: var(--text-sm); color: var(--kind-accent); }
+.kind__len small { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+/* Five pips, lit to the run's length: the comparison IS the picture. */
+.kind__pips { display: inline-flex; gap: 3px; }
+.kind__pips i { width: 8px; height: 8px; border-radius: 2px; border: 1.5px solid var(--kind-accent); }
+.kind__pips i.is-on { background: var(--kind-accent); }
+.kind__fig { justify-self: start; }
+.kind__fig svg { width: 64px; height: 64px; }
+.kind__name { font-size: var(--text-lg); font-weight: 900; }
+.kind__who { font-size: var(--text-xs); font-weight: 700; color: var(--kind-accent); }
+.kind__lead { font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.45; }
+
+/* The break dial's own body, which only exists once the switch is on. */
+.dm-open { display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--border); }
+
+/* ── The hero cheers before the fight ───────────────────────
+   Two arm rotations and a hop on the figure standing on the last setup slide.
+   It is the one moment in the whole flow where nothing is being decided, which
+   is exactly where a small piece of life belongs. CSS only: css/style.css
+   zeroes every animation under prefers-reduced-motion and this goes with it. */
+.fig--cheer .fig__arm--l { animation: cheer-l 2.4s var(--ease-out) infinite; }
+.fig--cheer .fig__arm--r { animation: cheer-r 2.4s var(--ease-out) infinite; }
+.fig--cheer { animation: cheer-hop 2.4s var(--ease-out) infinite; }
+@keyframes cheer-l {
+  0%, 30%, 100% { transform: rotate(0deg); }
+  45%, 80% { transform: rotate(-42deg); }
+}
+@keyframes cheer-r {
+  0%, 30%, 100% { transform: rotate(0deg); }
+  45%, 80% { transform: rotate(42deg); }
+}
+@keyframes cheer-hop {
+  0%, 34%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+  66% { transform: translateY(0); }
+}
+
+/* The setup column reads as a column: the stepper, one slide, the buttons,
+   all on the same axis. It was centred by the container and its content was
+   not, so the whole thing sat a little left of where the eye expected it. */
+.setup-slide { max-width: 62rem; margin-inline: auto; width: 100%; }
+/* The header and the stepper sat hard left while the Next button sat hard
+   right, so the eye crossed an empty middle on every slide and the whole thing
+   read as off centre. One axis: everything the setup says is centred on it, and
+   only Back and Next keep the edges, because those are directions. */
+/* Everything in the column shares the spine's left edge. Centring the stepper
+   inside the column looked right before the spine existed and looks wrong now:
+   it put the stepper 66px right of the cards below it, which is exactly the
+   soft, nothing-quite-lines-up feel the spine was meant to cure. */
+.setup-slide .setup-steps { justify-content: flex-start; }
+.setup-slide > .small.muted { text-align: center; }
+.setup-slide .setup-nav { align-items: center; }
+@media (max-width: 700px) {
+  .setup-slide .setup-steps { gap: 4px; }
+  .kind { padding: var(--space-3); }
+  .kind__fig svg { width: 52px; height: 52px; }
+}
+
+/* ── The wall answers the obvious question ──────────────────
+   Every card in the boss's wall is worth the same 100 and the leading one is a
+   fraction of it, and nothing on screen said so. A hover lifts the card and its
+   title gives the number; the grid cell does not move, so the wall does not
+   reflow under the pointer. */
+.lc-hit { display: contents; }
+.wall .lc-hit > * { transition: transform 120ms var(--ease-out); }
+.wall .lc-hit:hover > * { transform: translateY(-3px) scale(1.06); cursor: help; }
+
+/* ── Reordering the lane ────────────────────────────────────
+   Order started mattering when Run began halving what follows it, and the only
+   way to move a card was to clear the lane and rebuild it. Drag the step, or
+   nudge it with the two chevrons: both dispatch the same action, so the mouse
+   can never do what the keyboard cannot. */
+.plan-step[draggable="true"] { cursor: grab; }
+.plan-step.is-dragging { opacity: 0.45; cursor: grabbing; }
+.plan-step.is-over { outline: 2px dashed var(--gold-deep); outline-offset: 2px; }
+.plan-move { display: inline-flex; color: var(--text-muted); }
+.plan-bump {
+  border: 1px solid var(--border); background: var(--surface-1); color: var(--text-secondary);
+  border-radius: var(--radius-sm); width: 20px; min-height: 22px; padding: 0;
+  font: inherit; font-size: 13px; line-height: 1; cursor: pointer;
+}
+.plan-bump:hover { border-color: var(--gold-deep); color: var(--text-primary); }
+.plan-bump[aria-disabled="true"] { opacity: 0.3; pointer-events: none; }
+@media (max-width: 900px) {
+  /* On a phone the drag is the awkward gesture and the chevrons are the answer,
+     so they get a thumb-sized target and the grip dots go away. */
+  .plan-move { display: none; }
+  .plan-bump { width: 28px; min-height: 30px; font-size: 15px; }
+}
+
+/* ── The spine ──────────────────────────────────────────────
+   The setup title stands on its edge down the left margin, the way a word runs
+   down the spine of a book or the edge of a boxed game. It is the one piece of
+   typography here that a generic layout would not produce, and it is not
+   decoration: it hands the top of the screen back to the thing being chosen,
+   which is what the three run cards needed.
+
+   The visible copy is aria-hidden and a sr-only h2 carries the real heading,
+   because a rotated string is read letter-by-letter by some screen readers.
+   Below 900px it lies back down: a 90-degree title on a 360px screen costs
+   more width than it saves. */
+.setup-shell { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-6); align-items: start; }
+.spine {
+  position: sticky; top: var(--space-6);
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  font-size: clamp(28px, 4.2vw, 54px); font-weight: 900; line-height: 1;
+  letter-spacing: -0.02em; text-transform: uppercase;
+  color: transparent; -webkit-text-stroke: 1.5px var(--gold-deep);
+  padding-block: var(--space-2);
+  border-inline-end: 3px solid var(--gold-deep);
+  padding-inline-end: var(--space-4);
+  user-select: none;
+}
+@media (max-width: 900px) {
+  .setup-shell { grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
+  .spine {
+    position: static; writing-mode: horizontal-tb; transform: none;
+    font-size: var(--text-2xl); border-inline-end: 0; padding-inline-end: 0;
+    border-block-end: 3px solid var(--gold-deep); padding-block-end: var(--space-2);
+  }
+}

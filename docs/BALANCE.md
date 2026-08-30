@@ -232,8 +232,11 @@ compare them to the 17.90% above.**
   same Hidden state, so the Python models neither.
 - **Second Wind.** The gentle-mode card is absent from the Python entirely.
   `tools/checks/second-wind.mjs` at 4,000 fights per cell puts the full five-level adaptive
-  run at **6.1% without it and 28.9% with it**, and it helps a reckless player most (level 3
-  gamble moves +45.9 points), which is the point of a safety net.
+  run at **15.0% without it and 52.9% with it**, and it helps a reckless player most (level 3
+  gamble moves +48.1 points), which is the point of a safety net. Re-measured 2026-08-30,
+  after the card went from a flat two cards returned to the 4/3/2/1 ladder and the boss
+  started falling on its body alone; the numbers it replaces (6.1% and 28.9%) were taken
+  under both old rules and were wrong in two directions at once.
 - **Element and biome affinity.** The simulator accepts a `--bonus` flag but the table
   above runs at zero. A +25 or +50 run has not been characterised.
 - **Aiming at minions.** The sim always hits the boss body, which understates the player

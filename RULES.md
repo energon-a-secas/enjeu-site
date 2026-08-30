@@ -144,6 +144,21 @@ castle you built. The rules do not ask and do not care. Run is the one card whos
 describe instead of counting, which is what the invented spells of the first version turned
 into: the game keeps the number, you keep the story.
 
+### Striking from cover, and why the order matters
+
+Moving is free and hiding is not, and that is the whole of it.
+
+**While you are Hidden, every attack you make deals half**, rounded down to the nearest 25.
+You are behind the sofa. You are not in a position to swing properly.
+
+So Run belongs at the **end** of a turn. Hit first at full weight, then hide with whatever
+action is left: that is the tactic worth learning, and it is the only place in the game
+where the order of your three actions changes the numbers. Everything else you do this turn
+is worth the same whenever you do it.
+
+The inefficient order is betting after you are already safe. A big bet from cover pays the
+cards and collects half the damage, which is the worst trade on the table.
+
 **Invention** is the spell you make up. Before you roll, say the spell out loud: what it
 is called, what it looks like, what it does to the room. Then bet one card and roll the
 Wild check. It lands for 350, which is the biggest single number in your deck, and it
@@ -261,6 +276,12 @@ boss's body, and it does not carry to another minion. That is the one place in t
 where damage goes nowhere, so aim the big attacks at the body and finish a minion with the
 small ones.
 
+**When the boss falls, its minions run off.** The boss is the pile in the middle. Take the
+last card off it and the fight is over that second, even if a minion is still standing
+beside it: the little ones scatter and you have won. So a minion is never something you
+have to kill. It is a choice: clear it and stop the 25 a turn it costs you, or ignore it
+and race the big pile.
+
 ### The Ally
 
 If you have played the **Ally** Advantage card, there is a second figure on your side of the
@@ -319,6 +340,50 @@ of what is left, then what remains breaks cards.
 Rage is why you cannot win by playing it safe. Turtling behind Strike is survivable for a
 while and then it is not.
 
+### Breaking a part
+
+Your boss is built out of bricks and nobody else's looks like it, so this rulebook is not
+going to tell you what its parts are. You are. Say what you went for out loud, the way you
+already say where you ran to:
+
+> I climb its neck and stab the eye.
+> I go for the wing where the plates do not meet.
+> I take the tail off at the root.
+
+If it comes off, pick **one** of three things:
+
+| | What a break buys you |
+|---|---|
+| **Wound** | The boss loses **50** on the spot, over and above the attack that opened it. |
+| **Cripple** | Everything the boss deals is **25 lower** for the rest of the level. It never goes below 25. |
+| **Trophy** | One check this level succeeds automatically. In a campaign you also draw an Advantage card. |
+
+Two parts per boss. You may only try it **immediately after an attack of yours has landed**:
+the break is where that attack landed, so a swing that missed is not somewhere to aim.
+
+**How hard it is, is the grown-up's call**, and that is the actual rule here. Pick one before
+you start:
+
+| Style | To break a part |
+|---|---|
+| **Friendly** | Say it, and it happens. No roll, no cost. |
+| **Assisted** | Roll ●●● Hard. |
+| **Hardcore** | Roll ●●●● Wild, and it costs one of your three actions. |
+
+Assisted is the middle setting and the one to start on: the check is what makes an invented
+part feel earned by the person who invented it. Friendly is for a young player whose whole
+pleasure is describing the stab. Hardcore is for a table that wants breaking to compete with
+attacking for the same three actions.
+
+Every number above is a dial, not a law: two parts, 50, 25, and which rung the check sits on
+are all things a table can change and the site lets you change them. Set the cap to zero and
+the whole rule is gone, which is a fine way to play as well.
+
+**Why it is in here at all.** The first version of this game let the player invent spells,
+and cutting that was the right call and lost something real. This is the piece worth having
+back: the part of a fight that is not on any card, priced just enough that saying it out loud
+changes a number.
+
 ### Keeping count
 
 The boss's life is the pile of cards beside its build, so the count is already on the
@@ -339,7 +404,8 @@ number in this rulebook.
 
 ## 8. Winning a level
 
-The boss falls when its life cards run out. Then, in this order:
+The boss falls when the **cards under the boss itself** run out. Minions still on the table
+run off (rule 7). Then, in this order:
 
 1. Return **all** your Broken cards to Ready. You start the next level whole.
 2. Take **1** white Extra Life card. It is Ready.
@@ -379,21 +445,28 @@ An optional card. Put it in play for a softer run, or leave it in the box.
 
 When you would go **Down**, you may come back instead:
 
-| Comeback | Roll |
-|---|---|
-| 1st this level | free, no roll |
-| 2nd | ● Sure |
-| 3rd | ●● Even |
-| 4th | ●●● Hard |
-| 5th and after | ●●●● Wild |
+| Comeback | Roll | Cards you get back |
+|---|---|---|
+| 1st this level | free, no roll | **4** |
+| 2nd | ● Sure | **3** |
+| 3rd | ●● Even | **2** |
+| 4th | ●●● Hard | **1** |
+| 5th and after | ●●●● Wild | **1** |
 
-Come back with **2** of your Broken cards returned to Ready. Fail the roll and the
-level ends exactly as it would without the card. The count resets every level.
+Two ladders climbing together: the roll gets harder and the rescue gets thinner. The first
+comeback is a real one and stands you all the way back up; the fourth stands you up with one
+card and a Hard check to get there. It never returns nothing, because a comeback worth
+nothing is a coin flip pretending to be a choice.
+
+Fail the roll and the level ends exactly as it would without the card. The count resets
+every level.
 
 It exists so a child does not lose fifteen minutes of play to one bad
-round. Measured over 4,000 fights per level in the site's own engine, it lifts a careful
-player between 11 and 26 points per level, and a whole five-level run from 6.1% to 28.9%; it helps a
-reckless player most, which is the point of a safety net.
+round. Re-measured over 4,000 fights per level in the site's own engine after the
+2026-08-30 ladder replaced the flat two cards: it lifts a careful player between 12
+and 28 points per level and a whole five-level run from 4.0% to 19.7%, and a reckless
+one between 27 and 47 points, from 3.0% to 57.9%. It helps recklessness most, which
+is what a safety net is for.
 
 ### Playing with two: the Sidekick
 
@@ -435,7 +508,7 @@ You win the run by clearing level 5. A lost level is not erased: it hands you a 
 
 ## 10. Components
 
-110 cards, poker size **63 × 88 mm**, on 300gsm card stock. Home printers: 9 per A4 sheet,
+111 cards, poker size **63 × 88 mm**, on 300gsm card stock. Home printers: 9 per A4 sheet,
 so 13 sheets, the last one part empty. It was exactly 10 sheets until the first
 playtest on 2026-08-27 asked for two more cards, Bubble and Second Wind; the
 round number lost to cards a real player wanted. The same playtest asked for two more
@@ -444,8 +517,8 @@ The twelfth sheet is the price of two later changes: Run, and making every boss 
 worth 100, which took the boss life pile from 10 cards to 20. The thirteenth pays for the
 v1.2 cards: Invention, Taunt, Sidekick and two Grudges.
 You do not have to print all thirteen. The site's Cards page offers two smaller sets:
-**Essentials** (103 cards, 12 sheets) leaves out the seven biomes, because any object on
-the table can stand for a place, and **First Game** (33 cards, 4 sheets) is exactly what
+**Essentials** (104 cards, 12 sheets) leaves out the seven biomes, because any object on
+the table can stand for a place, and **First Game** (34 cards, 4 sheets) is exactly what
 the First Game deals: one boss, six cards, all four elements of life, the aids.
 Every card is distinguished by **both** colour and a shape or sigil, so
 the deck stays readable without colour vision.
@@ -479,9 +552,9 @@ colour, which is a real amount of ink on a home printer.
 | Advantage: 6 kinds × 2 | 12 |
 | Boss: S, M, L, L, XL, UM | 6 |
 | Biome | 7 |
-| Player aid: checks, turn order, boss reactions, damage track | 4 |
+| Player aid: checks, turn order, boss reactions, damage track, break points | 5 |
 | Modes: Second Wind, Sidekick, Grudge × 2 | 4 |
-| **Total** | **110** |
+| **Total** | **111** |
 
 The two L cards are not a duplicate: levels 2 and 3 are both size L with different life
 and Damage, and the S card exists only as a summon. `tests/cards.test.mjs` parses this

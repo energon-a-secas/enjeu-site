@@ -51,3 +51,40 @@
   .about-stats { gap: var(--space-4); }
   .about-credits { font-size: var(--text-xs); }
 }
+
+/* ── Section spines ─────────────────────────────────────────
+   Each section's heading stands on its edge down its own left margin, the same
+   move the setup screen makes. It is the page's one piece of typography a
+   generic layout would not produce, and it earns its place twice: the prose
+   gets its column back from a full-width heading that was mostly empty line,
+   and six of them running down the page give About a rhythm that a stack of
+   identical panels did not have.
+
+   The visible copy is aria-hidden and an sr-only h2 carries the real heading,
+   because a rotated string is read letter by letter by some screen readers. */
+/* min-height so the spine always has room: align-self:start stopped a long
+   label stretching the section, and then it simply ran off the bottom instead.
+   The labels are single words for the same reason, so the floor stays low. */
+.about-sec { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-5); align-items: start; min-height: 9.5rem; }
+.about-sec__body { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
+.spine--sec {
+  /* start, not stretch: a spine that stretches makes the SECTION as tall as its
+     own rotated label, which left a column of empty paper beside three lines. */
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  font-size: clamp(15px, 1.7vw, 20px); font-weight: 900; line-height: 1;
+  letter-spacing: -0.01em; text-transform: uppercase;
+  color: transparent; -webkit-text-stroke: 1.2px var(--gold-deep);
+  border-inline-end: 2px solid var(--gold-deep);
+  padding-inline-end: var(--space-3);
+  align-self: start; user-select: none;
+}
+@media (max-width: 760px) {
+  /* Lying back down: a 90-degree heading on a phone costs more width than the
+     empty line it was buying back. */
+  .about-sec { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
+  .spine--sec {
+    writing-mode: horizontal-tb; transform: none;
+    font-size: var(--text-lg); border-inline-end: 0; padding-inline-end: 0;
+    border-block-end: 2px solid var(--gold-deep); padding-block-end: var(--space-2);
+  }
+}

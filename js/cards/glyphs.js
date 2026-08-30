@@ -129,7 +129,19 @@ export const GLYPHS = {
   // UI only: not manifest slots, so no art file will ever replace these
   book:      { label: 'Book', d: 'M4 4.5h6a3 3 0 0 1 2 .9 3 3 0 0 1 2-.9h6v13h-6a3 3 0 0 0-2 .9 3 3 0 0 0-2-.9H4zM12 5.4v13' },
   'trend-up':{ label: 'Trend up', d: 'M12 20V5M6.5 10.5L12 5l5.5 5.5M4 21h16' },
+  'trend-down':{ label: 'Trend down', d: 'M12 4v13M6.5 11.5 12 17l5.5-5.5M4 21h16' },
+  // Break points (2026-08-30). A plate with a crack through it, a cup, and the
+  // downward arrow that is trend-up's mirror: three marks for the three things
+  // a break can buy, drawn to the same 24x24 stroked grid as the rest.
+  break:    { label: 'Break', d: 'M12 2.6 4.6 6v6.2c0 4.1 3 7.4 7.4 9.2 4.4-1.8 7.4-5.1 7.4-9.2V6zM12 2.6l-1.7 5.8 3.5 1.5-2.9 4.3 2.6 1.3-2.1 6' },
+  trophy:   { label: 'Trophy', d: 'M7.5 3.8h9v4.9a4.5 4.5 0 0 1-9 0zM7.5 5.4H4.8v1.3a3.4 3.4 0 0 0 3.4 3.4M16.5 5.4h2.7v1.3a3.4 3.4 0 0 1-3.4 3.4M12 13.2v3.4M9.5 16.6h5l.9 3.6H8.6z' },
   skip:      { label: 'Skip', d: 'M6 5l7 7-7 7M13 5l7 7-7 7' },
+  // The go-and-play mark (2026-08-30). It used to be the Strike fist, borrowed
+  // from the attack card, and a fist beside "try it" reads as a threat rather
+  // than an invitation. A triangle is the one symbol that means start to
+  // everybody, and it survives the 12px rail dot, which a joystick would not.
+  play:      { label: 'Play', d: 'M8.6 5 19 12 8.6 19Z' },
+  grip:      { label: 'Drag', d: 'M9 6h.1M15 6h.1M9 12h.1M15 12h.1M9 18h.1M15 18h.1' },
   dice:      { label: 'Die', d: 'M4.5 4.5h15v15h-15zM9 9a.6.6 0 1 0 0-.1M15 9a.6.6 0 1 0 0-.1M12 12a.6.6 0 1 0 0-.1M9 15a.6.6 0 1 0 0-.1M15 15a.6.6 0 1 0 0-.1' },
   eye:       { label: 'Hide', d: 'M2.5 12c2.5-4.5 5.8-6.5 9.5-6.5s7 2 9.5 6.5c-2.5 4.5-5.8 6.5-9.5 6.5S5 16.5 2.5 12zM12 9.2a2.8 2.8 0 1 1 0 5.6 2.8 2.8 0 0 1 0-5.6z' },
   shield:    { label: 'Guard', d: 'M12 3l7.5 2.6v6c0 4.2-3.1 8-7.5 9.4C7.6 19.6 4.5 15.8 4.5 11.6v-6z' },

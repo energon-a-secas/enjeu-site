@@ -282,5 +282,52 @@ test('the attack slide draws every card in the Attack deck, not a hardcoded list
   assert.equal(shown, data.attack.length, `the slide draws ${shown} cards for a deck of ${data.attack.length}`);
 });
 
+/**
+ * The tactics slide is the answer to a question asked at a real table ("does the
+ * order of my actions matter?"), and the answer is one rule: while you are
+ * Hidden every attack you make is halved. A slide that keeps its title and loses
+ * that sentence would still render, still draw a visual and still pass every
+ * loop above, so the two named plays and the rule itself are asserted by name.
+ *
+ * The arithmetic is checked against data/cards.json rather than against the
+ * literals in walkthrough.js: 25 a Strike, 100 for each card an All In bets, and
+ * the halving rounded down to a whole 25. Two rows spending the same cards in
+ * opposite orders and NOT differing by half would be the slide teaching the
+ * thing it exists to correct.
+ */
+test('the tactics slide names both plays, states the halving, and its drawing pays what cards.json says', () => {
+  const i = SLIDE_SLUGS.indexOf('tactics');
+  assert.notEqual(i, -1, 'the tactics slide is not in the deck');
+  const html = renderLearn(S({ learnStep: i }));
+  const prose = STEPS[i].body.join(' ');
+
+  for (const name of ['Hit and run', 'Bet and hide']) {
+    assert.ok(prose.includes(name), `the copy never names the "${name}" tactic`);
+  }
+  assert.match(prose, /Hidden/, 'the copy never says what Run leaves you as');
+  assert.match(prose, /halved/, 'the copy never states the halving');
+  assert.match(prose, /whole 25/, 'the halving must say what it rounds to');
+  assert.match(prose, /free/, 'movement being free is half the answer to the question');
+
+  const { plans } = COPY.tactics;
+  assert.equal(plans.length, 3, 'two plays and the order that costs');
+  for (const p of plans) {
+    assert.ok(html.includes(p.name), `the drawing drops "${p.name}"`);
+    assert.ok(html.includes(`<b>${p.dealt}</b>`), `${p.name}: ${p.dealt} is not on the slide`);
+    for (const id of p.cards) assert.ok(data.byId[id], `${p.name} plays a card that is not in the deck: ${id}`);
+    assert.ok(p.cards.includes('run'), `${p.name} is not about where Run sits`);
+  }
+  // Every card in the plain play prices itself out of cards.json.
+  const plain = plans.find((p) => p.cards.every((id) => typeof data.byId[id].damage === 'number'));
+  assert.equal(plain.dealt, plain.cards.reduce((n, id) => n + data.byId[id].damage, 0), 'the drawing does not add up its own cards');
+  // The two All In rows: same cards, opposite orders, and the halving between.
+  const full = plans.find((p) => p.cards.includes('all-in') && !p.costly);
+  const cut = plans.find((p) => p.costly);
+  assert.equal(full.dealt, 4 * full.bet * 25, 'All In pays 100 for every card it bets');
+  assert.deepEqual([...cut.cards].sort(), [...full.cards].sort(), 'the two orders must spend the same cards');
+  assert.notDeepEqual(cut.cards, full.cards, 'and they must be in opposite orders');
+  assert.equal(cut.dealt, Math.floor(full.dealt / 2 / 25) * 25, 'hiding first halves the bet, down to a whole 25');
+});
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

@@ -30,13 +30,14 @@ let passed = 0, failed = 0;
 const queue = [];
 const test = (name, fn) => queue.push([name, fn]);
 
-test('110 physical cards, matching the component table in RULES.md section 10', () => {
+test('111 physical cards, matching the component table in RULES.md section 10', () => {
   // 90; +Bubble and Second Wind (first playtest); +two aids; +Run and ten boss
   // life cards (uniform 100); then v1.2: +Invention, +Taunt, +Sidekick,
-  // +Grudge x2, which is the 13th sheet the owner approved.
-  assert.equal(data.physical.length, 110);
+  // +Grudge x2, which is the 13th sheet the owner approved; then v1.6:
+  // +Break Points, the fifth reference card, after the first playtest.
+  assert.equal(data.physical.length, 111);
   const per = Object.fromEntries(DECKS.map((d) => [d, (data[d] || []).reduce((a, c) => a + (c.copies || 1), 0)]));
-  assert.deepEqual(per, { attack: 6, skill: 26, class: 4, advantage: 12, boss: 6, biome: 7, life: 41, mode: 4, aid: 4 });
+  assert.deepEqual(per, { attack: 6, skill: 26, class: 4, advantage: 12, boss: 6, biome: 7, life: 41, mode: 4, aid: 5 });
   // The printed pile has to be able to hold the biggest boss, or level 5 runs
   // out of cards halfway through the fight it is the climax of.
   const bossLife = data.life.find((c) => c.id === 'life-boss');
@@ -387,12 +388,59 @@ test('print scopes: essentials skips only biomes; first is exactly what the Firs
   assert.ok(!ids.has('knight') && !ids.has('taunt'), 'no classes, no skills: the First Game is six cards');
   for (const a of data.aid) assert.ok(ids.has(a.id), `${a.id} rides along`);
   // And the shipped counts, so a data change that moves them is a conscious one.
-  assert.deepEqual(SCOPES.map((k) => [scopeCards(data, k).length, scopeSheets(data, k)]), [[110, 13], [103, 12], [33, 4]]);
+  assert.deepEqual(SCOPES.map((k) => [scopeCards(data, k).length, scopeSheets(data, k)]), [[111, 13], [104, 12], [34, 4]]);
+});
+
+/**
+ * The break dial is written down FIVE times: data/cards.json break_points, the
+ * engine's DM_DEFAULTS, the device-state default in js/state.js, and both
+ * rulebooks. face.js prints the cards.json copy on the Break Points card and
+ * claims out loud that it "cannot promise a 50 while the engine tears off a 75",
+ * and until this test nothing checked that claim. Four of the five are code and
+ * are compared exactly; the rulebooks are prose and are checked for the numbers.
+ */
+test('the break dial agrees with itself in all five places it is written down', async () => {
+  const { DM_DEFAULTS, DM_STYLES, BREAK_REWARDS } = await import('../js/game/engine.js');
+  const { state } = await import('../js/state.js');
+  const bp = data.break_points;
+  assert.ok(bp, 'cards.json carries the dial the printed card draws from');
+
+  assert.equal(bp.cap, DM_DEFAULTS.cap, 'cap');
+  assert.equal(bp.step, DM_DEFAULTS.step, 'step');
+  assert.equal(bp.wound, DM_DEFAULTS.wound, 'wound');
+  assert.equal(bp.cripple, DM_DEFAULTS.cripple, 'cripple');
+  assert.deepEqual(bp.styles.map((x) => x.id), DM_STYLES, 'the three styles, in the same order');
+
+  // The device default a table starts on has to be the same dial.
+  assert.deepEqual(
+    { style: state.dm.style, cap: state.dm.cap, step: state.dm.step, wound: state.dm.wound, cripple: state.dm.cripple },
+    { style: DM_DEFAULTS.style, cap: DM_DEFAULTS.cap, step: DM_DEFAULTS.step, wound: DM_DEFAULTS.wound, cripple: DM_DEFAULTS.cripple },
+    'js/state.js starts a table on the engine\u2019s own defaults');
+
+  // Every reward the engine can pay has a row on the card and a name to print.
+  assert.deepEqual([...BREAK_REWARDS].sort(), ['cripple', 'trophy', 'wound'].sort());
+
+  // The check each style asks for, as the engine computes it, is what the card draws.
+  const asks = { friendly: null, assisted: bp.step, hardcore: 'wild' };
+  for (const st of bp.styles) assert.equal(st.check, asks[st.id], `${st.id} check`);
+  assert.deepEqual(bp.styles.map((x) => x.actions), [0, 0, 1], 'only hardcore charges an action');
+
+  // And both rulebooks print the same numbers as the dial.
+  for (const file of ['RULES.md', 'RULES.es.md']) {
+    const md = readFileSync(join(root, file), 'utf8');
+    const i = md.indexOf(file === 'RULES.md' ? '### Breaking a part' : '### Romper una parte');
+    assert.ok(i > 0, `${file} has the Breaking a part section`);
+    const section = md.slice(i, i + 2600);
+    for (const n of [String(bp.wound), String(bp.cripple)]) {
+      assert.ok(section.includes(n), `${file} never prints ${n}`);
+    }
+  }
 });
 
 for (const [name, fn] of queue) {                 // in declaration order: they share module state
   try { await fn(); passed++; console.log(`  ok   ${name}`); }
   catch (e) { failed++; console.log(`  FAIL ${name}\n       ${e.message}`); }
 }
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

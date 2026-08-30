@@ -34,6 +34,13 @@ export const state = {
   runKind: 'first',
   secondWind: true,     // the gentle-mode card in play; default follows runKind
   simple: true,         // plain table: no biomes, no signatures; default follows runKind
+  // The break dial (RULES.md section 7). A table setting, like the die and the
+  // mode: it survives the run, because the grown-up who set it is the same
+  // grown-up next Saturday. Shape and defaults are engine.js DM_DEFAULTS.
+  // `on` is the opt-in: break points are the one mechanic that asks the table
+  // to invent something, so a family meets the game without it and turns it on
+  // when they want it. cap stays the dial; on is the switch.
+  dm: { on: false, style: 'assisted', cap: 2, step: 'hard', wound: 50, cripple: 25 },
   run: null,            // see game/engine.js newRun()
   // Board preferences. NOT in run.ui: game/run.js resets that object every
   // level, and a preference that resets every level is not a preference.
@@ -51,10 +58,10 @@ export const secondWindDefault = (kind) => kind === 'first';
 /** The First Game IS the try-out, so it starts on the plain table. */
 export const simpleDefault = (kind) => kind === 'first';
 
-const PERSIST = ['lang', 'learnStep', 'deckFilter', 'browse', 'paper', 'printScope', 'withBacks', 'die', 'mode', 'element', 'runKind', 'secondWind', 'simple', 'run', 'play', 'balance'];
+const PERSIST = ['lang', 'learnStep', 'deckFilter', 'browse', 'paper', 'printScope', 'withBacks', 'die', 'mode', 'element', 'runKind', 'secondWind', 'simple', 'dm', 'run', 'play', 'balance'];
 
 // The nested settings, defaults captured before anything can overwrite them.
-const NESTED = ['balance', 'browse', 'play'];
+const NESTED = ['balance', 'browse', 'play', 'dm'];
 const DEFAULTS = Object.fromEntries(NESTED.map((k) => [k, { ...state[k] }]));
 
 /**

@@ -166,6 +166,13 @@ const STAGE_ACTIONS = new Set([
 ]);
 
 /** Route `<view>-<act>` to the owning view. Returns false if nothing claimed it. */
+/**
+ * Fire an action as if a control had been clicked. The lane's drag-and-drop uses
+ * it so a drop does exactly what the nudge buttons do: same action, same rules,
+ * same re-render. A second path into the plan would be a second set of rules.
+ */
+export function fireAction(a, el) { return dispatch(state, a, el, null); }
+
 function dispatch(s, a, el, e) {
   const cut = a.indexOf('-');
   if (cut < 0) return false;

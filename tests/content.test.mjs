@@ -6,11 +6,14 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { STRINGS } from '../js/strings.js';
-import { DECKS } from '../js/data/cards.js';
+import { DECKS, useCards } from '../js/data/cards.js';
+import { DM_STYLES } from '../js/game/engine.js';
 import { STEPS } from '../js/data/walkthrough.js';
 import { HEROES, BOSSES, MINION } from '../js/data/placeholders.js';
 
+
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const data = useCards(JSON.parse(readFileSync(join(root, 'data/cards.json'), 'utf8')));
 let passed = 0, failed = 0;
 function test(name, fn) {
   try { fn(); passed++; console.log(`  ok   ${name}`); }
@@ -29,7 +32,7 @@ test('no em dashes in site code, strings, docs or README (house rule; dated plan
   // css/ is in the list because the stylesheets carry as much prose as the JS:
   // three of them were written this run, entirely in comments explaining layout
   // decisions, and none of that was scanned before.
-  const files = [...walk(join(root, 'js')), ...walk(join(root, 'css')), ...walk(join(root, 'tests')), join(root, 'index.html'), join(root, 'README.md'), join(root, 'RULES.md'), ...walk(join(root, 'docs')).filter((f) => f.endsWith('.md'))];
+  const files = [...walk(join(root, 'js')), ...walk(join(root, 'css')), ...walk(join(root, 'tests')), join(root, 'index.html'), join(root, 'README.md'), join(root, 'RULES.md'), join(root, 'RULES.es.md'), ...walk(join(root, 'docs')).filter((f) => f.endsWith('.md'))];
   const bad = files.filter((f) => readFileSync(f, 'utf8').includes('\u2014')).map((f) => f.replace(root + '/', ''));
   assert.deepEqual(bad, []);
 });
@@ -88,6 +91,20 @@ test('every enumerated label table is complete (a gap renders the raw [key] on s
   need('play', ['story', 'standard', 'nightmare']);
   need('play.modeHint', ['story', 'standard', 'nightmare']);
   need('balance.style', ['turtle', 'safe', 'adaptive', 'gamble']);
+  // The tables added with break points and the DM dial. `play.outcome` is here
+  // because it was first written as `play.hist`, which ALREADY EXISTED as the
+  // history table's column headers: the object literal collapsed, key parity
+  // still passed in both directions (both languages lost the same key), and the
+  // run summary rendered a raw [play.hist.win]. Parity cannot catch a key that
+  // was never reachable; only checking a table against the list that indexes it can.
+  need('play.outcome', ['win', 'loss']);
+  need('play.brk', ['title', 'say', 'wound', 'cripple', 'trophy', 'woundHint', 'crippleHint', 'trophyHint', 'left', 'costs', 'free', 'held', 'broke', 'cancel']);
+  need('play.dm', DM_STYLES);
+  need('play.dm', DM_STYLES.map((k) => `${k}Hint`));
+  need('cards.step', ['sure', 'even', 'hard', 'wild']);
+  need('cards.effect', data.physical.map((c) => c.id));
+  need('play.reactionName', (data.boss_reaction || []).map((r) => r.id));
+  need('play.signatureName', [...new Set(data.boss.filter((b) => b.signature).map((b) => b.signature.id))]);
   assert.deepEqual(missing, []);
 });
 
@@ -146,6 +163,66 @@ test('no toy brand is named in any living document', () => {
     }
   }
   assert.deepEqual(hits, [], 'a brand name reached a living document');
+});
+
+/**
+ * A test that is written and never runs is worse than no test, because it gets
+ * counted. It has now happened twice in two days: three new cases in
+ * tests/play.test.mjs and one in tests/cards.test.mjs, both caught only because
+ * the reported count did not move, and nobody remembers what the count was.
+ *
+ * There are two suite shapes here and only one is vulnerable. A QUEUED suite
+ * (`test()` pushes, one loop drains at the end) silently drops anything declared
+ * below that loop. An IMMEDIATE suite (`test()` calls fn right away) cannot.
+ * This checks the queued ones for orphans and checks that the immediate ones
+ * really are immediate, so a suite cannot quietly change shape and lose its tail.
+ */
+/**
+ * The deck size is typed out in words in four places across two languages, and
+ * it has gone stale three times: 94, then 105, then 110, each time next to a
+ * drawing that counted the real deck for itself. Words cannot be derived, so
+ * they get checked instead.
+ */
+test('the card count spelled out in prose is the deck that actually exists', () => {
+  const WORDS = {
+    110: ['a hundred and ten', 'ciento diez'],
+    111: ['a hundred and eleven', 'ciento once'],
+    112: ['a hundred and twelve', 'ciento doce'],
+  };
+  const n = data.physical.length;
+  const right = WORDS[n];
+  assert.ok(right, `no spelled-out form on record for ${n} cards: add it here and to the copy`);
+  const wrong = Object.entries(WORDS).filter(([k]) => Number(k) !== n).flatMap(([, v]) => v);
+  const hay = JSON.stringify(STRINGS).toLowerCase();
+  for (const w of wrong) {
+    assert.equal(hay.includes(w), false, `the string table still says "${w}" and the deck is ${n}`);
+  }
+  // And at least one language says the right number, so this cannot pass by the
+  // copy simply having dropped every mention.
+  assert.ok(right.some((w) => hay.includes(w)), `no copy anywhere states the deck size (${n})`);
+});
+
+test('no test file registers a case that never runs', () => {
+  const files = readdirSync(join(root, 'tests')).filter((f) => f.endsWith('.test.mjs'));
+  assert.ok(files.length >= 8, `expected the whole suite, saw ${files.length}`);
+  const bad = [];
+  for (const f of files) {
+    const src = readFileSync(join(root, 'tests', f), 'utf8');
+    const declared = [...src.matchAll(/^test\(/gm)].map((m) => m.index);
+    if (!declared.length) { bad.push(`${f}: no test() call sites at all`); continue; }
+    const queued = /queue\.push\(/.test(src);
+    if (queued) {
+      const runner = src.search(/for \(const \[[^\]]+\] of queue\)/);
+      if (runner < 0) { bad.push(`${f}: queues its cases and never drains the queue`); continue; }
+      const orphans = declared.filter((at) => at > runner).length;
+      if (orphans) bad.push(`${f}: ${orphans} case(s) declared below the runner, so they never run`);
+    } else {
+      // An immediate suite has to actually invoke the case it was handed.
+      const fn = src.match(/function test\(name, fn\) \{[\s\S]{0,220}?\n\}/);
+      if (!fn || !/\bfn\(\)/.test(fn[0])) bad.push(`${f}: test() never calls the function it is given`);
+    }
+  }
+  assert.deepEqual(bad, []);
 });
 
 console.log(`\n${passed} passed, ${failed} failed`);

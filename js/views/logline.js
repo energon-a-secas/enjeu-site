@@ -51,8 +51,16 @@ const ES = [
   [/^(.+?) fells a minion\.$/, (m) => `${name(m[1])} tumba un esbirro.`],
   [/^Necromancer takes one of its cards as a Ready life card\.$/, () => 'El Nigromante toma una de sus cartas como carta de vida En Pie.'],
   [/^The boss falls!$/, () => '¡El jefe cae!'],
+  [/^Its minions scatter\.$/, () => 'Sus esbirros se dispersan.'],
+  // Break points. The part is never named by the game (the player says what it
+  // was), so these lines have nothing to gender and translate cleanly.
+  [/^You break a part off the boss \((\d+) of (\d+)\)\.$/, (m) => `Le arrancas una parte al jefe (${m[1]} de ${m[2]}).`],
+  [/^The part holds\. Nothing comes off\.$/, () => 'La parte aguanta. No se rompe nada.'],
+  [/^The break tears (\d+) off it\.$/, (m) => `La rotura le arranca ${m[1]}.`],
+  [/^Crippled: the boss now deals (\d+)\.$/, (m) => `Lisiado: ahora el jefe hace ${m[1]}.`],
+  [/^Trophy: one check this level succeeds automatically\.$/, () => 'Trofeo: una tirada de este nivel acierta automáticamente.'],
   [/^The comeback fails\. You are Down\.$/, () => 'La remontada falla. Estás Caído.'],
-  [/^Second Wind holds! Back up with 2 cards\.$/, () => '¡Segundo Aire aguanta! De vuelta con 2 cartas.'],
+  [/^Second Wind holds! Back up with (\d+) cards\.$/, (m) => `¡Segundo Aire aguanta! De vuelta con ${m[1]} ${m[1] === '1' ? 'carta' : 'cartas'}.`],
   [/^Second Wind: you come back free\.$/, () => 'Segundo Aire: vuelves gratis.'],
   [/^You slip into the trees\. The boss has to find you\.$/, () => 'Te deslizas entre los árboles. El jefe tiene que encontrarte.'],
   [/^Cure: two Broken cards return to Ready\.$/, () => 'Cura: dos cartas Rotas vuelven a En Pie.'],

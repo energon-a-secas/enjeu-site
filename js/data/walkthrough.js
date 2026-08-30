@@ -112,9 +112,10 @@ export const STEPS = bilingual([
   },
   {
     id: 'three-cards', rule: '5', chapter: 'basics',
-    // Five, and derived: data.attack is Strike, Focus, All In, Bubble and Run,
-    // and js/game/run.js deals every entry of it. A hardcoded trio in the copy
-    // is how Bubble and then Run went missing from the teaching for a while.
+    // Six, and derived: data.attack is Strike, Focus, All In, Bubble, Run and
+    // Invention, and js/game/run.js deals every entry of it. A hardcoded trio in
+    // the copy is how Bubble and then Run went missing from the teaching for a
+    // while, and why this title is checked against the deck rather than typed.
     title: { en: 'Your first fight is six cards', es: 'Tu primera pelea son seis cartas' },
     body: {
       en: [
@@ -133,7 +134,7 @@ export const STEPS = bilingual([
         'Todo o Nada cuesta dos de tus tres acciones y apuesta las cartas que quieras. Con una moneda al aire paga 100 de daño por cada carta que apostaste, así que 1, 2, 3 o 4 cartas son 100, 200, 300 o 400.',
         'Burbuja y Escape cuestan una acción y ninguna carta. Burbuja absorbe los próximos 25 de daño que recibas esta ronda.',
         'Escape te deja Escondido hasta que el jefe actúe. Su Golpe pasa de largo y no te hace nada, y todo lo demás igual te encuentra, pero solo por la mitad.',
-        'Invención es la carta loca: inventa un hechizo, di en voz alta qué hace, y una tirada difícil paga 350.',
+        'Invención es la apuesta más grande: inventa un hechizo, di en voz alta qué hace, y una tirada Loca paga 350.',
         'Di el nombre en voz alta cuando juegues una carta. El dibujo es el nombre.',
       ],
     },
@@ -205,15 +206,17 @@ export const STEPS = bilingual([
     id: 'what-you-need', rule: '10', chapter: 'basics',
     title: { en: 'What you need', es: 'Lo que necesitas' },
     body: {
-      // A hundred and five: the count comes from data/cards.json, which the
-      // grid beside this copy counts for itself. Two numbers on one slide that
-      // disagree teach the reader to trust neither.
+      // No count in this sentence on purpose. The grid beside it counts
+      // data/cards.json for itself (COPY.sheets, filled by learn.js), and a
+      // hand-typed number here went stale twice: it said 105, then 110, while
+      // the drawing next to it said 111. Two numbers on one slide that disagree
+      // teach the reader to trust neither.
       en: [
-        'A hundred and ten printed cards, one die, and the bricks and figures already on the table. The game ships no dice and no figures on purpose.',
+        'The printed deck, one die, and the bricks and figures already on the table. The game ships no dice and no figures on purpose.',
         'Play it on screen first if you like: the Play tab runs the same cards with a stand-in hero and stand-in bosses.',
       ],
       es: [
-        'Ciento diez cartas impresas, un dado, y los bloques y las figuras que ya están en la mesa. El juego no trae dados ni figuras, y es a propósito.',
+        'La baraja impresa, un dado, y los bloques y las figuras que ya están en la mesa. El juego no trae dados ni figuras, y es a propósito.',
         'Si quieres, primero juégalo en pantalla: la pestaña Jugar usa las mismas cartas con un héroe y unos jefes provisorios.',
       ],
     },
@@ -252,6 +255,36 @@ export const STEPS = bilingual([
       ],
     },
     visual: 'levels',
+  },
+  {
+    // The question a child asked at the table after her first fight: does the
+    // order of my actions matter? It does, in exactly one place, and this slide
+    // is that place. Moving is free and two attacks in either order deal the
+    // same, so the only choice that changes a number is where Run sits: while
+    // you are Hidden every attack you make is halved, rounded down to a whole
+    // 25 (js/game/engine.js, attackDamage). That is what turns "hit and run"
+    // and "bet and hide" from habits into plans.
+    //
+    // Sections 4 and 5: section 4 is the order of a round and the rule that Run
+    // is declared while you act, before the boss's die is thrown; section 5 is
+    // Run itself, Hidden, and what a bet does to the cards it spends.
+    id: 'tactics', rule: '4, 5', chapter: 'advanced',
+    title: { en: 'Does the order matter?', es: '¿Importa el orden?' },
+    body: {
+      en: [
+        'Moving is free: walk up, climb the boss, say where you are.',
+        'Attacks in any order deal the same. Running away is the one exception: while you are Hidden every attack you make is halved, down to a whole 25. So Run goes last.',
+        "Hit and run: swing at full weight, then Run with your last action. The boss's Strike goes past you and a Ruin only finds you for half. That is the turn for levels 1 and 2.",
+        'Bet and hide: All In turns the cards you bet sideways whether it lands or not, and Spent cards do not guard. So bet, swing, then hide with the action left.',
+      ],
+      es: [
+        'Moverse es gratis: camina, súbete al jefe, di dónde estás.',
+        'Tus ataques hacen lo mismo en cualquier orden. Escapar es la única excepción: mientras estás Escondido, cada ataque tuyo se parte a la mitad, redondeando hacia abajo a 25. Escape va al final.',
+        'Golpea y escapa: pega con todo tu peso y usa Escape en tu última acción. El Golpe del jefe pasa de largo y una Ruina solo te encuentra por la mitad. Ese es el turno de los niveles 1 y 2.',
+        'Apuesta y escóndete: Todo o Nada gira de costado las cartas que apuestas, acierte o no, y las cartas De Lado no defienden. Así que apuesta, pega, y recién después escóndete.',
+      ],
+    },
+    visual: 'tactics',
   },
 ]);
 
@@ -294,6 +327,38 @@ export const COPY = bilingual({
   basicsEnd: {
     en: 'That is everything you need to play a whole fight. Advanced adds elements and biomes, the five-level run, and every other die.',
     es: 'Eso es todo lo que necesitas para jugar una pelea entera. Lo avanzado agrega los elementos y los biomas, la partida de cinco niveles, y todos los demás dados.',
+  },
+  // The two named tactics, and the order that pays for them. Same shape as the
+  // Damage Track below: `cards`, `bet` and `dealt` are the drawing and are
+  // written ONCE, so the picture cannot say a number the sentence beside it
+  // disagrees with, and neither language can drift from the other on arithmetic.
+  //
+  // The numbers are the plain ones, with no affinity, no biome and no Brace:
+  // 25 a Strike, 100 for each card an All In bets, and Hidden halving whatever
+  // lands, rounded down to a whole 25 (js/game/engine.js, attackDamage and
+  // halve). The last two rows spend the SAME two cards on the same three
+  // actions and differ only in where Run sits, which is the whole lesson: 200
+  // if you bet first, 100 if you hide first. tests/learn.test.mjs checks both
+  // sums against data/cards.json rather than trusting the literals here.
+  tactics: {
+    dealt: { en: 'dealt', es: 'de daño' },
+    plans: [
+      {
+        cards: ['strike', 'strike', 'run'], bet: 0, dealt: 50,
+        name: { en: 'Hit and run', es: 'Golpea y escapa' },
+        note: { en: 'Both Strikes land whole, and then you are gone.', es: 'Los dos Golpes caen enteros, y después desapareces.' },
+      },
+      {
+        cards: ['all-in', 'run'], bet: 2, dealt: 200,
+        name: { en: 'Bet and hide', es: 'Apuesta y escóndete' },
+        note: { en: 'Two cards bet at full weight. When it lands, it lands whole.', es: 'Dos cartas apostadas con todo el peso. Cuando acierta, acierta entero.' },
+      },
+      {
+        cards: ['run', 'all-in'], bet: 2, dealt: 100, costly: true,
+        name: { en: 'Hidden first', es: 'Escondido primero' },
+        note: { en: 'The same two cards, cut in half by your own hiding.', es: 'Las mismas dos cartas, partidas a la mitad por tu propio escondite.' },
+      },
+    ],
   },
   // The Damage Track, worked through in the rulebook's own sequence (RULES.md
   // section 7, Keeping count). `mark` is the band the brick stands on and

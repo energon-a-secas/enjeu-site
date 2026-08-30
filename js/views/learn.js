@@ -181,8 +181,14 @@ function attacksVisual(s) {
   // is the same defect run.js records having shipped once when Bubble was added
   // and no hand ever dealt it.
   const deck = s.cards.attack.map((c) => c.id);
-  const wide = deck.length > 4 ? ' action-cards--wide' : '';
-  return `<div class="action-cards action-cards--${deck.length === 4 ? 'four' : deck.length === 3 ? 'three' : 'five'}${wide}">${deck.map((id) => {
+  // Past four, a row of hand cards beside body copy stops being readable: six
+  // across left the sixth card orphaned on a line of its own and shrank the
+  // labels to fit. Three to a row instead, which lands the deck as the three
+  // basic moves and then everything after them, in cards.json's own order.
+  // A count, not a class per width: the old ternary had no answer for six and
+  // silently picked the five-column rule.
+  const perRow = deck.length <= 4 ? deck.length : 3;
+  return `<div class="action-cards action-cards--rows" style="--cards:${perRow}">${deck.map((id) => {
     const c = s.cards.byId[id];
     return `<button type="button" class="action-card" data-action="cards-detail" data-id="${c.id}" data-inspect="${c.id}">${cardFace(c, { size: 'hand' })}<span>${escHtml(cardName(c))}</span></button>`;
   }).join('')}</div>`;
@@ -201,11 +207,6 @@ function turnVisual() {
 const stepName = (step) => t(`cards.step.${step}`);
 
 /** The four checks, on the same traffic light the card prints (face.js riskDots). */
-function checkLegend() {
-  return `<div class="checks">${[['sure', 75], ['even', 50], ['hard', 25], ['wild', 15]].map(([step, odds]) => `
-    <span class="checks__item">${riskDots(step)}<b>${escHtml(stepName(step))}</b><i>${odds}%</i></span>`).join('')}</div>`;
-}
-
 /**
  * The check, as the step slide teaches it: the ramp, and the number for the
  * ONE die the reader owns. All eight dice are the dice-bridge slide's job; the
@@ -214,8 +215,7 @@ function checkLegend() {
 function checksVisual(s) {
   const { rows } = ladderTable(s.cards.ladder);
   const die = s.die && DICE.includes(s.die) ? s.die : 'd20';
-  return `${checkLegend()}
-  <div class="table-wrap"><table class="ladder">
+  return `<div class="table-wrap"><table class="ladder">
     <thead><tr><th>${escHtml(t('learn.step'))}</th><th>${escHtml(t('learn.odds'))}</th><th>${escHtml(die)}</th></tr></thead>
     <tbody>${rows.map((r) => `<tr><td>${riskDots(r.step)} ${escHtml(stepName(r.step))}</td><td>${r.odds}%</td><td class="is-mine">${r.targets[die]}+</td></tr>`).join('')}</tbody>
   </table></div>
@@ -226,8 +226,7 @@ function checksVisual(s) {
 function ladderVisual(s) {
   const { rows } = ladderTable(s.cards.ladder);
   const die = s.die && DICE.includes(s.die) ? s.die : 'd20';
-  return `${checkLegend()}
-  <div class="table-wrap"><table class="ladder">
+  return `<div class="table-wrap"><table class="ladder">
     <thead><tr><th>${escHtml(t('learn.step'))}</th><th>${escHtml(t('learn.odds'))}</th>${DICE.map((d) => `<th>${d}</th>`).join('')}</tr></thead>
     <tbody>${rows.map((r) => `<tr><td>${riskDots(r.step)} ${escHtml(stepName(r.step))}</td><td>${r.odds}%</td>${DICE.map((d) => `<td class="${d === die ? 'is-mine' : ''}">${r.targets[d]}+</td>`).join('')}</tr>`).join('')}</tbody>
   </table></div>
@@ -235,8 +234,8 @@ function ladderVisual(s) {
 }
 
 function reactionsVisual() {
-  return `<div class="strip">${REACTIONS.map((r) => `
-    <div class="strip__cell"><span class="strip__die" aria-hidden="true">${r.roll}</span>${glyphSvg(r.glyph, '', 28)}<b>${escHtml(r.name)}</b><span>${escHtml(r.note)}</span></div>`).join('')}</div>`;
+  return `<div class="strip strip--two">${REACTIONS.map((r) => `
+    <div class="strip__cell strip__cell--row"><span class="strip__die" aria-hidden="true">${r.roll}</span>${glyphSvg(r.glyph, '', 26)}<b>${escHtml(r.name)}</b><span>${escHtml(r.note)}</span></div>`).join('')}</div>`;
 }
 
 /**
@@ -305,7 +304,7 @@ function cycleVisual(s) {
 function levelsVisual(s) {
   const classes = s.cards.class.map((c) => `<button type="button" class="action-card" data-action="cards-detail" data-id="${c.id}" data-inspect="${c.id}">${cardFace(c, { size: 'hand' })}<span>${escHtml(cardName(c))}</span></button>`).join('');
   const camp = s.cards.boss.filter((b) => b.rage).map((b, i) => `<tr><td>${i + 1}</td><td>${b.size}</td><td>${b.life_cards} × ${b.per_card}</td><td>${b.damage}</td><td>${b.rage}</td></tr>`).join('');
-  return `<div class="action-cards action-cards--four">${classes}</div>
+  return `<div class="action-cards action-cards--rows" style="--cards:4">${classes}</div>
   <div class="table-wrap"><table class="ladder ladder--tight">
     <thead><tr>${COPY.campaign.map((h) => `<th>${escHtml(h)}</th>`).join('')}</tr></thead>
     <tbody>${camp}</tbody>
@@ -332,7 +331,41 @@ function componentsVisual(s) {
   <p class="small muted">${escHtml(t('play.placeholderNote'))}</p>`;
 }
 
-const VISUALS = { hero: heroArt, states: statesVisual, attacks: attacksVisual, turn: turnVisual, ladder: checksVisual, reactions: reactionsVisual, track: trackVisual, elements: cycleVisual, levels: levelsVisual, components: componentsVisual };
+/**
+ * The same turn in three orders, and what each of them deals.
+ *
+ * The two named tactics first, then the order that costs. The last two rows
+ * spend the SAME two cards on the same three actions and differ only in where
+ * Run sits, which is the whole lesson: hiding halves everything you throw after
+ * it (js/game/engine.js, attackDamage), so the bet goes first and the hiding
+ * goes last.
+ *
+ * The numbers, the card ids and the sentence under each row all come from one
+ * object (COPY.tactics in js/data/walkthrough.js), so a row cannot promise 200
+ * under a note that says half. The card names are asked of cardName(), never
+ * written here: this drawing says "Todo o Nada" in Spanish because the card
+ * does, and not because a second table was kept in step with the first.
+ *
+ * All In carries its own Even check, drawn with riskDots: a row promising 200
+ * with no dots on it would teach a coin flip as a certainty.
+ */
+function tacticsVisual(s) {
+  const { plans, dealt } = COPY.tactics;
+  return `<ol class="tactics">${plans.map((p) => `
+    <li class="tactic${p.costly ? ' tactic--costly' : ''}">
+      <div class="tactic__head">
+        <b class="tactic__name">${escHtml(p.name)}</b>
+        <span class="tactic__total"><b>${p.dealt}</b> ${escHtml(dealt)}</span>
+      </div>
+      <div class="tactic__seq">${p.cards.map((id) => {
+    const c = s.cards.byId[id];
+    return `<span class="tactic__act">${glyphSvg(c.icon, '', 20)}${escHtml(cardName(c))}${riskDots(c.check)}</span>`;
+  }).join(`<span class="tactic__arrow">${CHEV.right}</span>`)}</div>
+      <p class="tactic__note">${escHtml(p.note)}</p>
+    </li>`).join('')}</ol>`;
+}
+
+const VISUALS = { hero: heroArt, states: statesVisual, attacks: attacksVisual, turn: turnVisual, ladder: checksVisual, reactions: reactionsVisual, track: trackVisual, elements: cycleVisual, levels: levelsVisual, tactics: tacticsVisual, components: componentsVisual };
 // A visual that is wider than it is tall gets the whole width of the slide, with
 // the copy above it. Half a slide is about 470px: the boss's six reactions
 // squeezed into that wrap to one word a line and the longest name spills out of
@@ -340,7 +373,22 @@ const VISUALS = { hero: heroArt, states: statesVisual, attacks: attacksVisual, t
 // The track is wide for the same reason: each of its three rows is a caption, a
 // four-band drawing and a sentence on one line, and half a slide breaks that
 // line in three places.
-const WIDE = new Set(['reactions', 'track']);
+// EMPTY: every numbered LESSON now puts its visual in the side lane beside the
+// copy, which is what makes the deck read as one deck.
+//
+// Two used to claim the full width and neither earned it. The boss's reactions
+// lost it because six cells at 1fr each gave every note a ~110px column and broke
+// the longest over four lines. The Damage Track lost it on the owner's call after
+// seeing it: the argument for keeping it (a horizontal band of four 25s is a
+// horizontal thing) was mine, and it was worth less than the empty half-slide it
+// cost. Its three rows stack in the lane, which is the layout the narrow
+// breakpoint had always used anyway.
+//
+// This Set is not dead and neither is .slide--wide: the dice-bridge REFERENCE
+// slide passes the class directly (diceSlide below), because its table is four
+// steps by eight dice and a lane would not shrink it, it would scroll it
+// sideways to one column. That is the bar for anything joining this Set.
+const WIDE = new Set([]);
 
 // ── The slides ───────────────────────────────────────────────
 
@@ -370,7 +418,7 @@ function coverSlide(s, st) {
       <h2 class="cover__title" id="slideTitle">${t('learn.heroTitle')}</h2>
       <p class="cover__lead">${escHtml(t('learn.heroLead'))}</p>
       <div class="row">
-        <a class="btn btn--primary" href="#/play">${glyphSvg('strike', '', 18)} ${escHtml(t('learn.ctaPlayNow'))}</a>
+        <a class="btn btn--primary" href="#/play">${glyphSvg('play', '', 18)} ${escHtml(t('learn.ctaPlayNow'))}</a>
         <a class="btn" href="#/cards">${glyphSvg('dice', '', 18)} ${escHtml(t('learn.ctaCards'))}</a>
       </div>
     </div>
@@ -390,7 +438,7 @@ function playNowSlide(s) {
       <h2 class="cover__title" id="slideTitle">${escHtml(t('learn.playNowTitle'))}</h2>
       <p class="cover__lead">${escHtml(t('learn.playNowLead'))}</p>
       <div class="row">
-        <a class="btn btn--primary" href="#/play">${glyphSvg('strike', '', 18)} ${escHtml(t('learn.playNowCta'))}</a>
+        <a class="btn btn--primary" href="#/play">${glyphSvg('play', '', 18)} ${escHtml(t('learn.playNowCta'))}</a>
         <a class="btn" href="#/cards">${glyphSvg('dice', '', 18)} ${escHtml(t('learn.ctaCards'))}</a>
       </div>
       <p class="muted small">${escHtml(t('learn.playNowDesktop'))}</p>
@@ -458,7 +506,7 @@ function deckHead(i) {
     }
     dots += `
     <button type="button" class="rail__dot" data-action="learn-step" data-step="${n}"${n === i ? ' aria-current="true"' : ''}>
-      <span aria-hidden="true">${n === SLIDE_PLAY ? glyphSvg('strike', '', 12) : n + 1}</span><span class="sr-only">${escHtml(chapterLabel(n))}: ${escHtml(title)}</span>
+      <span aria-hidden="true">${n === SLIDE_PLAY ? glyphSvg('play', '', 12) : n + 1}</span><span class="sr-only">${escHtml(chapterLabel(n))}: ${escHtml(title)}</span>
     </button>`;
   });
   dots += '</div></div>';
@@ -483,9 +531,32 @@ function deckFoot(i) {
 // came from. Transient (a render memo), which is why it is not in state.
 let lastSlide = 0;
 
+/**
+ * Keep the dot you are on inside a rail that scrolls.
+ *
+ * Below 600px the rail is a horizontal scroller (css/learn.css): sizing the
+ * dots to fit a fixed count is a fix that expires the next time a slide is
+ * added, and it already had, twice. A scroller does not expire, but it can hide
+ * the current dot off its own edge, which would make the rail a worse map than
+ * the row it replaced. This puts it back. After paint, because render() has
+ * only just returned the markup.
+ */
+function keepRailDotInView() {
+  if (typeof requestAnimationFrame !== 'function') return;
+  requestAnimationFrame(() => {
+    const dot = document.querySelector('.rail__dot[aria-current="true"]');
+    const rail = dot?.closest('.rail');
+    if (!rail || rail.scrollWidth <= rail.clientWidth) return;
+    const d = dot.getBoundingClientRect(), r = rail.getBoundingClientRect();
+    if (d.left >= r.left && d.right <= r.right) return;
+    rail.scrollLeft += (d.left + d.width / 2) - (r.left + r.width / 2);
+  });
+}
+
 export function renderLearn(s) {
   ensureRulebook();
   installGestures();
+  keepRailDotInView();
   const i = openSlide(s);
   const dir = i < lastSlide ? 'back' : 'fwd';
   lastSlide = i;

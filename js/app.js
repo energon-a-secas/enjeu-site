@@ -6,8 +6,8 @@ import { loadCards } from './data/cards.js';
 import { setArtManifest, loadArt } from './cards/glyphs.js';
 import { syncFromHash } from './navigate.js';
 import { render, renderError } from './render.js';
-import { bindEvents } from './events.js';
-import { initInspector } from './views/inspect.js';
+import { bindEvents, fireAction } from './events.js';
+import { initInspector, initLaneDrag } from './views/inspect.js';
 import { setLogNames } from './views/logline.js';
 import { t } from './strings.js';
 import { reattach } from './game/run.js';
@@ -18,6 +18,7 @@ async function init() {
   render(state);           // "loading" until the data lands
   bindEvents();
   initInspector();
+  initLaneDrag(fireAction);
   try {
     const [cards, manifest] = await Promise.all([
       loadCards('data/cards.json'),
