@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img"><g transform="translate(-1.9476,-0.7215) scale(0.410546)" fill="none" stroke="#000" stroke-width="4.019" stroke-linecap="round" stroke-linejoin="round"><!-- Enjeu: a life card standing (Ready) and one turned sideways (Spent), the bet -->
+  <rect x="10" y="12" width="22" height="32" rx="4"/>
+  <circle cx="21" cy="28" r="4" fill="#000" stroke="none"/>
+  <rect x="30" y="30" width="28" height="20" rx="4"/>
+  <circle cx="44" cy="40" r="3" fill="#000" stroke="none"/>
+  <path d="M38 12l4 6 6-2"/></g></svg>
