@@ -1,7 +1,7 @@
 # Enjeu - print-and-play boss-rush card game
 PORT := 8871
 
-.PHONY: help serve kill check sim dice lint credits test
+.PHONY: help serve kill check sim dice lint credits test cards
 
 help:
 	@echo "make check    - run every checker and its selftest"
@@ -11,6 +11,7 @@ help:
 	@echo "make credits  - build CREDITS.md from the art manifest"
 	@echo "make serve    - static server on http://localhost:$(PORT)"
 	@echo "make test     - node tests: cards, dice bridge, engine (no dependencies)"
+	@echo "make cards    - every card as a print-ready PNG, face and back (needs make serve)"
 
 serve:
 	@# no-cache dev server: a plain http.server lets the browser keep stale modules
@@ -32,6 +33,9 @@ credits:
 	python3 tools/credits.py
 
 # Site tests: contracts C1-C5 from docs/plans/2026-08-22-enjeu-site.md.
+cards:
+	@python3 tools/export_cards.py $(ARGS)
+
 test:
 	@for f in tests/*.test.mjs; do echo "== $$f =="; node $$f || exit 1; done
 

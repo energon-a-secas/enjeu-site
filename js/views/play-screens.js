@@ -10,7 +10,7 @@ import { cardFace, lifeMini } from '../cards/face.js';
 import { glyphSvg } from '../cards/glyphs.js';
 import { figureSvg } from '../game/figures.js';
 import { heroFor, BOSSES } from '../data/placeholders.js';
-import { lastLevel } from '../game/run.js';
+import { lastLevel, shapeOf } from '../game/run.js';
 import { DICE } from '../game/rules.js';
 import { DM_STYLES } from '../game/engine.js';
 import { riskDots } from '../cards/face.js';
@@ -66,14 +66,19 @@ export function renderSetup(s) {
   // as a row of level pips and a wall-clock estimate, carries the boss it ends
   // on, and takes its own accent. The length is the question being asked.
   const KINDS = [
-    { id: 'first', name: t('play.firstGame'), lead: t('play.firstGameLead'), boss: 1 },
-    { id: 'quick', name: t('play.quickRun'), lead: t('play.quickRunLead'), boss: 3 },
-    { id: 'full', name: t('play.fullRun'), lead: t('play.fullRunLead'), boss: 5 },
+    { id: 'first', name: t('play.firstGame'), lead: t('play.firstGameLead') },
+    { id: 'quick', name: t('play.quickRun'), lead: t('play.quickRunLead') },
+    { id: 'full', name: t('play.fullRun'), lead: t('play.fullRunLead') },
   ];
   const kindCard = (k) => {
     const n = lastLevel(k.id);
     const pips = Array.from({ length: 5 }, (_, i) => `<i class="${i < n ? 'is-on' : ''}"></i>`).join('');
-    const roster = BOSSES.find((b) => b.level === k.boss);
+    // The boss this run ENDS on, taken from the shape rather than written down
+    // beside it: a Quick run stops at three levels but its last stop is the
+    // level 5 boss, and a hardcoded 3 put the middle boss on the card as if it
+    // were the climax.
+    const sh = shapeOf(k.id);
+    const roster = BOSSES.find((b) => b.level === sh.bosses[sh.levels - 1]);
     return `<button class="kind ${kind === k.id ? 'is-on' : ''}" data-kind-id="${k.id}" data-action="play-kind" data-kind="${k.id}" aria-pressed="${kind === k.id}">
       <span class="kind__len"><span class="kind__pips" aria-hidden="true">${pips}</span>
         <b>${escHtml(t(`play.kindLevels.${k.id}`))}</b><small>${escHtml(t(`play.kindMinutes.${k.id}`))}</small></span>
@@ -106,14 +111,14 @@ export function renderSetup(s) {
           <span class="seg" role="group">${['story', 'standard', 'nightmare'].map((m) => `<button data-action="play-mode" data-mode="${m}" aria-pressed="${s.mode === m}">${escHtml(t(`play.${m}`))}</button>`).join('')}</span>
           <small class="muted">${escHtml(t(`play.modeHint.${s.mode}`))}</small></div>
       </div>
-      <div class="sw-pick ${s.secondWind ? 'panel--accent' : ''}">
+      <div class="sw-pick opt ${s.secondWind ? 'is-on' : ''}">
         <div class="sw-pick__card">${sw ? cardFace(sw, { size: 'mini' }) : ''}</div>
         <label class="sw-pick__text">
           <span class="row"><input type="checkbox" data-change="play-second-wind" ${s.secondWind ? 'checked' : ''}> <b>${escHtml(t('play.secondWind'))}</b></span>
           <small class="muted">${escHtml(t('play.secondWindHint'))}</small>
         </label>
       </div>
-      <div class="sw-pick ${s.simple ? 'panel--accent' : ''}">
+      <div class="sw-pick opt ${s.simple ? 'is-on' : ''}">
         <label class="sw-pick__text">
           <span class="row"><input type="checkbox" data-change="play-simple" ${s.simple ? 'checked' : ''}> <b>${escHtml(t('play.simpleMode'))}</b></span>
           <small class="muted">${escHtml(t('play.simpleModeHint'))}</small>
@@ -154,6 +159,7 @@ export function renderSetup(s) {
     ${stepper}
     ${slides[st]}
     ${nav}
+    <p class="small muted setup-keys">${escHtml(t('play.setup.keys'))}</p>
     <p class="small muted">${escHtml(t('play.placeholderNote'))}</p>
     </div>
   </div>`;
@@ -185,7 +191,7 @@ function dmDial(s) {
   // than a thing a family has to notice and switch off: the game is complete
   // without it, and a settings screen that shows every dial at once is how a
   // simple game stops looking simple.
-  return `<div class="dm-dial ${on ? 'panel--accent' : ''}">
+  return `<div class="dm-dial opt ${on ? 'is-on' : ''}">
     <label class="sw-pick__text">
       <span class="row"><input type="checkbox" data-change="play-dm-on" ${on ? 'checked' : ''}>
         <b>${glyphSvg('break', '', 18)} ${escHtml(t('play.dm.enable'))}</b></span>

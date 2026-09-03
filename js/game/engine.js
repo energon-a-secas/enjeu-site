@@ -92,7 +92,7 @@ export const ALLY_DEF = 2 * UNIT;
  */
 export const DM_STYLES = ['friendly', 'assisted', 'hardcore'];
 export const BREAK_REWARDS = ['wound', 'cripple', 'trophy'];
-export const DM_DEFAULTS = { style: 'assisted', cap: 2, step: 'hard', wound: 2 * UNIT, cripple: UNIT };
+export const DM_DEFAULTS = { on: false, style: 'assisted', cap: 2, step: 'hard', wound: 2 * UNIT, cripple: UNIT };
 
 /** The check a break asks for, or null when the DM simply grants it. */
 export function breakStepFor(f) {
@@ -112,7 +112,12 @@ export const breakCost = (f) => (f.dm?.style === 'hardcore' ? 1 : 0);
  * describing anything that happened.
  */
 export function canBreak(f) {
-  if (f.legacy || !f.dm || !f.dm.cap) return false;
+  // `on` is the switch and `cap` is the dial, and they are deliberately not the
+  // same field. Encoding "off" as cap 0 at a call site meant a run that carried
+  // no dm at all fell back to DM_DEFAULTS and turned breaks ON, and the setup
+  // screen's "same table as last time" wrote the 0 back into device settings,
+  // disabling the feature permanently with no way to see why.
+  if (f.legacy || !f.dm || !f.dm.on || !f.dm.cap) return false;
   return f.phase === 'act' && !!f.hero.breakWindow
     && f.boss.breaks < f.dm.cap && f.actionsLeft >= breakCost(f);
 }
@@ -389,7 +394,12 @@ export function attack(f, a, o = {}) {
   if (a.id === 'all-in') f.stats.allIns += 1;
 
   const step = effectiveStep(f, a);
-  f.hero.penaltyArmed = false; f.hero.penalty = false; // a Roar is spent on the next attack
+  // A Roar is spent on the next CHECK, not on the next action. Clearing it here
+  // unconditionally meant a card that rolls nothing (Bubble, Run, Taunt reach
+  // this line via their own branches above, but a checkless attack does not)
+  // swallowed the penalty and the Roar cost nothing. legacy keeps the old
+  // behaviour, because tools/sim.py has always spent it on any attack.
+  if (step || f.legacy) { f.hero.penaltyArmed = false; f.hero.penalty = false; }
   const odds = stepOdds(step);
   let hit, auto = false, need = null, rollShown = o.roll ?? null;
   if (o.useRune && f.hero.rune > 0 && step) { f.hero.rune -= 1; hit = true; auto = true; }

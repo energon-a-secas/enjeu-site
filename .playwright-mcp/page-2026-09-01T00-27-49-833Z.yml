@@ -1,0 +1,148 @@
+- generic [ref=f9e1]:
+  - link "Saltar al contenido" [ref=f9e1543] [cursor=pointer]:
+    - /url: "#main"
+  - banner [ref=f9e3]:
+    - link [ref=f9e5] [cursor=pointer]:
+      - /url: "#/learn"
+      - heading "Enjeu" [level=1] [ref=f9e8]
+    - generic [ref=f9e9]:
+      - generic [ref=f9e10]:
+        - tablist "Secciones" [ref=f9e1544]:
+          - tab "Aprender" [ref=f9e1545] [cursor=pointer]
+          - tab "Cartas" [ref=f9e1549] [cursor=pointer]
+          - tab "Jugar" [selected] [ref=f9e1553] [cursor=pointer]
+          - tab "Acerca de" [ref=f9e1557] [cursor=pointer]
+        - group "Language / Idioma" [ref=f9e28]:
+          - button "EN" [ref=f9e29] [cursor=pointer]
+          - button "ES" [active] [pressed] [ref=f9e30] [cursor=pointer]
+      - link "Neorgon home" [ref=f9e31] [cursor=pointer]:
+        - /url: https://neorgon.com/
+  - main [ref=f9e41]:
+    - generic [ref=f9e1561]:
+      - generic [ref=f9e1562]:
+        - generic [ref=f9e1563]:
+          - generic [ref=f9e1564]: Ember Beetle
+          - generic [ref=f9e1565]:
+            - text: M · Fuego · Nivel 1 ·
+            - generic [ref=f9e1566]: Ronda 2
+        - generic [ref=f9e1567]:
+          - generic [ref=f9e1568] [cursor=pointer]: d20 · Normal
+          - button "Ver el registro" [ref=f9e1569] [cursor=pointer]
+          - button "Abandonar la partida" [ref=f9e1572] [cursor=pointer]
+      - generic [ref=f9e1573]:
+        - complementary "En la mesa" [ref=f9e1574]:
+          - 'img "Bioma: en la caja" [ref=f9e1575]'
+          - 'button "Segundo Aire: En juego" [ref=f9e1578]':
+            - img "Second Wind" [ref=f9e1580]
+            - generic [ref=f9e1598]: En juego
+        - generic [ref=f9e1599]:
+          - generic [ref=f9e1600]:
+            - generic [ref=f9e1601]:
+              - generic [ref=f9e1602]:
+                - img "Ember Scout" [ref=f9e1603]
+                - generic [ref=f9e1623]: Ember Scout
+              - generic [ref=f9e1624]: En Pie 4 · De Lado 0 · Rota 0
+              - generic [ref=f9e1625]:
+                - img "Fire" [ref=f9e1626]:
+                  - generic [ref=f9e1632]: "25"
+                - img "Fire" [ref=f9e1633]:
+                  - generic [ref=f9e1639]: "25"
+                - img "Fire" [ref=f9e1640]:
+                  - generic [ref=f9e1646]: "25"
+                - img "Fire" [ref=f9e1647]:
+                  - generic [ref=f9e1653]: "25"
+              - generic "En juego"
+            - generic [ref=f9e1654]:
+              - generic [ref=f9e1655]:
+                - generic [ref=f9e1656]: "275"
+                - generic [ref=f9e1657]: / 400
+                - generic [ref=f9e1658] [cursor=pointer]: Aguante
+              - 'img "Vida del jefe: 275 / 400" [ref=f9e1659]'
+            - generic [ref=f9e1676]:
+              - status [ref=f9e1677]: "El jefe Aguanta: sin daño, y recibe la mitad hasta el final de tu próximo turno."
+              - generic [ref=f9e1678]:
+                - img "Ember Beetle" [ref=f9e1679]
+                - generic [ref=f9e1702]: Ember Beetle
+              - generic [ref=f9e1703]:
+                - generic [ref=f9e1704]: Objetivo
+                - button "el jefe 275" [pressed] [ref=f9e1705] [cursor=pointer]
+          - paragraph [ref=f9e1709]: Ronda 2. 4 En Pie.
+          - generic [ref=f9e1710]:
+            - generic [ref=f9e1711]: 1 acciones restantes
+            - generic [ref=f9e1718]:
+              - generic [ref=f9e1719]: d20
+              - generic [ref=f9e1724]:
+                - 'button "Golpe. Una acción, sin apostar nada: haces 25 de daño. Siempre acierta." [ref=f9e1725] [cursor=pointer]':
+                  - img "Strike" [ref=f9e1726]:
+                    - generic [ref=f9e1741]: "0"
+                    - generic [ref=f9e1742]: "25"
+                  - generic [ref=f9e1743]: Golpe x2
+                  - generic [ref=f9e1744]: 1 acción
+                - 'button "Puntería. Apuesta 1 carta de vida y tira Segura: 75 de daño. La carta queda De Lado, acierte o no." [ref=f9e1745] [cursor=pointer]':
+                  - img "Focus" [ref=f9e1746]:
+                    - generic [ref=f9e1769]: "0"
+                    - generic [ref=f9e1770]: "75"
+                  - generic [ref=f9e1771]: Puntería
+                  - generic [ref=f9e1772]: 1 acción · Apuesta 1
+                - 'button "Todo o Nada. Dos acciones. Apuesta las cartas En Pie que quieras y tira Pareja: 100 por cada carta, o nada de nada." [disabled] [ref=f9e1775]':
+                  - img "All In" [ref=f9e1776]:
+                    - generic [ref=f9e1807]: "0"
+                    - generic [ref=f9e1808]: ×4
+                  - generic [ref=f9e1809]: Todo o Nada
+                  - generic [ref=f9e1810]: 2 acciones · Apuesta la que quieras
+                - 'button "Burbuja. Una acción y ninguna carta: absorbe los próximos 25 que te haga el jefe esta ronda. Sirve hasta en Furia." [ref=f9e1814] [cursor=pointer]':
+                  - img "Bubble" [ref=f9e1815]:
+                    - generic [ref=f9e1826]: "0"
+                    - generic [ref=f9e1827]: "25"
+                  - generic [ref=f9e1828]: Burbuja
+                  - generic [ref=f9e1829]: 1 acción
+                - 'button "Escape. Una acción: te Escondes hasta que el jefe actúe. Su Golpe pasa de largo; lo demás te llega a la mitad." [ref=f9e1830] [cursor=pointer]':
+                  - img "Run" [ref=f9e1831]:
+                    - generic [ref=f9e1849]: "0"
+                  - generic [ref=f9e1850]: Escape
+                  - generic [ref=f9e1851]: 1 acción
+                - 'button "Invención. Di tu hechizo en voz alta, apuesta 1 carta y tira Loca: acierta por 350, el número más grande del mazo." [ref=f9e1852] [cursor=pointer]':
+                  - img "Invention" [ref=f9e1853]:
+                    - generic [ref=f9e1870]: "0"
+                    - generic [ref=f9e1871]: "350"
+                  - generic [ref=f9e1872]: Invención
+                  - generic [ref=f9e1873]: 1 acción · Apuesta 1
+            - generic [ref=f9e1880]:
+              - generic [ref=f9e1881]:
+                - generic [ref=f9e1882]: Tu turno
+                - generic [ref=f9e1883]: Haz clic en una carta una vez por cada acción que quieras darle. Haz clic en un número para sacar ese paso.
+              - generic [ref=f9e1884]:
+                - list [ref=f9e1885]:
+                  - listitem [ref=f9e1886]:
+                    - button "Paso 1" [ref=f9e1887] [cursor=pointer]: "1"
+                    - button "Move earlier" [disabled]: ‹
+                    - button "Move later" [ref=f9e1888] [cursor=pointer]: ›
+                    - img "Strike" [ref=f9e1889]:
+                      - generic [ref=f9e1904]: "0"
+                      - generic [ref=f9e1905]: "25"
+                    - generic [ref=f9e1906]: Golpe
+                  - listitem [ref=f9e1908]:
+                    - button "Paso 2" [ref=f9e1909] [cursor=pointer]: "2"
+                    - button "Move earlier" [ref=f9e1910] [cursor=pointer]: ‹
+                    - button "Move later" [disabled]: ›
+                    - img "Strike" [ref=f9e1911]:
+                      - generic [ref=f9e1926]: "0"
+                      - generic [ref=f9e1927]: "25"
+                    - generic [ref=f9e1928]: Golpe
+                - generic [ref=f9e1930]:
+                  - button "Deshacer" [ref=f9e1931] [cursor=pointer]
+                  - button "Limpiar" [ref=f9e1932] [cursor=pointer]
+                  - button "Terminar el turno" [ref=f9e1933] [cursor=pointer]
+                  - button "Resolver el turno" [ref=f9e1936] [cursor=pointer]
+  - contentinfo [ref=f9e45]:
+    - generic [ref=f9e46]: Las reglas y las cartas son MIT. El arte de las cartas es CC BY, acreditado en la página Acerca de. Las partidas se guardan solo en este dispositivo.
+    - generic [ref=f9e47]:
+      - generic [ref=f9e48]: Fin.
+      - generic [ref=f9e49]: ·
+      - link "Part of Neorgon" [ref=f9e50] [cursor=pointer]:
+        - /url: https://neorgon.com/
+      - generic [ref=f9e53]: ·
+      - link "Code" [ref=f9e54] [cursor=pointer]:
+        - /url: https://github.com/energon-a-secas/enjeu-site
+      - generic [ref=f9e57]: ·
+      - generic [ref=f9e58]: v1.1.0

@@ -107,7 +107,17 @@ function bossWall(f, ui = {}) {
   const whole = Math.floor(f.boss.body / per);
   const part = f.boss.body - whole * per;                 // 0, 25, 50 or 75
   const cards = whole + (part > 0 ? 1 : 0);
-  const { cols, rows } = wallShape(cards + (ui.wallFell || 0));
+  // The wall's GEOMETRY comes from the boss at full life, never from what is
+  // left of it. --wall-card in css/play.css divides the available space by the
+  // column and row counts, so counts that shrank with the wall made every
+  // surviving card grow: a 20 card boss down to two was rendering them at the
+  // 148px ceiling, wider than it had ever drawn a card, and the whole board
+  // reflowed around it. Sizing from the maximum means a card is one size for
+  // the whole fight and losing one takes a card off the wall rather than
+  // inflating its neighbours, which is also what happens on a real table.
+  const maxCards = Math.max(1, Math.ceil((f.boss.maxHp || f.boss.body) / per));
+  const { cols } = wallShape(maxCards);
+  const rows = Math.ceil(maxCards / cols);
   const lead = part > 0
     ? `<span class="lc-part" style="--frac:${(part / per).toFixed(2)}" aria-hidden="true">${lifeMini('boss')}</span>`
     : '';
@@ -813,7 +823,13 @@ function resolveModal(f, ui, plan, wait) {
     : `<button class="btn btn--primary" data-action="play-resolve-close">${escHtml(t('play.rm.close'))}</button>`}</div>`;
   } else {
     const n = plan.filter((st) => effectiveStep(f, attackFor(f, st.id))).length;
-    body = `<p class="rm-what">${escHtml(t('play.rm.lead'))}${n ? ` ${n} ${escHtml(t(n > 1 ? 'play.rm.checks' : 'play.rm.check'))}.` : ` ${escHtml(t('play.rm.noChecks'))}`}</p>
+    // The lead is written to be followed by a count ("This turn holds 2 rolls
+    // to make."), so with nothing to count it has to be REPLACED, not extended:
+    // appending gave "This turn holds Everything lands on its own."
+    const lead = n
+      ? `${t('play.rm.lead')} ${n} ${t(n > 1 ? 'play.rm.checks' : 'play.rm.check')}.`
+      : t('play.rm.noChecks');
+    body = `<p class="rm-what">${escHtml(lead)}</p>
       <div class="row rm-row">
         <button class="btn btn--primary btn--lg" data-action="play-resolve-throw">${glyphSvg('dice', '', 18)} ${escHtml(t('play.rm.throw'))}</button>
         <button class="btn" data-action="play-resolve-fast">${escHtml(t('play.rm.fast'))}</button>

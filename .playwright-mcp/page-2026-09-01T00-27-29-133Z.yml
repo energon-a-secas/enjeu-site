@@ -1,0 +1,149 @@
+- generic [active] [ref=f9e1]:
+  - link "Skip to content" [ref=f9e2] [cursor=pointer]:
+    - /url: "#main"
+  - banner [ref=f9e3]:
+    - link [ref=f9e5] [cursor=pointer]:
+      - /url: "#/learn"
+      - heading "Enjeu" [level=1] [ref=f9e8]
+    - generic [ref=f9e9]:
+      - generic [ref=f9e10]:
+        - tablist "Sections" [ref=f9e11]:
+          - tab "Learn" [ref=f9e778] [cursor=pointer]
+          - tab "Cards" [ref=f9e782] [cursor=pointer]
+          - tab "Play" [selected] [ref=f9e786] [cursor=pointer]
+          - tab "About" [ref=f9e790] [cursor=pointer]
+        - group "Language / Idioma" [ref=f9e28]:
+          - button "EN" [pressed] [ref=f9e29] [cursor=pointer]
+          - button "ES" [ref=f9e30] [cursor=pointer]
+      - link "Neorgon home" [ref=f9e31] [cursor=pointer]:
+        - /url: https://neorgon.com/
+  - main [ref=f9e41]:
+    - generic [ref=f9e794]:
+      - generic [ref=f9e795]:
+        - generic [ref=f9e796]:
+          - generic [ref=f9e797]: Ember Beetle
+          - generic [ref=f9e798]:
+            - text: M · Fire · Level 1 ·
+            - generic [ref=f9e799]: Round 2
+        - generic [ref=f9e800]:
+          - generic [ref=f9e801] [cursor=pointer]: d20 · Standard
+          - button "Show the log" [ref=f9e802] [cursor=pointer]
+          - button "Abandon run" [ref=f9e805] [cursor=pointer]
+      - generic [ref=f9e806]:
+        - complementary "On the table" [ref=f9e807]:
+          - 'img "Biome: in the box" [ref=f9e808]'
+          - 'button "Second Wind: In play" [ref=f9e811]':
+            - img "Second Wind" [ref=f9e813]
+            - generic [ref=f9e831]: In play
+        - generic [ref=f9e832]:
+          - generic [ref=f9e833]:
+            - generic [ref=f9e834]:
+              - generic [ref=f9e835]:
+                - img "Ember Scout" [ref=f9e836]
+                - generic [ref=f9e856]: Ember Scout
+              - generic [ref=f9e857]: Ready 4 · Spent 0 · Broken 0
+              - generic [ref=f9e858]:
+                - img "Fire" [ref=f9e859]:
+                  - generic [ref=f9e865]: "25"
+                - img "Fire" [ref=f9e866]:
+                  - generic [ref=f9e872]: "25"
+                - img "Fire" [ref=f9e873]:
+                  - generic [ref=f9e879]: "25"
+                - img "Fire" [ref=f9e880]:
+                  - generic [ref=f9e886]: "25"
+              - generic "In play"
+            - generic [ref=f9e887]:
+              - generic [ref=f9e888]:
+                - generic [ref=f9e889]: "275"
+                - generic [ref=f9e890]: / 400
+                - generic [ref=f9e891] [cursor=pointer]: Brace
+              - 'img "Boss life: 275 / 400" [ref=f9e892]'
+            - generic [ref=f9e909]:
+              - status [ref=f9e910]: "The boss Braces: no damage, and it halves what it takes until the end of your next turn."
+              - generic [ref=f9e911]:
+                - img "Ember Beetle" [ref=f9e912]
+                - generic [ref=f9e935]: Ember Beetle
+              - generic [ref=f9e936]:
+                - generic [ref=f9e937]: Target
+                - button "the boss 275" [pressed] [ref=f9e938] [cursor=pointer]
+          - paragraph [ref=f9e942]: Round 2. 4 Ready.
+          - generic [ref=f9e943]:
+            - generic [ref=f9e944]: 2 actions left
+            - generic [ref=f9e951]:
+              - generic [ref=f9e952]: d20
+              - generic [ref=f9e957]:
+                - 'button "Strike. One action, no bet: deal 25. It always lands." [ref=f9e958] [cursor=pointer]':
+                  - img "Strike" [ref=f9e959]:
+                    - generic [ref=f9e974]: "0"
+                    - generic [ref=f9e975]: "25"
+                  - generic [ref=f9e976]: Strike x1
+                  - generic [ref=f9e977]: 1 action
+                - 'button "Focus. Bet 1 life card and roll Sure: 75 damage. The card is Spent whether it lands or not." [ref=f9e978] [cursor=pointer]':
+                  - img "Focus" [ref=f9e979]:
+                    - generic [ref=f9e1002]: "0"
+                    - generic [ref=f9e1003]: "75"
+                  - generic [ref=f9e1004]: Focus
+                  - generic [ref=f9e1005]: 1 action · Bet 1
+                - 'button "All In. Two actions. Bet any Ready cards and roll Even: 100 damage for each card bet, or nothing at all." [ref=f9e1008] [cursor=pointer]':
+                  - img "All In" [ref=f9e1009]:
+                    - generic [ref=f9e1040]: "0"
+                    - generic [ref=f9e1041]: ×4
+                  - generic [ref=f9e1042]: All In
+                  - generic [ref=f9e1043]: 2 actions · Bet any
+                - 'button "Bubble. One action, no card: absorb the next 25 the boss deals you this round. It still works under Rage." [ref=f9e1047] [cursor=pointer]':
+                  - img "Bubble" [ref=f9e1048]:
+                    - generic [ref=f9e1059]: "0"
+                    - generic [ref=f9e1060]: "25"
+                  - generic [ref=f9e1061]: Bubble
+                  - generic [ref=f9e1062]: 1 action
+                - 'button "Run. One action: you Hide until the boss acts. Its Strike misses you entirely; anything else hits for half." [ref=f9e1063] [cursor=pointer]':
+                  - img "Run" [ref=f9e1064]:
+                    - generic [ref=f9e1082]: "0"
+                  - generic [ref=f9e1083]: Run
+                  - generic [ref=f9e1084]: 1 action
+                - 'button "Invention. Say your spell out loud, bet 1 card and roll Wild: it lands for 350, the biggest number in your deck." [ref=f9e1085] [cursor=pointer]':
+                  - img "Invention" [ref=f9e1086]:
+                    - generic [ref=f9e1103]: "0"
+                    - generic [ref=f9e1104]: "350"
+                  - generic [ref=f9e1105]: Invention
+                  - generic [ref=f9e1106]: 1 action · Bet 1
+            - generic [ref=f9e1113]:
+              - generic [ref=f9e1114]:
+                - generic [ref=f9e1115]: Your turn
+                - generic [ref=f9e1116]: Click a card once for each action you want it to take. Click a number to drop that step.
+              - generic [ref=f9e1117]:
+                - list [ref=f9e1118]:
+                  - listitem [ref=f9e1119]:
+                    - button "Step 1" [ref=f9e1120] [cursor=pointer]: "1"
+                    - img "Strike" [ref=f9e1121]:
+                      - generic [ref=f9e1136]: "0"
+                      - generic [ref=f9e1137]: "25"
+                    - generic [ref=f9e1138]: Strike
+                - generic [ref=f9e1140]:
+                  - button "Undo last" [ref=f9e1141] [cursor=pointer]
+                  - button "Clear" [ref=f9e1142] [cursor=pointer]
+                  - button "End turn" [ref=f9e1143] [cursor=pointer]
+                  - button "Resolve the turn" [ref=f9e1146] [cursor=pointer]
+  - contentinfo [ref=f9e45]:
+    - generic [ref=f9e46]: Rules and cards are MIT. Card art is CC BY, credited on the About page. Runs save on this device only.
+    - generic [ref=f9e47]:
+      - generic [ref=f9e48]: Fin.
+      - generic [ref=f9e49]: ·
+      - link "Part of Neorgon" [ref=f9e50] [cursor=pointer]:
+        - /url: https://neorgon.com/
+      - generic [ref=f9e53]: ·
+      - link "Code" [ref=f9e54] [cursor=pointer]:
+        - /url: https://github.com/energon-a-secas/enjeu-site
+      - generic [ref=f9e57]: ·
+      - generic [ref=f9e58]: v1.1.0
+  - 'tooltip "Strike Strike One action, no bet: deal 25. It always lands. 1 action · 25 damage · lands"':
+    - generic:
+      - img "Strike":
+        - generic: "0"
+        - generic: "25"
+    - generic:
+      - generic: Strike
+      - paragraph: "One action, no bet: deal 25. It always lands."
+      - paragraph:
+        - text: 1 action · 25 damage ·
+        - generic: lands

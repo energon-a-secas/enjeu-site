@@ -1,0 +1,442 @@
+- generic [ref=f9e1]:
+  - link "Saltar al contenido" [ref=f9e1543] [cursor=pointer]:
+    - /url: "#main"
+  - banner [ref=f9e3]:
+    - link [ref=f9e5] [cursor=pointer]:
+      - /url: "#/learn"
+      - heading "Enjeu" [level=1] [ref=f9e8]
+    - generic [ref=f9e9]:
+      - generic [ref=f9e10]:
+        - tablist "Secciones" [ref=f9e1544]:
+          - tab "Aprender" [ref=f9e1939] [cursor=pointer]
+          - tab "Cartas" [selected] [ref=f9e1943] [cursor=pointer]
+          - tab "Jugar" [ref=f9e1947] [cursor=pointer]
+          - tab "Acerca de" [ref=f9e1951] [cursor=pointer]
+        - group "Language / Idioma" [ref=f9e28]:
+          - button "EN" [ref=f9e29] [cursor=pointer]
+          - button "ES" [active] [pressed] [ref=f9e30] [cursor=pointer]
+      - link "Neorgon home" [ref=f9e31] [cursor=pointer]:
+        - /url: https://neorgon.com/
+  - main [ref=f9e41]:
+    - generic [ref=f9e1955]:
+      - generic [ref=f9e1956]:
+        - paragraph [ref=f9e1957]: Las cartas
+        - paragraph [ref=f9e1958]: Ciento once cartas, tamaño póker, sin una sola palabra impresa. Las esquinas llevan los números. El dibujo es el nombre, y decirlo en voz alta te toca a ti. Toca una carta para ver qué hace.
+        - paragraph [ref=f9e1959]: 70 attributed icons from the manifest; the rest are arte provisorio.
+      - generic [ref=f9e1960]:
+        - button "Imprimir 111 (13 hojas)" [ref=f9e1961] [cursor=pointer]
+        - group "Qué imprimir" [ref=f9e1964]:
+          - button "Todo" [pressed] [ref=f9e1965] [cursor=pointer]
+          - button "Lo esencial" [ref=f9e1966] [cursor=pointer]
+          - button "Primera partida" [ref=f9e1967] [cursor=pointer]
+        - group "Papel" [ref=f9e1968]:
+          - button "A4" [pressed] [ref=f9e1969] [cursor=pointer]
+          - button "Letter" [ref=f9e1970] [cursor=pointer]
+        - group "Reversos" [ref=f9e1971]:
+          - button "sin reversos" [pressed] [ref=f9e1972] [cursor=pointer]
+          - button "4 reversos" [ref=f9e1973] [cursor=pointer]
+          - button "un reverso por carta" [ref=f9e1974] [cursor=pointer]
+      - generic [ref=f9e1976]:
+        - generic [ref=f9e1977]:
+          - generic [ref=f9e1978]: Ordenar por
+          - combobox "Ordenar por" [ref=f9e1979]:
+            - option "Mazo" [selected]
+            - option "Elemento"
+            - option "Rango"
+            - option "Clase"
+            - option "Riesgo"
+            - option "Daño"
+            - option "Nombre"
+        - generic [ref=f9e1980]:
+          - group [ref=f9e1981]:
+            - generic "Todos los mazos ▾" [ref=f9e1982] [cursor=pointer]:
+              - generic [ref=f9e1983]: Todos los mazos
+              - text: ▾
+          - group [ref=f9e1984]:
+            - generic "Cualquier elemento ▾" [ref=f9e1985] [cursor=pointer]:
+              - generic [ref=f9e1986]: Cualquier elemento
+              - text: ▾
+          - group [ref=f9e1987]:
+            - generic "Cualquier rango ▾" [ref=f9e1988] [cursor=pointer]:
+              - generic [ref=f9e1989]: Cualquier rango
+              - text: ▾
+          - group [ref=f9e1990]:
+            - generic "Cualquier clase ▾" [ref=f9e1991] [cursor=pointer]:
+              - generic [ref=f9e1992]: Cualquier clase
+              - text: ▾
+        - button "Ver reversos" [ref=f9e1993] [cursor=pointer]
+      - region [ref=f9e1994]:
+        - generic [ref=f9e1995]:
+          - heading "Ataque" [level=3] [ref=f9e1996]
+          - generic [ref=f9e1997]: 6 copias
+        - generic [ref=f9e1998]:
+          - button "Golpe" [ref=f9e1999] [cursor=pointer]:
+            - img "Strike" [ref=f9e2000]:
+              - generic [ref=f9e2015]: "0"
+              - generic [ref=f9e2016]: "25"
+          - button "Puntería" [ref=f9e2018] [cursor=pointer]:
+            - img "Focus" [ref=f9e2019]:
+              - generic [ref=f9e2042]: "0"
+              - generic [ref=f9e2043]: "75"
+          - button "Todo o Nada" [ref=f9e2045] [cursor=pointer]:
+            - img "All In" [ref=f9e2046]:
+              - generic [ref=f9e2077]: "0"
+              - generic [ref=f9e2078]: ×4
+          - button "Burbuja" [ref=f9e2080] [cursor=pointer]:
+            - img "Bubble" [ref=f9e2081]:
+              - generic [ref=f9e2092]: "0"
+              - generic [ref=f9e2093]: "25"
+          - button "Escape" [ref=f9e2095] [cursor=pointer]:
+            - img "Run" [ref=f9e2096]:
+              - generic [ref=f9e2114]: "0"
+          - button "Invención" [ref=f9e2116] [cursor=pointer]:
+            - img "Invention" [ref=f9e2117]:
+              - generic [ref=f9e2134]: "0"
+              - generic [ref=f9e2135]: "350"
+      - region [ref=f9e2137]:
+        - generic [ref=f9e2138]:
+          - heading "Habilidades" [level=3] [ref=f9e2139]
+          - generic [ref=f9e2140]: 26 copias
+        - generic [ref=f9e2141]:
+          - button "Tajo" [ref=f9e2142] [cursor=pointer]:
+            - img "Slash" [ref=f9e2143]:
+              - generic [ref=f9e2159]: "0"
+              - generic [ref=f9e2160]: "75"
+          - button "Brasa" [ref=f9e2162] [cursor=pointer]:
+            - img "Ember" [ref=f9e2163]:
+              - generic [ref=f9e2178]: "0"
+              - generic [ref=f9e2179]: "75"
+          - button "Torrente" [ref=f9e2181] [cursor=pointer]:
+            - img "Torrent" [ref=f9e2182]:
+              - generic [ref=f9e2200]: "0"
+              - generic [ref=f9e2201]: "75"
+          - button "Temblor" [ref=f9e2203] [cursor=pointer]:
+            - img "Tremor" [ref=f9e2204]:
+              - generic [ref=f9e2217]: "0"
+              - generic [ref=f9e2218]: "75"
+          - button "Vendaval" [ref=f9e2220] [cursor=pointer]:
+            - img "Gale" [ref=f9e2221]:
+              - generic [ref=f9e2238]: "0"
+              - generic [ref=f9e2239]: "75"
+          - button "Punzón" [ref=f9e2241] [cursor=pointer]:
+            - img "Piercer" [ref=f9e2242]:
+              - generic [ref=f9e2261]: "1"
+              - generic [ref=f9e2262]: "100"
+          - button "Fogonazo" [ref=f9e2264] [cursor=pointer]:
+            - img "Firebolt" [ref=f9e2265]:
+              - generic [ref=f9e2280]: "1"
+              - generic [ref=f9e2281]: "100"
+          - button "Lanza de Hielo" [ref=f9e2283] [cursor=pointer]:
+            - img "Ice Spear" [ref=f9e2284]:
+              - generic [ref=f9e2306]: "1"
+              - generic [ref=f9e2307]: "100"
+          - button "Peñasco" [ref=f9e2309] [cursor=pointer]:
+            - img "Boulder" [ref=f9e2310]:
+              - generic [ref=f9e2324]: "1"
+              - generic [ref=f9e2325]: "100"
+          - button "Ciclón" [ref=f9e2327] [cursor=pointer]:
+            - img "Cyclone" [ref=f9e2328]:
+              - generic [ref=f9e2347]: "1"
+              - generic [ref=f9e2348]: "100"
+          - button "Onda Cortante" [ref=f9e2350] [cursor=pointer]:
+            - img "Slash Wave" [ref=f9e2351]:
+              - generic [ref=f9e2374]: "2"
+              - generic [ref=f9e2375]: "225"
+          - button "Nova" [ref=f9e2377] [cursor=pointer]:
+            - img "Nova" [ref=f9e2378]:
+              - generic [ref=f9e2395]: "2"
+              - generic [ref=f9e2396]: "225"
+          - button "Maldición Helada" [ref=f9e2398] [cursor=pointer]:
+            - img "Cold Curse" [ref=f9e2399]:
+              - generic [ref=f9e2417]: "2"
+              - generic [ref=f9e2418]: "225"
+          - button "Terremoto" [ref=f9e2420] [cursor=pointer]:
+            - img "Earthquake" [ref=f9e2421]:
+              - generic [ref=f9e2446]: "2"
+              - generic [ref=f9e2447]: "225"
+          - button "Tormenta" [ref=f9e2449] [cursor=pointer]:
+            - img "Tempest" [ref=f9e2450]:
+              - generic [ref=f9e2466]: "2"
+              - generic [ref=f9e2467]: "225"
+          - button "Filo de Alma" [ref=f9e2469] [cursor=pointer]:
+            - img "Soul Strike" [ref=f9e2470]:
+              - generic [ref=f9e2498]: "3"
+              - generic [ref=f9e2499]: "400"
+          - button "Pira" [ref=f9e2501] [cursor=pointer]:
+            - img "Pyre" [ref=f9e2502]:
+              - generic [ref=f9e2518]: "3"
+              - generic [ref=f9e2519]: "400"
+          - button "Remolino" [ref=f9e2521] [cursor=pointer]:
+            - img "Maelstrom" [ref=f9e2522]:
+              - generic [ref=f9e2539]: "3"
+              - generic [ref=f9e2540]: "400"
+          - button "Derrumbe" [ref=f9e2542] [cursor=pointer]:
+            - img "Landslide" [ref=f9e2543]:
+              - generic [ref=f9e2559]: "3"
+              - generic [ref=f9e2560]: "400"
+          - button "Nubarrón" [ref=f9e2562] [cursor=pointer]:
+            - img "Thunderhead" [ref=f9e2563]:
+              - generic [ref=f9e2579]: "3"
+              - generic [ref=f9e2580]: "400"
+          - button "Meteoro" [ref=f9e2582] [cursor=pointer]:
+            - img "Meteor" [ref=f9e2583]:
+              - generic [ref=f9e2609]: "4"
+              - generic [ref=f9e2610]: "750"
+          - button "Diluvio" [ref=f9e2612] [cursor=pointer]:
+            - img "Deluge" [ref=f9e2613]:
+              - generic [ref=f9e2639]: "4"
+              - generic [ref=f9e2640]: "750"
+          - button "Cataclismo" [ref=f9e2642] [cursor=pointer]:
+            - img "Cataclysm" [ref=f9e2643]:
+              - generic [ref=f9e2661]: "4"
+              - generic [ref=f9e2662]: "750"
+          - button "Huracán" [ref=f9e2664] [cursor=pointer]:
+            - img "Hurricane" [ref=f9e2665]:
+              - generic [ref=f9e2699]: "4"
+              - generic [ref=f9e2700]: "750"
+          - button "Segador" [ref=f9e2702] [cursor=pointer]:
+            - img "Reaper" [ref=f9e2703]:
+              - generic [ref=f9e2738]: "4"
+              - generic [ref=f9e2739]: "750"
+          - button "Provocación" [ref=f9e2741] [cursor=pointer]:
+            - img "Taunt" [ref=f9e2742]:
+              - generic [ref=f9e2767]: "1"
+      - region [ref=f9e2769]:
+        - generic [ref=f9e2770]:
+          - heading "Clases" [level=3] [ref=f9e2771]
+          - generic [ref=f9e2772]: 4 copias
+        - generic [ref=f9e2773]:
+          - button "Caballero" [ref=f9e2774] [cursor=pointer]:
+            - img "Knight" [ref=f9e2775]
+          - button "Mago" [ref=f9e2783] [cursor=pointer]:
+            - img "Mage" [ref=f9e2784]
+          - button "Cazador" [ref=f9e2791] [cursor=pointer]:
+            - img "Hunter" [ref=f9e2792]
+          - button "Nigromante" [ref=f9e2804] [cursor=pointer]:
+            - img "Necromancer" [ref=f9e2805]
+      - region [ref=f9e2818]:
+        - generic [ref=f9e2819]:
+          - heading "Ventaja" [level=3] [ref=f9e2820]
+          - generic [ref=f9e2821]: 12 copias
+        - generic [ref=f9e2822]:
+          - button "Cura" [ref=f9e2823] [cursor=pointer]:
+            - img "Cure" [ref=f9e2824]
+            - generic [ref=f9e2833]: Cura ×2
+          - button "Barrera" [ref=f9e2834] [cursor=pointer]:
+            - img "Barrier" [ref=f9e2835]
+            - generic [ref=f9e2846]: Barrera ×2
+          - button "Aliado" [ref=f9e2847] [cursor=pointer]:
+            - img "Ally" [ref=f9e2848]
+            - generic [ref=f9e2854]: Aliado ×2
+          - button "Runa" [ref=f9e2855] [cursor=pointer]:
+            - img "Rune" [ref=f9e2856]
+            - generic [ref=f9e2864]: Runa ×2
+          - button "Reliquia" [ref=f9e2865] [cursor=pointer]:
+            - img "Relic" [ref=f9e2866]
+            - generic [ref=f9e2874]: Reliquia ×2
+          - button "Cofre" [ref=f9e2875] [cursor=pointer]:
+            - img "Chest" [ref=f9e2876]
+            - generic [ref=f9e2884]: Cofre ×2
+      - region [ref=f9e2885]:
+        - generic [ref=f9e2886]:
+          - heading "Jefes" [level=3] [ref=f9e2887]
+          - generic [ref=f9e2888]: 6 copias
+        - generic [ref=f9e2889]:
+          - button "Esbirro" [ref=f9e2890] [cursor=pointer]:
+            - img "Minion" [ref=f9e2891]:
+              - generic [ref=f9e2893]: 2×100
+              - generic [ref=f9e2897]: S
+              - generic [ref=f9e2898]: "25"
+          - button "Nivel 1" [ref=f9e2900] [cursor=pointer]:
+            - img "Level 1" [ref=f9e2901]:
+              - generic [ref=f9e2903]: 4×100
+              - generic [ref=f9e2907]: M
+              - generic [ref=f9e2909]: "4"
+              - generic [ref=f9e2910]: "50"
+          - button "Nivel 2" [ref=f9e2912] [cursor=pointer]:
+            - img "Level 2" [ref=f9e2913]:
+              - generic [ref=f9e2915]: 7×100
+              - generic [ref=f9e2919]: L
+              - generic [ref=f9e2921]: "4"
+              - generic [ref=f9e2922]: "50"
+          - button "Nivel 3" [ref=f9e2924] [cursor=pointer]:
+            - img "Level 3" [ref=f9e2925]:
+              - generic [ref=f9e2927]: 10×100
+              - generic [ref=f9e2931]: L
+              - generic [ref=f9e2933]: "4"
+              - generic [ref=f9e2934]: "75"
+          - button "Nivel 4" [ref=f9e2936] [cursor=pointer]:
+            - img "Level 4" [ref=f9e2937]:
+              - generic [ref=f9e2939]: 12×100
+              - generic [ref=f9e2943]: XL
+              - generic [ref=f9e2945]: "4"
+              - generic [ref=f9e2946]: "100"
+          - button "Nivel 5" [ref=f9e2948] [cursor=pointer]:
+            - img "Level 5" [ref=f9e2949]:
+              - generic [ref=f9e2951]: 20×100
+              - generic [ref=f9e2955]: UM
+              - generic [ref=f9e2957]: "5"
+              - generic [ref=f9e2958]: "100"
+      - region [ref=f9e2960]:
+        - generic [ref=f9e2961]:
+          - heading "Biomas" [level=3] [ref=f9e2962]
+          - generic [ref=f9e2963]: 7 copias
+        - generic [ref=f9e2964]:
+          - button "Volcán" [ref=f9e2965] [cursor=pointer]:
+            - img "Volcano" [ref=f9e2966]
+          - button "Río" [ref=f9e2983] [cursor=pointer]:
+            - img "River" [ref=f9e2984]
+          - button "Montaña" [ref=f9e3000] [cursor=pointer]:
+            - img "Mountain" [ref=f9e3001]
+          - button "Desierto" [ref=f9e3015] [cursor=pointer]:
+            - img "Desert" [ref=f9e3016]
+          - button "Bosque" [ref=f9e3033] [cursor=pointer]:
+            - img "Forest" [ref=f9e3034]:
+              - generic [ref=f9e3052]: "0"
+          - button "Aldea" [ref=f9e3054] [cursor=pointer]:
+            - img "Village" [ref=f9e3055]:
+              - generic [ref=f9e3064]: "+1"
+          - button "Castillo" [ref=f9e3066] [cursor=pointer]:
+            - img "Castle" [ref=f9e3067]:
+              - generic [ref=f9e3078]: ×2
+      - region [ref=f9e3080]:
+        - generic [ref=f9e3081]:
+          - heading "Vida" [level=3] [ref=f9e3082]
+          - generic [ref=f9e3083]: 41 copias
+        - generic [ref=f9e3084]:
+          - button "Fuego" [ref=f9e3085] [cursor=pointer]:
+            - img "Fire" [ref=f9e3086]:
+              - generic [ref=f9e3092]: "25"
+            - generic [ref=f9e3093]: Fuego ×4
+          - button "Agua" [ref=f9e3094] [cursor=pointer]:
+            - img "Water" [ref=f9e3095]:
+              - generic [ref=f9e3100]: "25"
+            - generic [ref=f9e3101]: Agua ×4
+          - button "Tierra" [ref=f9e3102] [cursor=pointer]:
+            - img "Earth" [ref=f9e3103]:
+              - generic [ref=f9e3109]: "25"
+            - generic [ref=f9e3110]: Tierra ×4
+          - button "Viento" [ref=f9e3111] [cursor=pointer]:
+            - img "Wind" [ref=f9e3112]:
+              - generic [ref=f9e3118]: "25"
+            - generic [ref=f9e3119]: Viento ×4
+          - button "Extra" [ref=f9e3120] [cursor=pointer]:
+            - img "Extra" [ref=f9e3121]:
+              - generic [ref=f9e3123]: "25"
+            - generic [ref=f9e3124]: Extra ×5
+          - button "Jefe" [ref=f9e3125] [cursor=pointer]:
+            - img "Boss" [ref=f9e3126]
+            - generic [ref=f9e3130]: Jefe ×20
+      - region [ref=f9e3131]:
+        - generic [ref=f9e3132]:
+          - heading "Modo suave" [level=3] [ref=f9e3133]
+          - generic [ref=f9e3134]: 4 copias
+        - generic [ref=f9e3135]:
+          - button "Segundo Aire" [ref=f9e3136] [cursor=pointer]:
+            - img "Second Wind" [ref=f9e3137]
+          - button "Compinche" [ref=f9e3156] [cursor=pointer]:
+            - img "Sidekick" [ref=f9e3157]
+          - button "Rencor" [ref=f9e3168] [cursor=pointer]:
+            - img "Grudge" [ref=f9e3169]
+            - generic [ref=f9e3176]: Rencor ×2
+      - region [ref=f9e3177]:
+        - generic [ref=f9e3178]:
+          - heading "Ayudas" [level=3] [ref=f9e3179]
+          - generic [ref=f9e3180]: 5 copias
+        - generic [ref=f9e3181]:
+          - button "Puente de Dados" [ref=f9e3182] [cursor=pointer]:
+            - img "Dice Bridge" [ref=f9e3183]:
+              - generic [ref=f9e3186]: 75%
+              - generic [ref=f9e3189]: 50%
+              - generic [ref=f9e3193]: 25%
+              - generic [ref=f9e3198]: 15%
+              - generic [ref=f9e3199]: d20
+              - generic [ref=f9e3200]: 6+
+              - generic [ref=f9e3201]: 11+
+              - generic [ref=f9e3202]: 16+
+              - generic [ref=f9e3203]: 18+
+              - generic [ref=f9e3204]: d12
+              - generic [ref=f9e3205]: 4+
+              - generic [ref=f9e3206]: 7+
+              - generic [ref=f9e3207]: 10+
+              - generic [ref=f9e3208]: 11+
+              - generic [ref=f9e3209]: d10
+              - generic [ref=f9e3210]: 3+
+              - generic [ref=f9e3211]: 6+
+              - generic [ref=f9e3212]: 8+
+              - generic [ref=f9e3213]: 9+
+              - generic [ref=f9e3214]: d8
+              - generic [ref=f9e3215]: 3+
+              - generic [ref=f9e3216]: 5+
+              - generic [ref=f9e3217]: 7+
+              - generic [ref=f9e3218]: 8+
+              - generic [ref=f9e3219]: d6
+              - generic [ref=f9e3220]: 2+
+              - generic [ref=f9e3221]: 4+
+              - generic [ref=f9e3222]: 5+
+              - generic [ref=f9e3223]: 6+
+              - generic [ref=f9e3224]: d4
+              - generic [ref=f9e3225]: 2+
+              - generic [ref=f9e3226]: 3+
+              - generic [ref=f9e3227]: 4+
+              - generic [ref=f9e3228]: 4+
+              - generic [ref=f9e3229]: 2d6
+              - generic [ref=f9e3230]: 6+
+              - generic [ref=f9e3231]: 7+
+              - generic [ref=f9e3232]: 9+
+              - generic [ref=f9e3233]: 10+
+              - generic [ref=f9e3234]: 3d6
+              - generic [ref=f9e3235]: 9+
+              - generic [ref=f9e3236]: 11+
+              - generic [ref=f9e3237]: 13+
+              - generic [ref=f9e3238]: 14+
+          - button "Orden del Turno" [ref=f9e3240] [cursor=pointer]:
+            - img "Turn Order" [ref=f9e3241]:
+              - generic [ref=f9e3244]: "1"
+              - generic [ref=f9e3248]: "2"
+              - generic [ref=f9e3255]: "3"
+              - generic [ref=f9e3257]: "3"
+              - generic [ref=f9e3260]: "25"
+              - generic [ref=f9e3262]: "4"
+          - button "Reacciones del Jefe" [ref=f9e3268] [cursor=pointer]:
+            - img "Boss Reactions" [ref=f9e3269]:
+              - generic [ref=f9e3272]: "1"
+              - generic [ref=f9e3275]: Aguante
+              - generic [ref=f9e3277]: 2-3
+              - generic [ref=f9e3284]: Golpe
+              - generic [ref=f9e3286]: "4"
+              - generic [ref=f9e3289]: Invocación
+              - generic [ref=f9e3291]: "5"
+              - generic [ref=f9e3294]: Rugido
+              - generic [ref=f9e3296]: "6"
+              - generic [ref=f9e3299]: Ruina
+          - button "Pista de Daño" [ref=f9e3301] [cursor=pointer]:
+            - img "Damage Track" [ref=f9e3302]:
+              - generic [ref=f9e3305]: "25"
+              - generic [ref=f9e3308]: "50"
+              - generic [ref=f9e3311]: "75"
+              - generic [ref=f9e3314]: "100"
+              - generic [ref=f9e3317]: ×100
+          - button "Roturas" [ref=f9e3322] [cursor=pointer]:
+            - img "Break Points" [ref=f9e3323]:
+              - generic [ref=f9e3327]: Herida
+              - generic [ref=f9e3328]: "50"
+              - generic [ref=f9e3331]: Lisiar
+              - generic [ref=f9e3332]: "-25"
+              - generic [ref=f9e3335]: Trofeo
+              - generic [ref=f9e3339]: x2
+              - generic [ref=f9e3340]: Amable
+              - generic [ref=f9e3342]: Asistido
+              - generic [ref=f9e3347]: Duro
+  - contentinfo [ref=f9e45]:
+    - generic [ref=f9e46]: Las reglas y las cartas son MIT. El arte de las cartas es CC BY, acreditado en la página Acerca de. Las partidas se guardan solo en este dispositivo.
+    - generic [ref=f9e47]:
+      - generic [ref=f9e48]: Fin.
+      - generic [ref=f9e49]: ·
+      - link "Part of Neorgon" [ref=f9e50] [cursor=pointer]:
+        - /url: https://neorgon.com/
+      - generic [ref=f9e53]: ·
+      - link "Code" [ref=f9e54] [cursor=pointer]:
+        - /url: https://github.com/energon-a-secas/enjeu-site
+      - generic [ref=f9e57]: ·
+      - generic [ref=f9e58]: v1.1.0

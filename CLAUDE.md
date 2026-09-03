@@ -11,6 +11,7 @@ make serve      # http://localhost:8871 (ES modules, must be served over HTTP)
 make test       # node tests: cards, content, dice bridge, engine + BALANCE.md parity
 make check      # the Python checkers and their selftests (card linter, credits, dice bridge)
 make sim        # tools/sim.py, the published balance table
+make cards      # every card as a print-ready PNG, face and back (needs make serve)
 ```
 
 ## Architecture
@@ -35,6 +36,7 @@ make sim        # tools/sim.py, the published balance table
 | `js/game/figures.js` · `js/data/placeholders.js` | brick-built stand-in heroes, bosses, minion (`placeholder: true`) |
 | `js/views/*.js` | learn (walkthrough + rulebook + play-now slide), cards (browse, tap, print scopes), play (runner + first-run tour), balance |
 | `js/views/inspect.js` | the one card popover: hover on mouse, press-and-hold on touch, fed by `cards.effect` strings |
+| `js/cards/png.js` | one card, one PNG for a printing service: flatten onto the card's own field colour, size presets, filenames that pair a face with its back |
 | `tools/*.py` | unchanged design-baseline checkers: `sim.py`, `lint_cards.py`, `dice_bridge.py`, `credits.py` |
 
 Vendored from `packages/neorgon-ui/`, never edit in place: `js/neorgon-header.js`, `js/neorgon-footer.js`, `css/neorgon-*.css`.

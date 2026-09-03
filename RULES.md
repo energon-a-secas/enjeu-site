@@ -68,7 +68,7 @@ You are **Down** when you must Break a card and have none left. The level ends a
 
 1. Pick your **element**: Fire, Water, Earth or Wind. Take that element's 4 life cards.
    Place them Ready. This choice lasts the whole run. You **may not** change it later.
-2. Take the five **Attack** cards: Strike, Focus, All In, Bubble, Run. These are always
+2. Take the six **Attack** cards: Strike, Focus, All In, Bubble, Run, Invention. These are always
    available.
 3. Draw 1 **Biome** card at random. The **Boss** card is not drawn: level 1 is always the
    **M** card, and every later level uses the card named in its row of the table in rule 9. Never shuffle the

@@ -704,26 +704,34 @@ test('Run halves every attack that follows it in the same turn, which is why Run
 });
 
 test('a break needs a landed attack to hang off, and closes with the turn', () => {
-  const f = basic();
-  assert.deepEqual({ ...DM_DEFAULTS }, { style: 'assisted', cap: 2, step: 'hard', wound: 50, cripple: 25 });
+  // Breaks are off by default now, so every fight in this test switches them on.
+  const basicOn = (o = {}) => basic({ ...o, dm: { on: true, ...(o.dm || {}) } });
+  const f = basicOn();
+  assert.deepEqual({ ...DM_DEFAULTS }, { on: false, style: 'assisted', cap: 2, step: 'hard', wound: 50, cripple: 25 });
+  // Off is the DEFAULT, and it is a switch of its own rather than a cap of 0:
+  // encoding the off state as cap 0 at a call site meant a fight built without
+  // any dm at all fell back to the defaults and quietly turned breaks on.
+  const noDial = basic();
+  attack(noDial, legalAttacks(noDial).find((a) => a.id === 'strike'), { target: 'body' });
+  assert.equal(canBreak(noDial), false, 'a fight nobody switched breaks on for cannot break');
   assert.equal(canBreak(f), false, 'nothing has landed yet');
   attack(f, legalAttacks(f).find((a) => a.id === 'strike'), { target: 'body' });
   assert.equal(canBreak(f), true, 'a landed Strike opens the window');
   assert.throws(() => breakPart(f, { reward: 'wound', roll: 20 }) && breakPart(f, { reward: 'wound', roll: 20 }),
     /nothing to break yet/, 'one attack, one break: the window closes behind it');
   // A miss opens nothing at all.
-  const g = basic();
+  const g = basicOn();
   attack(g, g.hero.attacks.find((a) => a.id === 'focus'), { bet: 1, roll: 1 });
   assert.equal(canBreak(g), false, 'a miss is not a place to aim');
   // And the window does not survive the turn it was opened in.
-  const h = basic();
+  const h = basicOn();
   attack(h, legalAttacks(h).find((a) => a.id === 'strike'), { target: 'body' });
   endTurn(h);
   assert.equal(canBreak(h), false);
 });
 
 test('the DM dial changes permission, not damage: friendly grants, assisted checks, hardcore charges an action', () => {
-  const opened = (dm) => { const f = basic({ dm }); attack(f, legalAttacks(f).find((a) => a.id === 'strike'), { target: 'body' }); return f; };
+  const opened = (dm) => { const f = basic({ dm: { on: true, ...dm } }); attack(f, legalAttacks(f).find((a) => a.id === 'strike'), { target: 'body' }); return f; };
 
   const friendly = opened({ style: 'friendly' });
   assert.equal(breakStepFor(friendly), null, 'no check to make');
@@ -752,7 +760,7 @@ test('the DM dial changes permission, not damage: friendly grants, assisted chec
 });
 
 test('the three break rewards each do one thing, and the cap holds', () => {
-  const opened = (dm = {}) => { const f = basic({ dm: { style: 'friendly', ...dm } }); attack(f, legalAttacks(f).find((a) => a.id === 'strike'), { target: 'body' }); return f; };
+  const opened = (dm = {}) => { const f = basic({ dm: { on: true,  style: 'friendly', ...dm } }); attack(f, legalAttacks(f).find((a) => a.id === 'strike'), { target: 'body' }); return f; };
 
   const wound = opened();
   const body = wound.boss.body;
@@ -779,7 +787,7 @@ test('the three break rewards each do one thing, and the cap holds', () => {
   assert.equal(canBreak(capped), false, 'one part is all this table allows');
 
   // Nothing about breaks reaches the simulator's parity layer.
-  const legacy = basic({ legacy: true, dm: { style: 'friendly' } });
+  const legacy = basic({ legacy: true, dm: { on: true, style: 'friendly' } });
   attack(legacy, legalAttacks(legacy).find((a) => a.id === 'strike'), { target: 'body' });
   assert.equal(canBreak(legacy), false);
   assert.throws(() => breakPart(legacy, {}), /nothing to break yet/);

@@ -220,6 +220,25 @@ export function normaliseArt(text) {
     .replace(/\sclass="[^"]*"/g, '')                // nothing to match the stripped CSS
     .replace(/\sfill="(?!none)[^"]*"/g, '')         // keep fill="none": it cuts holes
     .replace(/\sstyle="[^"]*"/g, '')
+    // Namespace-prefixed attributes, which are the drawing tool's private
+    // metadata and nothing the picture needs: run.svg carries i:extraneous from
+    // Illustrator. Harmless inlined into the page, because the HTML parser does
+    // not care about undeclared prefixes, and FATAL the moment the same markup
+    // is asked to stand alone as XML: js/cards/png.js rasterises through an
+    // Image, which is a real SVG document, and one such attribute failed the
+    // whole card with "the card did not rasterise". Measured across art/: this
+    // is the only prefixed attribute in any body, and no file uses <use>, so
+    // nothing here needs xlink either.
+    .replace(/\s[a-zA-Z][\w-]*:[a-zA-Z][\w-]*="[^"]*"/g, '')
+    // <foreignObject>, and the <switch> the drawing tool wraps it in. Illustrator
+    // emits a self-closing foreignObject as a "was this made by us" marker; it
+    // draws nothing. It is also the single thing that made every exported card
+    // fail: a canvas is TAINTED by any SVG carrying a foreignObject, because one
+    // could hold arbitrary HTML, so toBlob threw SecurityError on the whole deck.
+    // Measured: art/run.svg is the only file with either, and no art file has an
+    // <image>, <script> or xlink:href, so this is the whole of the hazard.
+    .replace(/<foreignObject[\s\S]*?(?:\/>|<\/foreignObject>)/gi, '')
+    .replace(/<\/?switch\s*>/gi, '')
     .trim();
   return { inner, minX, minY, w, h };
 }

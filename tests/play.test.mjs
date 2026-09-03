@@ -238,10 +238,12 @@ test('Enter belongs to the focused control, and only reaches the board when noth
     querySelectorAll: (sel) => (sel === '.actions .btn--primary' ? [primary] : []),
   };
   try {
+    // The board keys only apply on the board: an empty state routes to the
+    // setup screen's handler now, so this test says which screen it is on.
     const press = (target) => {
       clicked.length = 0;
       let prevented = false;
-      onPlayKey({}, { key: 'Enter', target, preventDefault: () => { prevented = true; } });
+      onPlayKey({ run: { stage: 'fight' } }, { key: 'Enter', target, preventDefault: () => { prevented = true; } });
       return { clicked: [...clicked], prevented };
     };
     // A focused button keeps its own Enter.
@@ -252,6 +254,39 @@ test('Enter belongs to the focused control, and only reaches the board when noth
     const onBody = press({ closest: () => null });
     assert.deepEqual(onBody.clicked, ['primary'], 'Enter still resolves the turn from the board');
     assert.equal(onBody.prevented, true);
+  } finally {
+    globalThis.document = saved;
+  }
+});
+
+test('setup keys: arrows walk a roving focus through the screen buttons, Enter presses the primary', () => {
+  const clicked = [];
+  const focusLog = [];
+  const btn = (name) => ({ name, focus: () => focusLog.push(name), getClientRects: () => [{}] });
+  const a = btn('a'), b = btn('b'), c = btn('c');
+  const primary = { click: () => clicked.push('next') };
+  const root = {
+    querySelectorAll: () => [a, b, c],
+    querySelector: (sel) => (sel === '.setup-nav .btn--primary' ? primary : null),
+  };
+  const saved = globalThis.document;
+  globalThis.document = { getElementById: (id) => (id === 'viewRoot' ? root : null), activeElement: b };
+  try {
+    const press = (key, target) => {
+      let prevented = false;
+      onPlayKey({}, { key, target, preventDefault: () => { prevented = true; } });
+      return prevented;
+    };
+    // ArrowRight moves focus from b to c; ArrowLeft back to a; both claim the key.
+    assert.equal(press('ArrowRight', { closest: () => null }), true);
+    assert.equal(press('ArrowLeft', { closest: () => null }), true);
+    assert.deepEqual(focusLog, ['c', 'a'], 'arrows walk the ring in DOM order from the active element');
+    // Enter with nothing focused presses Next; on a control it is left alone.
+    assert.equal(press('Enter', { closest: () => null }), true);
+    assert.deepEqual(clicked, ['next']);
+    clicked.length = 0;
+    assert.equal(press('Enter', { closest: (sel) => (/button/.test(sel) ? {} : null) }), false);
+    assert.deepEqual(clicked, [], 'Enter on a focused control must not double-fire the primary');
   } finally {
     globalThis.document = saved;
   }
@@ -621,7 +656,7 @@ test("the boss's turn is a popup with the THROW as its primary, and the six face
 });
 
 test('breaking a part: the row appears only in the window a landed hit opens, and buys one thing', () => {
-  const run = newRun(data, { kind: 'first', element: 'fire', die: 'd20', mode: 'standard', secondWind: true, dm: { style: 'friendly', cap: 2, step: 'hard', wound: 50, cripple: 25 } });
+  const run = newRun(data, { kind: 'first', element: 'fire', die: 'd20', mode: 'standard', secondWind: true, dm: { on: true, style: 'friendly', cap: 2, step: 'hard', wound: 50, cripple: 25 } });
   startLevel(run, data);
   const f = run.fight;
   const s = { cards: data, run, view: 'play', play: { tourDone: true } };
@@ -696,7 +731,7 @@ test('break points are opt-in: the dial is folded away until the table switches 
   // false in the fight no matter what the cap was left at.
   s.dm = { on: false, style: 'assisted', cap: 2, step: 'hard', wound: 50, cripple: 25 };
   click(s, 'start');
-  assert.equal(s.run.fight.dm.cap, 0, 'off means off, all the way into the fight');
+  assert.equal(s.run.fight.dm.on, false, 'off means off, all the way into the fight');
 });
 
 test('the three ways in are three distinct cards, each saying how long it is', () => {
@@ -766,6 +801,45 @@ test('the throw door walks the lane a beat at a time, so a card that always work
   click(q, 'resolve-plan');
   click(q, 'resolve-fast');
   assert.equal(q.run.ui.results.length, 2, 'resolve it all still means all of it');
+});
+
+test('the boss wall keeps one card size all fight: losing cards removes them, it does not inflate the rest', () => {
+  // The defect: --wall-card in css/play.css divides the space by the column and
+  // row counts, and those counts were taken from what was LEFT of the wall. A
+  // twenty card boss down to two rendered them at the 148px ceiling, wider than
+  // the wall had ever drawn a card, and the board reflowed around it mid-fight.
+  const geom = (bossId, hp) => {
+    const f = newFight(data, { level: 5, boss: data.byId[bossId], hero: { element: 'fire', pool: ['fire', 'fire', 'fire', 'fire'], attacks: ATTACKS } });
+    f.boss.body = hp;
+    const run = { kind: 'full', element: 'fire', fight: f, ui: {}, stage: 'fight', history: [], skillPool: [], advDeck: [], hand: [], extraLives: 0, secondWind: false };
+    const html = renderPlay({ cards: data, run, play: { tourDone: true } });
+    const m = /--wall-cols:(\d+);--wall-rows:(\d+)/.exec(html);
+    assert.ok(m, 'the wall declares its own geometry');
+    return { cols: m[1], rows: m[2], drawn: (html.match(/class="lc-hit"/g) || []).length };
+  };
+
+  // Twenty cards down to one: the grid never changes, only what stands in it.
+  const full = geom('boss-um', 2000);
+  assert.deepEqual([full.cols, full.rows], ['5', '4']);
+  assert.equal(full.drawn, 20);
+  for (const [hp, drawn] of [[1000, 10], [400, 4], [200, 2], [100, 1]]) {
+    const g = geom('boss-um', hp);
+    assert.deepEqual([g.cols, g.rows], [full.cols, full.rows], `at ${hp} the wall changed shape`);
+    assert.equal(g.drawn, drawn, `at ${hp} the wall drew the wrong number of cards`);
+  }
+
+  // And a four card boss keeps ITS shape too, which is the case where the old
+  // code grew cards the most: two columns of one row got the whole width.
+  const small = geom('boss-m', 400);
+  assert.deepEqual([small.cols, small.rows], ['4', '1']);
+  for (const hp of [200, 100]) {
+    const g = geom('boss-m', hp);
+    assert.deepEqual([g.cols, g.rows], [small.cols, small.rows], `a small boss changed shape at ${hp}`);
+  }
+
+  // The ceiling that made it visible is gone too: no card is ever 148px wide.
+  const css = readFileSync(join(root, 'css/play.css'), 'utf8');
+  assert.equal(/\), 148px\)/.test(css), false, 'the 148px wall-card ceiling is still in the stylesheet');
 });
 
 for (const [name, fn] of queue) {

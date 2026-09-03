@@ -347,7 +347,14 @@ function biomeCard(c) {
   out += glyphAt(c.icon, 315 - 155, 440 - 155, 310, { stroke: ink, width: 2.5 });
   const mark = BIOME_RULE_MARK[c.id];
   if (mark) {
-    out += glyphAt(mark[0], W - 205, H - 132, 80, { stroke: ink, width: 2.5 });
+    // The numeral is right-anchored and the glyph was not, so a two-digit rule
+    // (Village and Castle both print one) grew leftward into the picture and
+    // the two overlapped on the printed card. Reserve the numeral's advance and
+    // hang the glyph off the left of it: an 80-unit numeral runs about 46 units
+    // a digit in this face, which is the number the layout has to respect.
+    const digits = String(mark[1]).length;
+    const numeralW = digits * 46;
+    out += glyphAt(mark[0], W - 58 - numeralW - 92, H - 132, 80, { stroke: ink, width: 2.5 });
     out += numeral(mark[1], W - 58, H - 58, 80, 'end', ink);
   }
   return out;
@@ -451,7 +458,12 @@ function aidCard(c, opts) {
       // opts.reactionNames is handed in by the view so this module stays free of
       // the string table: face.js is shared with the Python-free print path and
       // the node tests, neither of which sets a language.
-      out += numeral((opts.aid?.reactionNames?.[r.id]) || r.name, 314, y + 82, 58, 'start');
+      // The label column starts at 314 and the card ends at 630, so it has 316
+      // units. "Invocación" at 58 is wider than that and printed over the card's
+      // own border in Spanish. Shrink long names rather than clipping them: the
+      // English set is short enough that nothing here changes for it.
+      const rxName = (opts.aid?.reactionNames?.[r.id]) || r.name;
+      out += numeral(rxName, 314, y + 82, rxName.length > 7 ? 44 : 58, 'start');
       if (i < rows.length - 1) out += `<line x1="40" y1="${y + rowH - 16}" x2="${W - 40}" y2="${y + rowH - 16}" stroke="#ddd6c3" stroke-width="3"/>`;
     });
   } else if (c.id === 'aid-breaks' && opts.aid?.breaks) {

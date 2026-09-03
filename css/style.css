@@ -153,6 +153,13 @@ strong { font-weight: 700; }
   overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
 }
 .sk-nav::-webkit-scrollbar { display: none; }
+/* The scrollbar is hidden on purpose, so the strip needs another way to say it
+   holds more than it shows: at 360px it is 108px wide around 359px of tabs.
+   A mask fades the last few pixels only while there is something out there. */
+.sk-nav { mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent); }
+@supports not (mask-image: linear-gradient(to right, #000, transparent)) {
+  .sk-nav { mask-image: none; }
+}
 .sk-tab {
   flex: 0 0 auto;
   min-height: var(--header-control-h, 40px);
@@ -167,7 +174,7 @@ strong { font-weight: 700; }
   transition: background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
 }
 .sk-tab:hover { background: rgba(255,255,255,0.1); color: #fff; }
-.sk-tab[aria-selected="true"] {
+.sk-tab[aria-current="page"] {
   background: var(--gold); color: #1c1917; border-color: var(--gold);
 }
 .sk-tab svg { width: 16px; height: 16px; }

@@ -11,15 +11,37 @@ import { renderPlay } from './views/play.js';
 import { renderBalance } from './views/balance.js';
 import { renderAbout } from './views/about.js';
 
-const NAV_ICON = { learn: 'book', cards: 'dice', play: 'strike', about: 'star', balance: 'trend-up' };
+const NAV_ICON = { learn: 'book', cards: 'dice', play: 'play', about: 'star', balance: 'trend-up' };
+
+/**
+ * Keep the tab you are on inside a strip that scrolls.
+ *
+ * Measured at 360x740: #skNav is 108px wide holding 359px of tabs (429px in
+ * Spanish), its scrollbar is hidden by css/style.css, and it is opted out of the
+ * header kit's overflow menu. So on any view but the default, the header showed
+ * one unselected tab and no sign that three more existed. The Learn rail already
+ * solved exactly this (js/views/learn.js keepRailDotInView) and said so in its
+ * comment; the nav never got the same six lines.
+ */
+function keepNavTabInView(nav) {
+  if (typeof requestAnimationFrame !== 'function') return;
+  requestAnimationFrame(() => {
+    const cur = nav.querySelector('[aria-current="page"]');
+    if (!cur || nav.scrollWidth <= nav.clientWidth) return;
+    const c = cur.getBoundingClientRect(), n = nav.getBoundingClientRect();
+    if (c.left >= n.left && c.right <= n.right) return;
+    nav.scrollLeft += (c.left + c.width / 2) - (n.left + n.width / 2);
+  });
+}
 
 export function renderNav(s) {
   const nav = document.getElementById('skNav');
   if (!nav) return;
   nav.innerHTML = NAV_VIEWS.map((v) => `
-    <a class="sk-tab" role="tab" href="#/${v}" aria-selected="${s.view === v}" data-view="${v}">
+    <a class="sk-tab" href="#/${v}"${s.view === v ? ' aria-current="page"' : ''} data-view="${v}">
       ${glyphSvg(NAV_ICON[v], '', 16)}<span>${escHtml(t(`nav.${v}`))}</span>
     </a>`).join('');
+  keepNavTabInView(nav);
 }
 
 export function render(s) {

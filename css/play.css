@@ -196,7 +196,7 @@ button.tbl-slot { cursor: zoom-in; }
   --wall-card: clamp(16px, min(
       (100cqw - 380px - (var(--wall-cols) - 1) * 4px) / var(--wall-cols),
       ((92cqh - 34px - (var(--wall-rows) - 1) * 4px) / var(--wall-rows)) * 0.716
-    ), 148px);
+    ), 96px);
 }
 .wall .lc { width: var(--wall-card); height: auto; }
 /* A ragged last row (4+3, 6+4) centres rather than hanging left. */
@@ -524,6 +524,32 @@ button.tbl-slot { cursor: zoom-in; }
    A checkbox alone never told anyone which card it was putting on the table. */
 .sw-pick { display: flex; align-items: center; gap: var(--space-4); }
 .sw-pick__card { --mini-w: 62px; flex: none; }
+/* An enabled option wears its state: an accent frame, a tint and a corner
+   check, not only the 3px underscore panel--accent drew. The Second Wind card
+   at the side IS the state made visible: parked in greyscale while the option
+   is off, in colour and standing up once it is on. */
+.opt {
+  position: relative; border: 2px solid var(--border); border-radius: var(--radius);
+  padding: var(--space-3);
+  transition: border-color var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out);
+}
+.opt.is-on { border-color: var(--gold-deep); background: #fdf3d3; }
+.opt.is-on::after {
+  content: '✓'; position: absolute; top: -10px; right: -8px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--gold-deep); color: #fff;
+  font-weight: 900; font-size: 14px; line-height: 1;
+  display: grid; place-items: center;
+  box-shadow: 0 1px 0 rgba(40, 32, 16, 0.35);
+}
+.opt .sw-pick__card {
+  filter: grayscale(1); opacity: 0.55;
+  transition: filter var(--dur) var(--ease-out), opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
+}
+.opt.is-on .sw-pick__card { filter: none; opacity: 1; transform: rotate(-3deg) scale(1.05); }
+@media (prefers-reduced-motion: reduce) {
+  .opt.is-on .sw-pick__card { transform: none; }
+}
 .sw-pick__text { display: flex; flex-direction: column; gap: 2px; cursor: pointer; }
 .sw-pick__text input { width: 20px; height: 20px; }
 
@@ -694,6 +720,8 @@ button.tbl-slot { cursor: zoom-in; }
 .table-steps__art { display: inline-flex; gap: 3px; --mini-w: 34px; flex: none; }
 .table-steps__art .lc { width: 34px; }
 .setup-nav { margin-top: var(--space-2); }
+/* The keyboard hint describes keys a touch screen does not have. */
+@media (hover: none) { .setup-keys { display: none; } }
 
 /* ── Small fingers ─────────────────────────────────────────── */
 @media (pointer: coarse) {

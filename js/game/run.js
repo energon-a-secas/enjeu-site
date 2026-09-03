@@ -4,7 +4,7 @@
 // lives in engine.js. The First Game (the user's fork 1) is a run of one
 // level with the three Attack cards and nothing else to learn.
 
-import { newFight } from './engine.js';
+import { newFight, DM_DEFAULTS } from './engine.js';
 import { BOSSES, MINION, heroFor } from '../data/placeholders.js';
 import { shuffle } from '../utils.js';
 
@@ -93,7 +93,7 @@ export function startLevel(run, data) {
     hero: { element: run.element, klass: run.klass, pool: poolFor(run), attacks: attacksFor(run, data) },
     biome: biome ? { id: biome.id, element: biome.element, rule: biome.rule } : null,
     noSignatures: !!run.simple,
-    die: run.die, mode: run.mode, dm: run.dm || undefined,
+    die: run.die, mode: run.mode, dm: run.dm || { ...DM_DEFAULTS, on: false },
     // The Second Wind card is put in play for the whole run or left in the box,
     // and the engine resets its ladder per fight (RULES: the first comeback is
     // free EACH level). Without this hop the engine's whole revive path was

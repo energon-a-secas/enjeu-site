@@ -58,6 +58,11 @@ html[data-view="learn"] #viewRoot { min-height: 0; }
   display: grid; place-items: center; cursor: pointer;
   transition: background-color var(--dur) var(--ease-out), color var(--dur), transform var(--dur-fast), box-shadow var(--dur-fast);
 }
+/* The one dot that is a mark rather than a numeral. Its neighbours are digits
+   at font-weight 800; a stroked glyph beside them reads as a hairline, because
+   2.4 on a 24 grid is 1.2px once it is drawn at 12. Filled and thickened, it
+   carries the same optical weight as the numbers it stands in line with. */
+.rail__dot svg { fill: currentColor; stroke-width: 3.4; }
 .rail__dot:hover { background: var(--surface-2); color: var(--text-primary); }
 .rail__dot:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--border-strong); }
 .rail__dot[aria-current="true"] {

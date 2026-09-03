@@ -1,0 +1,17 @@
+Enjeu, box panels
+
+language   en
+dpi        300
+box        65 x 90 x 38 mm internal, sized for 111 cards at ~0.32mm each
+
+The two spines share one design and the two lids share one, so the
+service's 'same design on both' boxes can stay ticked. Unticked, each
+file is still there and can be replaced individually.
+
+file                 panel   mm        px
+frente               front   65x90     768x1063
+dorso                back    65x90     768x1063
+lomo-izquierdo       spine   38x90     449x1063
+lomo-derecho         spine   38x90     449x1063
+tapa-superior        lid     65x38     768x449
+tapa-inferior        lid     65x38     768x449

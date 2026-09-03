@@ -154,7 +154,7 @@ export function onPlayAction(s, act, el, e) {
       case 'mode': s.mode = d.mode; return true;
       case 'start': {
         // Remember the table so a returning family gets a one-tap fast lane.
-        s.playLast = { kind: s.runKind || 'first', element: s.element, die: s.die, mode: s.mode, secondWind: s.secondWind, simple: s.simple, dm: { ...s.dm, cap: s.dm.on ? s.dm.cap : 0 } };
+        s.playLast = { kind: s.runKind || 'first', element: s.element, die: s.die, mode: s.mode, secondWind: s.secondWind, simple: s.simple, dm: { ...s.dm } };
         s.setupStep = 0;
         s.run = newRun(s.cards, s.playLast);
         startLevel(s.run, s.cards);
@@ -165,7 +165,7 @@ export function onPlayAction(s, act, el, e) {
       case 'setup-again': {
         const L = s.playLast;
         if (L) { s.runKind = L.kind; s.element = L.element; s.die = L.die; s.mode = L.mode; s.secondWind = L.secondWind; s.simple = !!L.simple; if (L.dm) s.dm = { ...s.dm, ...L.dm }; }
-        s.run = newRun(s.cards, { kind: s.runKind || 'first', element: s.element, die: s.die, mode: s.mode, secondWind: s.secondWind, simple: s.simple, dm: { ...s.dm, cap: s.dm.on ? s.dm.cap : 0 } });
+        s.run = newRun(s.cards, { kind: s.runKind || 'first', element: s.element, die: s.die, mode: s.mode, secondWind: s.secondWind, simple: s.simple, dm: { ...s.dm } });
         startLevel(s.run, s.cards);
         applyGrudges(s, s.run);
         return true;
@@ -452,6 +452,8 @@ export function onPlayAction(s, act, el, e) {
  * last queued step. Returns false always: the click it forwards re-renders.
  */
 export function onPlayKey(s, e) {
+  const stage = s.run && s.run.stage !== 'setup' ? s.run.stage : 'setup';
+  if (stage !== 'fight') return onScreenKey(e);
   const hit = (sel, i = 0) => { const list = document.querySelectorAll(sel); const el = list[i]; if (el) { e.preventDefault(); el.click(); } };
   // Enter belongs to whatever is focused, if anything is. The board used to claim
   // it unconditionally and preventDefault it, so a keyboard user who tabbed to
@@ -465,6 +467,40 @@ export function onPlayKey(s, e) {
   else if (e.key === 'Backspace' || e.key === 'Delete') {
     const marks = document.querySelectorAll('[data-action="play-unqueue"]');
     if (marks.length) hit('[data-action="play-unqueue"]', marks.length - 1);
+  }
+  return false;
+}
+
+/**
+ * Keyboard for every Play screen that is not the board: setup, the class pick,
+ * the draft, the Advantage draw and the two endings. Arrows walk a roving
+ * focus through the screen's own buttons in DOM order (wrapping at the ends),
+ * so a choice is two keys: arrow to it, Enter or Space on it. Enter with
+ * nothing focused presses the screen's primary button (Next, Start, Keep),
+ * matching what Enter already means on the board. Number inputs never reach
+ * this handler (isPlainKey in events.js), so the DM dial's typed fields keep
+ * their native arrow behaviour.
+ */
+function onScreenKey(e) {
+  const root = document.getElementById('viewRoot');
+  if (!root) return false;
+  const arrows = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
+  if (e.key in arrows) {
+    const ring = Array.from(root.querySelectorAll('button:not([disabled])'))
+      .filter((el) => el.getClientRects().length > 0);
+    if (!ring.length) return false;
+    const dir = arrows[e.key];
+    const at = ring.indexOf(document.activeElement);
+    const next = at < 0 ? (dir > 0 ? 0 : ring.length - 1) : (at + dir + ring.length) % ring.length;
+    e.preventDefault();
+    ring[next].focus();
+    return false;
+  }
+  if (e.key === 'Enter' && !e.target?.closest?.('button, a[href], input, [role="button"]')) {
+    const primary = root.querySelector('.setup-nav .btn--primary')
+      || root.querySelector('.confirm-bar .btn--primary')
+      || root.querySelector('.btn--primary');
+    if (primary) { e.preventDefault(); primary.click(); }
   }
   return false;
 }

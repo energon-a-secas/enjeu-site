@@ -1,0 +1,33 @@
+- generic [active] [ref=f9e1]:
+  - link "Skip to content" [ref=f9e2] [cursor=pointer]:
+    - /url: "#main"
+  - banner [ref=f9e3]:
+    - link [ref=f9e5] [cursor=pointer]:
+      - /url: "#/learn"
+      - heading "Enjeu" [level=1] [ref=f9e8]
+    - generic [ref=f9e9]:
+      - generic [ref=f9e10]:
+        - tablist "Sections" [ref=f9e11]:
+          - tab "Learn" [ref=f9e12] [cursor=pointer]
+          - tab "Cards" [ref=f9e16] [cursor=pointer]
+          - tab "Play" [selected] [ref=f9e20] [cursor=pointer]
+          - tab "About" [ref=f9e24] [cursor=pointer]
+        - group "Language / Idioma" [ref=f9e28]:
+          - button "EN" [pressed] [ref=f9e29] [cursor=pointer]
+          - button "ES" [ref=f9e30] [cursor=pointer]
+      - link "Neorgon home" [ref=f9e31] [cursor=pointer]:
+        - /url: https://neorgon.com/
+  - main [ref=f9e41]:
+    - paragraph [ref=f9e44]: Loading the cards
+  - contentinfo [ref=f9e45]:
+    - generic [ref=f9e46]: Rules and cards are MIT. Card art is CC BY, credited on the About page. Runs save on this device only.
+    - generic [ref=f9e47]:
+      - generic [ref=f9e48]: Fin.
+      - generic [ref=f9e49]: ·
+      - link "Part of Neorgon" [ref=f9e50] [cursor=pointer]:
+        - /url: https://neorgon.com/
+      - generic [ref=f9e53]: ·
+      - link "Code" [ref=f9e54] [cursor=pointer]:
+        - /url: https://github.com/energon-a-secas/enjeu-site
+      - generic [ref=f9e57]: ·
+      - generic [ref=f9e58]: v1.1.0

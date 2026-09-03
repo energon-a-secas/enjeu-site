@@ -69,7 +69,7 @@ Estás **Caído** cuando tienes que Romper una carta y no te queda ninguna. El n
 
 1. Elige tu **elemento**: Fuego, Agua, Tierra o Viento. Toma las 4 cartas de vida de ese elemento.
    Ponlas En Pie. Esta elección dura toda la partida. **No puedes** cambiarla después.
-2. Toma las cinco cartas de **Ataque**: Golpe, Puntería, Todo o Nada, Burbuja, Escape. Estas
+2. Toma las seis cartas de **Ataque**: Golpe, Puntería, Todo o Nada, Burbuja, Escape, Invención. Estas
    siempre están disponibles.
 3. Roba 1 carta de **Bioma** al azar. La carta de **Jefe** no se roba: el nivel 1 siempre es la
    carta **M**, y cada nivel siguiente toma la carta que dice su fila en la regla 9. Nunca mezcles la

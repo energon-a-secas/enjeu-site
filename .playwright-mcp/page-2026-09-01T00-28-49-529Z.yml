@@ -1,0 +1,91 @@
+- generic [ref=f9e1]:
+  - link "Saltar al contenido" [ref=f9e1543] [cursor=pointer]:
+    - /url: "#main"
+  - banner [ref=f9e3]:
+    - link "Enjeu Equilibra tu ataque y tu defensa" [ref=f9e3354] [cursor=pointer]:
+      - /url: "#/learn"
+      - generic [ref=f9e7]:
+        - heading "Enjeu" [level=1] [ref=f9e8]
+        - generic [ref=f9e3355]: Equilibra tu ataque y tu defensa
+    - generic [ref=f9e9]:
+      - generic [ref=f9e10]:
+        - tablist "Secciones" [ref=f9e1544]:
+          - tab "Aprender" [ref=f9e3356] [cursor=pointer]
+          - tab "Cartas" [ref=f9e3360] [cursor=pointer]
+          - tab "Jugar" [ref=f9e3364] [cursor=pointer]
+          - tab "Acerca de" [selected] [ref=f9e3368] [cursor=pointer]
+        - group "Language / Idioma" [ref=f9e28]:
+          - button "EN" [ref=f9e29] [cursor=pointer]
+          - button "ES" [active] [pressed] [ref=f9e30] [cursor=pointer]
+      - link "Neorgon home" [ref=f9e31] [cursor=pointer]:
+        - /url: https://neorgon.com/
+  - main [ref=f9e41]:
+    - generic [ref=f9e3372]:
+      - generic [ref=f9e3373]:
+        - paragraph [ref=f9e3374]: Acerca de
+        - paragraph [ref=f9e3375]: Para quién se hizo, qué se cortó y quién dibujó las figuras de las cartas.
+      - generic [ref=f9e3376]:
+        - generic [ref=f9e3377]: Origen
+        - generic [ref=f9e3378]:
+          - heading "Lo hice para mi sobrina" [level=2] [ref=f9e3379]
+          - paragraph [ref=f9e3380]: Le gustan los bloques y casi siempre el que juega con ella en el suelo soy yo. Las reglas que inventábamos cambiaban cada cinco minutos y nadie podía perder. Así que escribí algunas.
+          - paragraph [ref=f9e3381]: También quería los dados. Todos, no solo el de seis. Así que cada dado, del d4 al d20, tiene que servir, y el juego gira sobre una tirada y no sobre un número.
+          - paragraph [ref=f9e3382]: "Lo que buscaba: las reglas mínimas que todavía la dejen perder."
+      - generic [ref=f9e3383]:
+        - generic [ref=f9e3384]: Segunda
+        - generic [ref=f9e3385]:
+          - heading "Esta es la segunda versión" [level=2] [ref=f9e3386]
+          - paragraph [ref=f9e3387]: La primera tenía demasiadas reglas. La jugamos, y las partes que le gustaron no eran aquellas para las que yo había escrito más reglas. El resto se fue.
+          - paragraph [ref=f9e3388]: Es corto porque se jugó, no porque se hiciera rápido.
+      - generic [ref=f9e3389]:
+        - generic [ref=f9e3390]: Mesa
+        - generic [ref=f9e3391]:
+          - heading "No hay tablero" [level=2] [ref=f9e3392]
+          - paragraph [ref=f9e3393]: El jefe se arma con bloques, el héroe es una figura de la misma caja, y las cartas hacen las cuentas.
+          - paragraph [ref=f9e3394]: Ninguna carta nombra un juguete. Los bloques son tuyos, los que tengas.
+      - generic [ref=f9e3395]:
+        - generic [ref=f9e3396]: Hechizos
+        - generic [ref=f9e3397]:
+          - heading "Los hechizos que se cortaron" [level=2] [ref=f9e3398]
+          - paragraph [ref=f9e3399]: Una versión temprana dejaba inventar hechizos. Escribías uno, le ponías nombre, lo usabas. Era demasiado complicado de sostener, así que se fue.
+          - paragraph [ref=f9e3400]: "En su lugar quedó la jugada más vieja del rol de mesa: devolvérselo al jugador en vez de escribir otra regla. La carta nunca dice su nombre. Lo dices tú."
+          - paragraph [ref=f9e3401]: Escape dice que te escapaste y el jefe dice qué tan bien. Dónde corriste y detrás de qué te escondiste, las reglas nunca lo preguntan.
+      - generic [ref=f9e3402]:
+        - generic [ref=f9e3403]: Arte
+        - generic [ref=f9e3404]:
+          - heading "El arte" [level=2] [ref=f9e3405]
+          - paragraph [ref=f9e3406]: "Casi todo el arte viene de The Noun Project, bajo CC BY. La atribución es una condición de esa licencia, no una cortesía. Los archivos están modificados: el crédito se movió aquí, se recortó el viewBox, el color se aplica al dibujar. La tabla de abajo se arma con data/art-manifest.json y no puede alejarse de las cartas."
+          - paragraph [ref=f9e3407]: Leyendo el manifiesto de arte
+      - generic [ref=f9e3408]:
+        - generic [ref=f9e3409]: Licencia
+        - generic [ref=f9e3410]:
+          - heading "Licencia" [level=2] [ref=f9e3411]
+          - paragraph [ref=f9e3412]: El código es mío y lo puedo regalar. El arte no.
+          - table [ref=f9e3414]:
+            - rowgroup [ref=f9e3415]:
+              - row [ref=f9e3416]:
+                - columnheader "Qué" [ref=f9e3417]
+                - columnheader "Licencia" [ref=f9e3418]
+            - rowgroup [ref=f9e3419]:
+              - row [ref=f9e3420]:
+                - cell "Las reglas, los datos de las cartas, las herramientas, el código del sitio y todo el texto" [ref=f9e3421]
+                - cell "MIT" [ref=f9e3422]
+              - row [ref=f9e3423]:
+                - cell "Los íconos de art/" [ref=f9e3424]
+                - cell "CC BY, según la tabla de arriba" [ref=f9e3425]
+              - row [ref=f9e3426]:
+                - cell "Los glifos dibujados en casa" [ref=f9e3427]
+                - cell "MIT, original" [ref=f9e3428]
+          - paragraph [ref=f9e3429]: "Los autores dejan que cualquiera use estos dibujos con una sola condición: sus nombres van a donde vayan los dibujos. Si copias esta carpeta, eso te toca a ti."
+  - contentinfo [ref=f9e45]:
+    - generic [ref=f9e46]: Las reglas y las cartas son MIT. El arte de las cartas es CC BY, acreditado en la página Acerca de. Las partidas se guardan solo en este dispositivo.
+    - generic [ref=f9e47]:
+      - generic [ref=f9e48]: Fin.
+      - generic [ref=f9e49]: ·
+      - link "Part of Neorgon" [ref=f9e50] [cursor=pointer]:
+        - /url: https://neorgon.com/
+      - generic [ref=f9e53]: ·
+      - link "Code" [ref=f9e54] [cursor=pointer]:
+        - /url: https://github.com/energon-a-secas/enjeu-site
+      - generic [ref=f9e57]: ·
+      - generic [ref=f9e58]: v1.1.0

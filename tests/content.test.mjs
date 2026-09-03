@@ -225,5 +225,28 @@ test('no test file registers a case that never runs', () => {
   assert.deepEqual(bad, []);
 });
 
+/**
+ * The Setup step lists the Attack cards by name, and it said five for as long
+ * as the deck had six: Invention joined the deck and the sentence beside it did
+ * not. The components table is already checked against cards.json; this checks
+ * the sentence a player actually reads first.
+ */
+test('the Setup step names every Attack card the deck actually has', () => {
+  const attacks = data.attack;
+  const words = { en: ['five', 'six', 'seven'], es: ['cinco', 'seis', 'siete'] };
+  for (const [file, lang] of [['RULES.md', 'en'], ['RULES.es.md', 'es']]) {
+    const md = readFileSync(join(root, file), 'utf8');
+    const line = md.split('\n').find((l) => /^\d+\.\s+(Take|Toma)/.test(l.trim()) && /Attack|Ataque/.test(l));
+    assert.ok(line, `${file}: no Setup step naming the Attack cards`);
+    const want = words[lang][attacks.length - 5];
+    assert.ok(want && line.includes(want),
+      `${file}: the Setup step does not say "${want}" for ${attacks.length} Attack cards: ${line.trim()}`);
+    for (const c of attacks) {
+      const name = lang === 'es' ? (STRINGS.es.cards.name[c.id] || c.name) : c.name;
+      assert.ok(line.includes(name), `${file}: the Setup step never names ${name}`);
+    }
+  }
+});
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

@@ -11,8 +11,9 @@
 // the screen is its preview: two players who print the deck have to end up with
 // the same sheets in the same order, whatever either screen was sorted by.
 
-import { t, cardName, reactionNames, breakNames, dmNames, elementName } from '../strings.js';
+import { t, cardName, reactionNames, breakNames, dmNames, elementName, getLang } from '../strings.js';
 import { escHtml, showToast } from '../utils.js';
+import { cardPng, saveBlob, cardFileName, printSize } from '../cards/png.js';
 import { DECKS, CHECKS } from '../data/cards.js';
 import { cardFace, cardBack, FACE } from '../cards/face.js';
 import { glyphSvg, artCount } from '../cards/glyphs.js';
@@ -417,9 +418,30 @@ export function showCardDetail(s, id) {
         ${effectLine(c)}
         <dl>${rows.join('')}</dl>
         ${say}
+        ${downloadRow(c)}
       </div>
     </div>`;
   openModal('cardModal');
+}
+
+/**
+ * Face and back, each as a PNG big enough for a printing service.
+ *
+ * The size is stated on the buttons rather than hidden in a setting, because
+ * the only question anyone has here is "will the printer take it", and the
+ * answer is a number. js/cards/png.js flattens the card onto its own field
+ * colour first: what the screen draws has a transparent 1.5mm margin and
+ * transparent corners, and a service composites its own background into those.
+ */
+function downloadRow(c) {
+  const { width, height } = printSize('standard');
+  return `<div class="row card-dl">
+    <button class="btn btn--sm" data-action="cards-png" data-id="${escHtml(c.id)}" data-side="face">
+      ${escHtml(t('cards.dlFace'))}</button>
+    <button class="btn btn--sm" data-action="cards-png" data-id="${escHtml(c.id)}" data-side="back">
+      ${escHtml(t('cards.dlBack'))}</button>
+    <small class="muted">${width} x ${height} px</small>
+  </div>`;
 }
 
 // ── Actions ──────────────────────────────────────────────────
@@ -440,6 +462,22 @@ export function onCardsAction(s, act, el, e) {
     case 'reset': b.element = 'all'; b.tier = 'all'; b.klass = 'all'; b.sort = 'deck'; s.deckFilter = 'all'; return true;
     case 'deck': s.deckFilter = el.dataset.deck; return true;
     case 'detail': showCardDetail(s, el.dataset.id); return false;
+    // One card, one side, one PNG. Async and fire-and-forget: the click is done
+    // the moment the browser takes the file, and a re-render would close the
+    // panel the player is still reading.
+    case 'png': {
+      const card = s.cards.byId[el.dataset.id];
+      if (!card) return false;
+      const side = el.dataset.side === 'back' ? 'back' : 'face';
+      const svg = side === 'back'
+        ? cardBack(backKind(card), { size: 'sheet' })
+        : cardFace(card, { size: 'sheet', aid: aidFor(s.cards, reactionNames(), breakNames(), dmNames()) });
+      const index = s.cards.physical.findIndex((x) => x.id === card.id);
+      cardPng(svg, 'standard')
+        .then((blob) => { saveBlob(blob, cardFileName(card, Math.max(0, index), side, getLang())); })
+        .catch((err) => { showToast(t('cards.dlFailed')); console.warn(err); });
+      return false;
+    }
     // The print controls. `backs` above is the screen toggle and `print-backs`
     // here is how many backs the sheet gets: one letter apart when they were
     // `backs` and `withBacks` in two different files, which is why both now
