@@ -86,7 +86,7 @@ const SAMPLES = [
   ["Barrier cancels the boss's Stormbreak.", 'Barrera cancela la reacción del jefe: Rompetormentas.'],
   ['The boss Braces: no damage, and it halves what it takes until the end of your next turn.'],
   ['The boss Summons: 200 of its life moves under a minion.'],
-  ['Skitter: it darts aside, no damage, and it is off balance. Your next landed hit deals +25.'],
+  ['Skitter: it darts aside, no damage, and it is off balance. Your next landed attack that bet a life card deals +25.'],
   ['Coil: 200 of its life moves under a minion, and the minion strikes at once.'],
   ['Bedrock: it braces, and 25 of its wall grinds back into place.'],
   ['Stormbreak! Ruin: 200.', '¡Rompetormentas! Ruina: 200.'],

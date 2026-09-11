@@ -1015,7 +1015,7 @@ export function resolveBoss(f, { barrier = false, cover = false } = {}) {
         switch (p.sig) {
           case 'skitter':
             f.boss.offBalance = true;
-            say(f, 'Skitter: it darts aside, no damage, and it is off balance. Your next landed hit deals +25.', 'boss');
+            say(f, 'Skitter: it darts aside, no damage, and it is off balance. Your next landed attack that bet a life card deals +25.', 'boss');
             break;
           case 'coil': {
             f.boss.body = Math.max(0, f.boss.body - p.chunk); f.boss.minions.push({ hp: p.chunk, max: p.chunk, marks: {} });
