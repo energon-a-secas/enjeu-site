@@ -1,733 +1,1245 @@
 {
- "$comment": [
-  "Art manifest for Enjeu. Every icon slot in the game, and where its art comes from.",
-  "",
-  "The art is sourced from The Noun Project. Noun Project icons are offered either",
-  "under CC BY (free, attribution REQUIRED) or under a paid royalty-free licence",
-  "(no attribution). Terms differ per icon and per download, so 'creator' and",
-  "'licence' below must be filled in from each icon's own page at download time.",
-  "",
-  "tools/credits.py reads this file and writes CREDITS.md. It REFUSES to write",
-  "anything while a used slot is missing its creator or licence, which is the",
-  "point: an incomplete attribution page is the actual legal exposure here.",
-  "",
-  "'source': null means no art has been chosen for that slot yet."
- ],
- "collection": "https://thenounproject.com/browse/collection-icon/role-playing-game-70773/",
- "$verified": [
-  "2026-08-27: every one of the 42 sourced URLs was loaded individually. All 42",
-  "return 200, all 42 are by the same creator, Maxicons (user id 3983118),",
-  "uploaded 2019-02-13 into the collection above. 'creator' below is therefore",
-  "filled in from the pages themselves rather than guessed.",
-  "",
-  "2026-08-27, later: the free route was taken. Each icon was downloaded via",
-  "'Continue With Attribution', which the page states plainly as 'CC BY-3.0",
-  "Attribution License', so 'licence' is now filled for the 34 slots whose",
-  "file is actually on disk, and stays null for every gap. That invariant is",
-  "load-bearing: js/cards/glyphs.js artSrc() serves art/<id>.svg the moment a",
-  "slot has creator AND licence, so a licence filled ahead of its file renders",
-  "a broken image on every card that asks for it.",
-  "",
-  "The download bakes 'Created by Maxicons / from the Noun Project' into the",
-  "bottom of a 512x640 box. That cannot print on a card, so art/<id>.svg is",
-  "cropped to 512x512 with those two text nodes removed, and the credit is",
-  "carried by CREDITS.md instead, which is exactly what tools/credits.py is",
-  "for. art/original/<id>.svg holds each file byte-for-byte as downloaded.",
-  "",
-  "Two page descriptions were wrong and were corrected against the artwork:",
-  "'classes hunter' is an owl with arrows, not an archer, and 'element stream'",
-  "is a droplet, not a stream. Both still suit their slots.",
-  "",
-  "Watch: the earth element sigil (element-mountain) and the Mountain biome",
-  "(landscape-mountain) are both mountains and may not be tellable apart on a",
-  "printed face. Not yet seen side by side at card size."
- ],
- "$boss_sizes": [
-  "The five boss-size slots are left unsourced deliberately, not from neglect.",
-  "The in-house glyphs are one figure escalating: S is a bare minion, M gains",
-  "shoulders, L gains horns and outflung arms, XL gains wings, UM gains a",
-  "spiked crown. That series encodes RELATIVE SIZE, which is the information",
-  "those cards carry. Five unrelated stock creatures cannot: nobody ranks a",
-  "skeleton below a bear below a dragon by size. The collection has no",
-  "size-graded monster family to buy either (it is a skills-and-equipment set,",
-  "not a bestiary), and each card already prints its size letter at 110 units,",
-  "about 11mm on a 63mm card. Sourcing these would add five CREDITS.md rows for",
-  "no gain."
- ],
- "$retired": [
-  {
-   "$note": "Real icons that no card asks for any more. They were assigned to cards whose NAME they do not depict, back when the supplied list was stretched across a deck it could not cover. Kept here so the URLs and the research are not lost: if a future card wants one of these subjects, the art is already found."
-  },
-  {
-   "id": "skill-evade",
-   "source": "https://thenounproject.com/icon/skill-evade-up-2360188/",
-   "creator": "Maxicons",
-   "depicts": "a figure dodging with motion lines",
-   "why": "Retired 2026-08-27: stood in for Gale, which is a gust of wind."
-  },
-  {
-   "id": "skill-slow",
-   "source": "https://thenounproject.com/icon/skill-speed-down-2360205/",
-   "creator": "Maxicons",
-   "depicts": "a downward speed chevron",
-   "why": "Retired 2026-08-27: stood in for Boulder, which is a thrown rock."
-  },
-  {
-   "id": "skill-circle",
-   "source": "https://thenounproject.com/icon/effect-magic-circle-2360027/",
-   "creator": "Maxicons",
-   "depicts": "a magic circle",
-   "why": "Retired 2026-08-27: stood in for BOTH Firebolt and Pyre, which are fire."
-  },
-  {
-   "id": "skill-control",
-   "source": "https://thenounproject.com/icon/skill-control-2360202/",
-   "creator": "Maxicons",
-   "depicts": "a control/puppet mark",
-   "why": "Retired 2026-08-27: stood in for Tempest, which is a storm."
-  },
-  {
-   "id": "skill-grimoire",
-   "source": "https://thenounproject.com/icon/game-ui-book-skill-2360109/",
-   "creator": "Maxicons",
-   "depicts": "a closed book with a star",
-   "why": "Retired 2026-08-27: stood in for Thunderhead, which is a storm cloud."
-  },
-  {
-   "id": "skill-quest",
-   "source": "https://thenounproject.com/icon/item-quest-scroll-2360143/",
-   "creator": "Maxicons",
-   "depicts": "a scroll with a question mark",
-   "why": "Retired 2026-08-27: stood in for Landslide, which is a slope giving way."
-  },
-  {
-   "id": "skill-ascend",
-   "source": "https://thenounproject.com/icon/game-ui-plus-level-up-2360113/",
-   "creator": "Maxicons",
-   "depicts": "a plus sign beside an up arrow",
-   "why": "Retired 2026-08-27: stood in for Hurricane, which is a great spiral."
-  },
-  {
-   "id": "skill-hoard",
-   "source": "https://thenounproject.com/icon/game-ui-money-2360125/",
-   "creator": "Maxicons",
-   "depicts": "a money sack and coin stack",
-   "why": "Retired 2026-08-27: no card ever used it."
-  },
-  {
-   "id": "skill-pack",
-   "source": "https://thenounproject.com/icon/game-ui-bag-2360116/",
-   "creator": "Maxicons",
-   "depicts": "a backpack",
-   "why": "Retired 2026-08-27: no card ever used it."
-  }
- ],
- "$tinting": [
-  "An <image> ignores the stroke colour, so downloaded art does NOT inherit the",
-  "card's colour language the way a glyph does. js/cards/face.js now floods the",
-  "wanted colour through the art's own alpha for any non-default ink. That",
-  "matters most for 'crown', which prints gold on a #111 face: untinted, an",
-  "attributed crown would print black on black and the boss life card would",
-  "come out blank. Invisible in review, obvious on paper."
- ],
- "slots": [
-  {
-   "id": "fire",
-   "use": "Fire element sigil",
-   "source": "https://thenounproject.com/icon/element-fire-2360070/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "element fire"
-  },
-  {
-   "id": "water",
-   "use": "Water element sigil",
-   "source": "https://thenounproject.com/icon/element-stream-2360063/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "element water"
-  },
-  {
-   "id": "earth",
-   "use": "Earth element sigil",
-   "source": "https://thenounproject.com/icon/element-mountain-2360067/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "element mountain"
-  },
-  {
-   "id": "wind",
-   "use": "Wind element sigil",
-   "source": "https://thenounproject.com/icon/element-wind-2360065/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "element wind"
-  },
-  {
-   "id": "strike",
-   "use": "Strike (attack card)",
-   "source": "https://thenounproject.com/icon/element-fist-2360069/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "element normal"
-  },
-  {
-   "id": "focus",
-   "use": "Focus (attack card)",
-   "source": "https://thenounproject.com/icon/classes-monk-2360006/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "classes Monk"
-  },
-  {
-   "id": "back-brokenheart",
-   "use": "Card back: a bandaged heart, what a Broken life card shows",
-   "source": "https://thenounproject.com/icon/broken-heart-6414622/",
-   "creator": "Gulalicon",
-   "licence": "CC BY 3.0",
-   "note": "The shipped back. A heart with a plaster across it: hurt but patched, which is the reading a ten-year-old should get from a card they just lost, and it rhymes with Second Wind."
-  },
-  {
-   "id": "back-breakup",
-   "use": "Card back, alternate: a split heart",
-   "source": "https://thenounproject.com/icon/breakup-5619033/",
-   "creator": "Ir Studio",
-   "licence": "CC BY 3.0",
-   "note": "The harsher alternate. Swap BACK_ART in js/cards/face.js to use it."
-  },
-  {
-   "id": "revive",
-   "use": "Second Wind (gentle-mode card)",
-   "source": "https://thenounproject.com/icon/zombie-hand-5193546/",
-   "creator": "Narakorn Chanchittakarn",
-   "licence": "CC BY 3.0",
-   "note": "Downloaded 2026-08-27. licence stays null until the file is in art/, since artSrc() switches on creator AND licence."
-  },
-  {
-   "id": "bubble",
-   "use": "Bubble (attack card)",
-   "source": "https://thenounproject.com/icon/bubble-8403070/",
-   "creator": "BnB Studio",
-   "licence": "CC BY 3.0",
-   "note": "GAP, opened 2026-08-27 with the card. Wants a soap bubble or a round shield: safety, not a weapon. Ships an original glyph."
-  },
-  {
-   "id": "run",
-   "use": "Attack: Run",
-   "source": "https://thenounproject.com/icon/run-1651221/",
-   "creator": "Adrien Coquet",
-   "licence": "CC BY 3.0"
-  },
-  {
-   "id": "all-in",
-   "use": "All In (attack card)",
-   "source": "https://thenounproject.com/icon/betting-5754807/",
-   "creator": "Amethyst Studio",
-   "licence": "CC BY 3.0",
-   "note": "GAP. Needs a glyph that reads as 'everything at once'. Candidates found 2026-08-27, all Maxicons, all in the same collection, none downloaded or eyeballed: element-critical-2360056 (the crit card, and an element-* icon like its shelf-mate Strike), skill-sword-tripple-stab-2360272, support-attack-increase-2360289. The in-house glyph (chips with a down arrow) ships meanwhile."
-  },
-  {
-   "id": "knight",
-   "use": "Knight class",
-   "source": "https://thenounproject.com/icon/equipment-helm-armor-2360086/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "equipment helm armor"
-  },
-  {
-   "id": "mage",
-   "use": "Mage class",
-   "source": "https://thenounproject.com/icon/equipment-wizard-hat-2360088/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "equipment wizard hat"
-  },
-  {
-   "id": "hunter",
-   "use": "Hunter class",
-   "source": "https://thenounproject.com/icon/classes-hunter-2360018/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "classes Hunter"
-  },
-  {
-   "id": "necromancer",
-   "use": "Necromancer class",
-   "source": "https://thenounproject.com/icon/classes-necromancer-2360015/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "classes Necromancer"
-  },
-  {
-   "id": "adv-cure",
-   "use": "Advantage: Cure",
-   "source": "https://thenounproject.com/icon/game-ui-item-2360115/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "game ui item"
-  },
-  {
-   "id": "adv-barrier",
-   "use": "Advantage: Barrier",
-   "source": "https://thenounproject.com/icon/skill-magic-barrier-2360190/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "skill magic barrier"
-  },
-  {
-   "id": "adv-ally",
-   "use": "Advantage: Ally",
-   "source": "https://thenounproject.com/icon/skill-beast-wolf-2360189/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "skill beast wolf"
-  },
-  {
-   "id": "adv-rune",
-   "use": "Advantage: Rune",
-   "source": "https://thenounproject.com/icon/item-rune-stone-2360138/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "note": "URL was reconstructed from a spliced line ('item-rune-stone-23' + '60138/'). CONFIRMED CORRECT 2026-08-27: the page returns 200 with rel=canonical item-rune-stone-2360138 and title 'item rune stone'.",
-   "title": "item rune stone"
-  },
-  {
-   "id": "adv-relic",
-   "use": "Advantage: Relic",
-   "source": "https://thenounproject.com/icon/game-ui-weapon-2360110/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "game ui weapon"
-  },
-  {
-   "id": "adv-chest",
-   "use": "Advantage: Chest",
-   "source": "https://thenounproject.com/icon/item-treasure-chest-2360145/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "item treasure chest"
-  },
-  {
-   "id": "biome-volcano",
-   "use": "Biome: Volcano",
-   "source": "https://thenounproject.com/icon/landscape-volcano-2360153/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "landscape Volcano"
-  },
-  {
-   "id": "biome-river",
-   "use": "Biome: River",
-   "source": "https://thenounproject.com/icon/landscape-river-2360155/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "landscape River"
-  },
-  {
-   "id": "biome-mountain",
-   "use": "Biome: Mountain",
-   "source": "https://thenounproject.com/icon/landscape-mountain-2360158/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "landscape Mountain"
-  },
-  {
-   "id": "biome-desert",
-   "use": "Biome: Desert",
-   "source": "https://thenounproject.com/icon/landscape-desert-2360152/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "landscape Desert"
-  },
-  {
-   "id": "biome-forest",
-   "use": "Biome: Forest",
-   "source": "https://thenounproject.com/icon/landscape-forest-2360154/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "landscape Forest"
-  },
-  {
-   "id": "biome-village",
-   "use": "Biome: Village",
-   "source": "https://thenounproject.com/icon/landscape-village-2360156/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "landscape Village"
-  },
-  {
-   "id": "biome-castle",
-   "use": "Biome: Castle",
-   "source": "https://thenounproject.com/icon/landscape-castle-2360157/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "landscape Castle"
-  },
-  {
-   "id": "skill-ice-spear",
-   "use": "Skill: Ice Spear",
-   "source": "https://thenounproject.com/icon/skill-magic-ice-spear-2360175/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "skill magic ice spear"
-  },
-  {
-   "id": "skill-torrent",
-   "use": "Skill: Torrent",
-   "source": "https://thenounproject.com/icon/skill-magic-stream-2360191/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "skill magic stream"
-  },
-  {
-   "id": "skill-earthquake",
-   "use": "Skill: Earthquake",
-   "source": "https://thenounproject.com/icon/skill-magic-earthquake-2360193/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "skill magic earthquake"
-  },
-  {
-   "id": "skill-piercer",
-   "use": "Skill: Piercer",
-   "source": "https://thenounproject.com/icon/skill-gun-bullet-2360207/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "skill gun bullet"
-  },
-  {
-   "id": "skill-slash",
-   "use": "Skill: Slash",
-   "source": "https://thenounproject.com/icon/effect-slash-damage-2360030/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "effect Slash damage"
-  },
-  {
-   "id": "skill-slash-wave",
-   "use": "Skill: Slash Wave",
-   "source": "https://thenounproject.com/icon/effect-slash-wave-2360038/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "effect Slash wave"
-  },
-  {
-   "id": "skill-nova",
-   "use": "Skill: Nova",
-   "source": "https://thenounproject.com/icon/effect-damage-circle-2360033/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "effect Damage circle"
-  },
-  {
-   "id": "skill-cold-curse",
-   "use": "Skill: Cold Curse",
-   "source": "https://thenounproject.com/icon/skill-magic-cold-curse-2360200/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "skill magic cold curse"
-  },
-  {
-   "id": "skill-soul-strike",
-   "use": "Skill: Soul Strike",
-   "source": "https://thenounproject.com/icon/skill-magic-soul-strike-2360160/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "skill magic soul strike"
-  },
-  {
-   "id": "skill-reaper",
-   "use": "Skill: Reaper",
-   "source": "https://thenounproject.com/icon/skill-dead-skull-2360206/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "title": "skill dead skull"
-  },
-  {
-   "id": "skill-ember",
-   "use": "Skill: Ember (fire t0)",
-   "source": "https://thenounproject.com/icon/fire-315160/",
-   "creator": "Alexander Skowalsky",
-   "licence": "CC BY 3.0",
-   "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
-  },
-  {
-   "id": "skill-firebolt",
-   "use": "Skill: Firebolt (fire t1)",
-   "source": "https://thenounproject.com/icon/fire-315159/",
-   "creator": "Alexander Skowalsky",
-   "licence": "CC BY 3.0",
-   "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
-  },
-  {
-   "id": "skill-pyre",
-   "use": "Skill: Pyre (fire t3)",
-   "source": "https://thenounproject.com/icon/flame-8020212/",
-   "creator": "Ahmad Ishaq",
-   "licence": "CC BY 3.0",
-   "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
-  },
-  {
-   "id": "skill-maelstrom",
-   "use": "Skill: Maelstrom (water t3)",
-   "source": "https://thenounproject.com/icon/tornado-5325195/",
-   "creator": "ratacon studio",
-   "licence": "CC BY 3.0",
-   "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
-  },
-  {
-   "id": "skill-deluge",
-   "use": "Skill: Deluge (water t4)",
-   "source": "https://thenounproject.com/icon/drowning-10830/",
-   "creator": "Luis Prado",
-   "licence": "CC BY 3.0",
-   "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
-  },
-  {
-   "id": "skill-tremor",
-   "use": "Skill: Tremor (earth t0)",
-   "source": "https://thenounproject.com/icon/earthquake-5554272/",
-   "creator": "WARHAMMER",
-   "licence": "CC BY 3.0",
-   "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
-  },
-  {
-   "id": "skill-boulder",
-   "use": "Skill: Boulder (earth t1)",
-   "source": "https://thenounproject.com/icon/rock-2632080/",
-   "creator": "RIZCA",
-   "licence": "CC BY 3.0",
-   "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
-  },
-  {
-   "id": "skill-landslide",
-   "use": "Skill: Landslide (earth t3)",
-   "source": "https://thenounproject.com/icon/landslide-8035788/",
-   "creator": "Muhammad Nur Auliady Pamungkas",
-   "licence": "CC BY 3.0",
-   "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
-  },
-  {
-   "id": "skill-cataclysm",
-   "use": "Skill: Cataclysm (earth t4)",
-   "source": "https://thenounproject.com/icon/disaster-6140448/",
-   "creator": "Afianroc",
-   "licence": "CC BY 3.0",
-   "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
-  },
-  {
-   "id": "skill-gale",
-   "use": "Skill: Gale (wind t0)",
-   "source": "https://thenounproject.com/icon/windy-6776957/",
-   "creator": "Pandu Bramantyo",
-   "licence": "CC BY 3.0",
-   "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
-  },
-  {
-   "id": "skill-cyclone",
-   "use": "Skill: Cyclone (wind t1)",
-   "source": "https://thenounproject.com/icon/typhoon-6776949/",
-   "creator": "Pandu Bramantyo",
-   "licence": "CC BY 3.0",
-   "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
-  },
-  {
-   "id": "skill-tempest",
-   "use": "Skill: Tempest (wind t2)",
-   "source": "https://thenounproject.com/icon/tornado-5434776/",
-   "creator": "J703",
-   "licence": "CC BY 3.0",
-   "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph.",
-   "title": "tornado"
-  },
-  {
-   "id": "skill-thunderhead",
-   "use": "Skill: Thunderhead (wind t3)",
-   "source": "https://thenounproject.com/icon/thunder-8077206/",
-   "creator": "Relona Creative",
-   "licence": "CC BY 3.0",
-   "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
-  },
-  {
-   "id": "skill-hurricane",
-   "use": "Skill: Hurricane (wind t4)",
-   "source": "https://thenounproject.com/icon/hurricane-8268736/",
-   "creator": "Zpoliariumz Zydanez",
-   "licence": "CC BY 3.0",
-   "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
-  },
-  {
-   "id": "skill-meteor",
-   "use": "Skill: Meteor (tier 4)",
-   "source": "https://thenounproject.com/icon/skill-magic-meteor-2360172/",
-   "creator": "Maxicons",
-   "licence": "CC BY 3.0",
-   "note": "FOUND 2026-08-27. The gap note said nothing in the supplied LIST depicts a meteor, which was true; the COLLECTION has one. Its id sits between two icons already sourced here, and its tier-4 siblings use skill-magic-stream-2360191 (Deluge) and skill-magic-earthquake-2360193 (Cataclysm), so this completes a set authored together. Not yet downloaded or seen at card size.",
-   "title": "skill magic meteor"
-  },
-  {
-   "id": "boss-s",
-   "use": "Boss size S (minifig)",
-   "source": null,
-   "creator": null,
-   "licence": null,
-   "note": "DELIBERATELY UNSOURCED, see $boss_sizes below."
-  },
-  {
-   "id": "boss-m",
-   "use": "Boss size M",
-   "source": null,
-   "creator": null,
-   "licence": null,
-   "note": "DELIBERATELY UNSOURCED, see $boss_sizes below."
-  },
-  {
-   "id": "boss-l",
-   "use": "Boss size L",
-   "source": null,
-   "creator": null,
-   "licence": null,
-   "note": "DELIBERATELY UNSOURCED, see $boss_sizes below."
-  },
-  {
-   "id": "boss-xl",
-   "use": "Boss size XL",
-   "source": null,
-   "creator": null,
-   "licence": null,
-   "note": "DELIBERATELY UNSOURCED, see $boss_sizes below."
-  },
-  {
-   "id": "boss-um",
-   "use": "Boss size UM (ultra)",
-   "source": null,
-   "creator": null,
-   "licence": null,
-   "note": "DELIBERATELY UNSOURCED, see $boss_sizes below."
-  },
-  {
-   "id": "life",
-   "use": "Life card marker",
-   "source": "https://thenounproject.com/icon/life-4724760/",
-   "creator": "verry poernomo",
-   "licence": "CC BY 3.0",
-   "note": "GAP. Candidates 2026-08-27 (Maxicons, same collection): item-crystal-2360128 preferred, a plain mark with no modifier, because the only place this renders is the Village biome card where it already sits beside a printed '+1'. support-heart-point-increase-2360297 is the literal heart but carries an up arrow that duplicates that '+1'."
-  },
-  {
-   "id": "crown",
-   "use": "Boss life marker",
-   "source": "https://thenounproject.com/icon/crown-8440024/",
-   "creator": "Kim Sun Young",
-   "licence": "CC BY 3.0",
-   "note": "GAP. Candidate: equipment-crown-2360075 (Maxicons), the collection's only crown, same equipment-* family as the Knight and Mage class icons. This slot prints GOLD on the black boss life card, so see $tinting below before sourcing it."
-  },
-  {
-   "id": "die-d4",
-   "use": "Die face: d4",
-   "source": "https://thenounproject.com/icon/d4-2453696/",
-   "creator": "Lonnie Tapscott",
-   "licence": "CC BY 3.0",
-   "title": "Artboard 1"
-  },
-  {
-   "id": "die-d6",
-   "use": "Die face: d6",
-   "source": "https://thenounproject.com/icon/d6-2453695/",
-   "creator": "Lonnie Tapscott",
-   "licence": "CC BY 3.0",
-   "title": "Artboard 2"
-  },
-  {
-   "id": "die-d8",
-   "use": "Die face: d8",
-   "source": "https://thenounproject.com/icon/d8-2453699/",
-   "creator": "Lonnie Tapscott",
-   "licence": "CC BY 3.0",
-   "title": "Artboard 3"
-  },
-  {
-   "id": "die-d10",
-   "use": "Die face: d10",
-   "source": "https://thenounproject.com/icon/d10-2453698/",
-   "creator": "Lonnie Tapscott",
-   "licence": "CC BY 3.0",
-   "title": "Artboard 4"
-  },
-  {
-   "id": "die-d12",
-   "use": "Die face: d12",
-   "source": "https://thenounproject.com/icon/d12-2453697/",
-   "creator": "Lonnie Tapscott",
-   "licence": "CC BY 3.0",
-   "title": "Artboard 5"
-  },
-  {
-   "id": "die-d20",
-   "use": "Die face: d20",
-   "source": "https://thenounproject.com/icon/d20-2453700/",
-   "creator": "Lonnie Tapscott",
-   "licence": "CC BY 3.0",
-   "title": "Artboard 6"
-  },
-  {
-   "id": "back-skill",
-   "use": "Card back: skill pool",
-   "source": "https://thenounproject.com/icon/book-7375971/",
-   "creator": "Putri Amaliya",
-   "licence": "CC BY 3.0"
-  },
-  {
-   "id": "back-coin",
-   "use": "Card back: Advantage and Second Wind",
-   "source": "https://thenounproject.com/icon/coin-7280138/",
-   "creator": "Putri Amaliya",
-   "licence": "CC BY 3.0"
-  },
-  {
-   "id": "back-biome",
-   "use": "Card back: biome",
-   "source": "https://thenounproject.com/icon/blocks-7983307/",
-   "creator": "Graphic Nehar",
-   "licence": "CC BY 3.0"
-  },
-  {
-   "id": "back-aid",
-   "use": "Card back: player aid",
-   "source": "https://thenounproject.com/icon/learning-7740728/",
-   "creator": "Nur Achmadi Yusuf",
-   "licence": "CC BY 3.0"
-  },
-  {
-   "id": "invention",
-   "use": "Attack: Invention",
-   "source": "https://thenounproject.com/icon/invention-7895989/",
-   "creator": "nangicon",
-   "licence": "CC BY 3.0",
-   "note": "v1.2 card"
-  },
-  {
-   "id": "taunt",
-   "use": "Skill: Taunt (Knight)",
-   "source": "https://thenounproject.com/icon/dancing-2717983/",
-   "creator": "Vectors Point",
-   "licence": "CC BY 3.0",
-   "note": "v1.2 card; a taunting dance"
-  },
-  {
-   "id": "sidekick",
-   "use": "Mode: Sidekick",
-   "source": "https://thenounproject.com/icon/friend-6929953/",
-   "creator": "Iconographer",
-   "licence": "CC BY 3.0",
-   "note": "v1.2 card"
-  },
-  {
-   "id": "grudge",
-   "use": "Mode: Grudge",
-   "source": "https://thenounproject.com/icon/anger-7788151/",
-   "creator": "siti muayanah",
-   "licence": "CC BY 3.0",
-   "note": "v1.2 card"
-  }
- ]
+  "$comment": [
+    "Art manifest for Enjeu. Every icon slot in the game, and where its art comes from.",
+    "",
+    "The art is sourced from The Noun Project. Noun Project icons are offered either",
+    "under CC BY (free, attribution REQUIRED) or under a paid royalty-free licence",
+    "(no attribution). Terms differ per icon and per download, so 'creator' and",
+    "'licence' below must be filled in from each icon's own page at download time.",
+    "",
+    "tools/credits.py reads this file and writes CREDITS.md. It REFUSES to write",
+    "anything while a used slot is missing its creator or licence, which is the",
+    "point: an incomplete attribution page is the actual legal exposure here.",
+    "",
+    "'source': null means no art has been chosen for that slot yet."
+  ],
+  "collection": "https://thenounproject.com/browse/collection-icon/role-playing-game-70773/",
+  "$verified": [
+    "2026-08-27: every one of the 42 sourced URLs was loaded individually. All 42",
+    "return 200, all 42 are by the same creator, Maxicons (user id 3983118),",
+    "uploaded 2019-02-13 into the collection above. 'creator' below is therefore",
+    "filled in from the pages themselves rather than guessed.",
+    "",
+    "2026-08-27, later: the free route was taken. Each icon was downloaded via",
+    "'Continue With Attribution', which the page states plainly as 'CC BY-3.0",
+    "Attribution License', so 'licence' is now filled for the 34 slots whose",
+    "file is actually on disk, and stays null for every gap. That invariant is",
+    "load-bearing: js/cards/glyphs.js artSrc() serves art/<id>.svg the moment a",
+    "slot has creator AND licence, so a licence filled ahead of its file renders",
+    "a broken image on every card that asks for it.",
+    "",
+    "The download bakes 'Created by Maxicons / from the Noun Project' into the",
+    "bottom of a 512x640 box. That cannot print on a card, so art/<id>.svg is",
+    "cropped to 512x512 with those two text nodes removed, and the credit is",
+    "carried by CREDITS.md instead, which is exactly what tools/credits.py is",
+    "for. art/original/<id>.svg holds each file byte-for-byte as downloaded.",
+    "",
+    "Two page descriptions were wrong and were corrected against the artwork:",
+    "'classes hunter' is an owl with arrows, not an archer, and 'element stream'",
+    "is a droplet, not a stream. Both still suit their slots.",
+    "",
+    "Watch: the earth element sigil (element-mountain) and the Mountain biome",
+    "(landscape-mountain) are both mountains and may not be tellable apart on a",
+    "printed face. Not yet seen side by side at card size."
+  ],
+  "$boss_sizes": [
+    "The five boss-size slots are left unsourced deliberately, not from neglect.",
+    "The in-house glyphs are one figure escalating: S is a bare minion, M gains",
+    "shoulders, L gains horns and outflung arms, XL gains wings, UM gains a",
+    "spiked crown. That series encodes RELATIVE SIZE, which is the information",
+    "those cards carry. Five unrelated stock creatures cannot: nobody ranks a",
+    "skeleton below a bear below a dragon by size. The collection has no",
+    "size-graded monster family to buy either (it is a skills-and-equipment set,",
+    "not a bestiary), and each card already prints its size letter at 110 units,",
+    "about 11mm on a 63mm card. Sourcing these would add five CREDITS.md rows for",
+    "no gain."
+  ],
+  "$retired": [
+    {
+      "$note": "Real icons that no card asks for any more. They were assigned to cards whose NAME they do not depict, back when the supplied list was stretched across a deck it could not cover. Kept here so the URLs and the research are not lost: if a future card wants one of these subjects, the art is already found."
+    },
+    {
+      "id": "skill-evade",
+      "source": "https://thenounproject.com/icon/skill-evade-up-2360188/",
+      "creator": "Maxicons",
+      "depicts": "a figure dodging with motion lines",
+      "why": "Retired 2026-08-27: stood in for Gale, which is a gust of wind."
+    },
+    {
+      "id": "skill-slow",
+      "source": "https://thenounproject.com/icon/skill-speed-down-2360205/",
+      "creator": "Maxicons",
+      "depicts": "a downward speed chevron",
+      "why": "Retired 2026-08-27: stood in for Boulder, which is a thrown rock."
+    },
+    {
+      "id": "skill-circle",
+      "source": "https://thenounproject.com/icon/effect-magic-circle-2360027/",
+      "creator": "Maxicons",
+      "depicts": "a magic circle",
+      "why": "Retired 2026-08-27: stood in for BOTH Firebolt and Pyre, which are fire."
+    },
+    {
+      "id": "skill-control",
+      "source": "https://thenounproject.com/icon/skill-control-2360202/",
+      "creator": "Maxicons",
+      "depicts": "a control/puppet mark",
+      "why": "Retired 2026-08-27: stood in for Tempest, which is a storm."
+    },
+    {
+      "id": "skill-grimoire",
+      "source": "https://thenounproject.com/icon/game-ui-book-skill-2360109/",
+      "creator": "Maxicons",
+      "depicts": "a closed book with a star",
+      "why": "Retired 2026-08-27: stood in for Thunderhead, which is a storm cloud."
+    },
+    {
+      "id": "skill-quest",
+      "source": "https://thenounproject.com/icon/item-quest-scroll-2360143/",
+      "creator": "Maxicons",
+      "depicts": "a scroll with a question mark",
+      "why": "Retired 2026-08-27: stood in for Landslide, which is a slope giving way."
+    },
+    {
+      "id": "skill-ascend",
+      "source": "https://thenounproject.com/icon/game-ui-plus-level-up-2360113/",
+      "creator": "Maxicons",
+      "depicts": "a plus sign beside an up arrow",
+      "why": "Retired 2026-08-27: stood in for Hurricane, which is a great spiral."
+    },
+    {
+      "id": "skill-hoard",
+      "source": "https://thenounproject.com/icon/game-ui-money-2360125/",
+      "creator": "Maxicons",
+      "depicts": "a money sack and coin stack",
+      "why": "Retired 2026-08-27: no card ever used it."
+    },
+    {
+      "id": "skill-pack",
+      "source": "https://thenounproject.com/icon/game-ui-bag-2360116/",
+      "creator": "Maxicons",
+      "depicts": "a backpack",
+      "why": "Retired 2026-08-27: no card ever used it."
+    }
+  ],
+  "$tinting": [
+    "An <image> ignores the stroke colour, so downloaded art does NOT inherit the",
+    "card's colour language the way a glyph does. js/cards/face.js now floods the",
+    "wanted colour through the art's own alpha for any non-default ink. That",
+    "matters most for 'crown', which prints gold on a #111 face: untinted, an",
+    "attributed crown would print black on black and the boss life card would",
+    "come out blank. Invisible in review, obvious on paper."
+  ],
+  "slots": [
+    {
+      "id": "fire",
+      "use": "Fire element sigil",
+      "source": "https://thenounproject.com/icon/element-fire-2360070/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "element fire"
+    },
+    {
+      "id": "water",
+      "use": "Water element sigil",
+      "source": "https://thenounproject.com/icon/element-stream-2360063/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "element water"
+    },
+    {
+      "id": "earth",
+      "use": "Earth element sigil",
+      "source": "https://thenounproject.com/icon/element-mountain-2360067/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "element mountain"
+    },
+    {
+      "id": "wind",
+      "use": "Wind element sigil",
+      "source": "https://thenounproject.com/icon/element-wind-2360065/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "element wind"
+    },
+    {
+      "id": "strike",
+      "use": "Strike (attack card)",
+      "source": "https://thenounproject.com/icon/element-fist-2360069/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "element normal"
+    },
+    {
+      "id": "focus",
+      "use": "Focus (attack card)",
+      "source": "https://thenounproject.com/icon/classes-monk-2360006/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "classes Monk"
+    },
+    {
+      "id": "back-brokenheart",
+      "use": "Card back: a bandaged heart, what a Broken life card shows",
+      "source": "https://thenounproject.com/icon/broken-heart-6414622/",
+      "creator": "Gulalicon",
+      "licence": "CC BY 3.0",
+      "note": "The shipped back. A heart with a plaster across it: hurt but patched, which is the reading a ten-year-old should get from a card they just lost, and it rhymes with Second Wind."
+    },
+    {
+      "id": "back-breakup",
+      "use": "Card back, alternate: a split heart",
+      "source": "https://thenounproject.com/icon/breakup-5619033/",
+      "creator": "Ir Studio",
+      "licence": "CC BY 3.0",
+      "note": "The harsher alternate. Swap BACK_ART in js/cards/face.js to use it."
+    },
+    {
+      "id": "revive",
+      "use": "Second Wind (gentle-mode card)",
+      "source": "https://thenounproject.com/icon/zombie-hand-5193546/",
+      "creator": "Narakorn Chanchittakarn",
+      "licence": "CC BY 3.0",
+      "note": "Downloaded 2026-08-27. licence stays null until the file is in art/, since artSrc() switches on creator AND licence."
+    },
+    {
+      "id": "bubble",
+      "use": "Bubble (attack card)",
+      "source": "https://thenounproject.com/icon/bubble-8403070/",
+      "creator": "BnB Studio",
+      "licence": "CC BY 3.0",
+      "note": "GAP, opened 2026-08-27 with the card. Wants a soap bubble or a round shield: safety, not a weapon. Ships an original glyph."
+    },
+    {
+      "id": "run",
+      "use": "Attack: Run",
+      "source": "https://thenounproject.com/icon/run-1651221/",
+      "creator": "Adrien Coquet",
+      "licence": "CC BY 3.0"
+    },
+    {
+      "id": "all-in",
+      "use": "All In (attack card)",
+      "source": "https://thenounproject.com/icon/betting-5754807/",
+      "creator": "Amethyst Studio",
+      "licence": "CC BY 3.0",
+      "note": "GAP. Needs a glyph that reads as 'everything at once'. Candidates found 2026-08-27, all Maxicons, all in the same collection, none downloaded or eyeballed: element-critical-2360056 (the crit card, and an element-* icon like its shelf-mate Strike), skill-sword-tripple-stab-2360272, support-attack-increase-2360289. The in-house glyph (chips with a down arrow) ships meanwhile."
+    },
+    {
+      "id": "knight",
+      "use": "Knight class",
+      "source": "https://thenounproject.com/icon/equipment-helm-armor-2360086/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "equipment helm armor"
+    },
+    {
+      "id": "mage",
+      "use": "Mage class",
+      "source": "https://thenounproject.com/icon/equipment-wizard-hat-2360088/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "equipment wizard hat"
+    },
+    {
+      "id": "hunter",
+      "use": "Hunter class",
+      "source": "https://thenounproject.com/icon/classes-hunter-2360018/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "classes Hunter"
+    },
+    {
+      "id": "necromancer",
+      "use": "Necromancer class",
+      "source": "https://thenounproject.com/icon/classes-necromancer-2360015/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "classes Necromancer"
+    },
+    {
+      "id": "adv-cure",
+      "use": "Advantage: Cure",
+      "source": "https://thenounproject.com/icon/game-ui-item-2360115/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "game ui item"
+    },
+    {
+      "id": "adv-barrier",
+      "use": "Advantage: Barrier",
+      "source": "https://thenounproject.com/icon/skill-magic-barrier-2360190/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "skill magic barrier"
+    },
+    {
+      "id": "adv-ally",
+      "use": "Advantage: Ally",
+      "source": "https://thenounproject.com/icon/skill-beast-wolf-2360189/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "skill beast wolf"
+    },
+    {
+      "id": "adv-rune",
+      "use": "Advantage: Rune",
+      "source": "https://thenounproject.com/icon/item-rune-stone-2360138/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "note": "URL was reconstructed from a spliced line ('item-rune-stone-23' + '60138/'). CONFIRMED CORRECT 2026-08-27: the page returns 200 with rel=canonical item-rune-stone-2360138 and title 'item rune stone'.",
+      "title": "item rune stone"
+    },
+    {
+      "id": "adv-relic",
+      "use": "Advantage: Relic",
+      "source": "https://thenounproject.com/icon/game-ui-weapon-2360110/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "game ui weapon"
+    },
+    {
+      "id": "adv-chest",
+      "use": "Advantage: Chest",
+      "source": "https://thenounproject.com/icon/item-treasure-chest-2360145/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "item treasure chest"
+    },
+    {
+      "id": "biome-volcano",
+      "use": "Biome: Volcano",
+      "source": "https://thenounproject.com/icon/landscape-volcano-2360153/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "landscape Volcano"
+    },
+    {
+      "id": "biome-river",
+      "use": "Biome: River",
+      "source": "https://thenounproject.com/icon/landscape-river-2360155/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "landscape River"
+    },
+    {
+      "id": "biome-mountain",
+      "use": "Biome: Mountain",
+      "source": "https://thenounproject.com/icon/landscape-mountain-2360158/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "landscape Mountain"
+    },
+    {
+      "id": "biome-desert",
+      "use": "Biome: Desert",
+      "source": "https://thenounproject.com/icon/landscape-desert-2360152/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "landscape Desert"
+    },
+    {
+      "id": "biome-forest",
+      "use": "Biome: Forest",
+      "source": "https://thenounproject.com/icon/landscape-forest-2360154/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "landscape Forest"
+    },
+    {
+      "id": "biome-village",
+      "use": "Biome: Village",
+      "source": "https://thenounproject.com/icon/landscape-village-2360156/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "landscape Village"
+    },
+    {
+      "id": "biome-castle",
+      "use": "Biome: Castle",
+      "source": "https://thenounproject.com/icon/landscape-castle-2360157/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "landscape Castle"
+    },
+    {
+      "id": "skill-ice-spear",
+      "use": "Skill: Ice Spear",
+      "source": "https://thenounproject.com/icon/skill-magic-ice-spear-2360175/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "skill magic ice spear"
+    },
+    {
+      "id": "skill-torrent",
+      "use": "Skill: Torrent",
+      "source": "https://thenounproject.com/icon/skill-magic-stream-2360191/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "skill magic stream"
+    },
+    {
+      "id": "skill-earthquake",
+      "use": "Skill: Earthquake",
+      "source": "https://thenounproject.com/icon/skill-magic-earthquake-2360193/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "skill magic earthquake"
+    },
+    {
+      "id": "skill-piercer",
+      "use": "Skill: Piercer",
+      "source": "https://thenounproject.com/icon/skill-gun-bullet-2360207/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "skill gun bullet"
+    },
+    {
+      "id": "skill-slash",
+      "use": "Skill: Slash",
+      "source": "https://thenounproject.com/icon/effect-slash-damage-2360030/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "effect Slash damage"
+    },
+    {
+      "id": "skill-slash-wave",
+      "use": "Skill: Slash Wave",
+      "source": "https://thenounproject.com/icon/effect-slash-wave-2360038/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "effect Slash wave"
+    },
+    {
+      "id": "skill-nova",
+      "use": "Skill: Nova",
+      "source": "https://thenounproject.com/icon/effect-damage-circle-2360033/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "effect Damage circle"
+    },
+    {
+      "id": "skill-cold-curse",
+      "use": "Skill: Cold Curse",
+      "source": "https://thenounproject.com/icon/skill-magic-cold-curse-2360200/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "skill magic cold curse"
+    },
+    {
+      "id": "skill-soul-strike",
+      "use": "Skill: Soul Strike",
+      "source": "https://thenounproject.com/icon/skill-magic-soul-strike-2360160/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "skill magic soul strike"
+    },
+    {
+      "id": "skill-reaper",
+      "use": "Skill: Reaper",
+      "source": "https://thenounproject.com/icon/skill-dead-skull-2360206/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "title": "skill dead skull"
+    },
+    {
+      "id": "skill-ember",
+      "use": "Skill: Ember (fire t0)",
+      "source": "https://thenounproject.com/icon/fire-315160/",
+      "creator": "Alexander Skowalsky",
+      "licence": "CC BY 3.0",
+      "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
+    },
+    {
+      "id": "skill-firebolt",
+      "use": "Skill: Firebolt (fire t1)",
+      "source": "https://thenounproject.com/icon/fire-315159/",
+      "creator": "Alexander Skowalsky",
+      "licence": "CC BY 3.0",
+      "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
+    },
+    {
+      "id": "skill-pyre",
+      "use": "Skill: Pyre (fire t3)",
+      "source": "https://thenounproject.com/icon/flame-8020212/",
+      "creator": "Ahmad Ishaq",
+      "licence": "CC BY 3.0",
+      "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
+    },
+    {
+      "id": "skill-maelstrom",
+      "use": "Skill: Maelstrom (water t3)",
+      "source": "https://thenounproject.com/icon/tornado-5325195/",
+      "creator": "ratacon studio",
+      "licence": "CC BY 3.0",
+      "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
+    },
+    {
+      "id": "skill-deluge",
+      "use": "Skill: Deluge (water t4)",
+      "source": "https://thenounproject.com/icon/drowning-10830/",
+      "creator": "Luis Prado",
+      "licence": "CC BY 3.0",
+      "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
+    },
+    {
+      "id": "skill-tremor",
+      "use": "Skill: Tremor (earth t0)",
+      "source": "https://thenounproject.com/icon/earthquake-5554272/",
+      "creator": "WARHAMMER",
+      "licence": "CC BY 3.0",
+      "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
+    },
+    {
+      "id": "skill-boulder",
+      "use": "Skill: Boulder (earth t1)",
+      "source": "https://thenounproject.com/icon/rock-2632080/",
+      "creator": "RIZCA",
+      "licence": "CC BY 3.0",
+      "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
+    },
+    {
+      "id": "skill-landslide",
+      "use": "Skill: Landslide (earth t3)",
+      "source": "https://thenounproject.com/icon/landslide-8035788/",
+      "creator": "Muhammad Nur Auliady Pamungkas",
+      "licence": "CC BY 3.0",
+      "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
+    },
+    {
+      "id": "skill-cataclysm",
+      "use": "Skill: Cataclysm (earth t4)",
+      "source": "https://thenounproject.com/icon/disaster-6140448/",
+      "creator": "Afianroc",
+      "licence": "CC BY 3.0",
+      "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
+    },
+    {
+      "id": "skill-gale",
+      "use": "Skill: Gale (wind t0)",
+      "source": "https://thenounproject.com/icon/windy-6776957/",
+      "creator": "Pandu Bramantyo",
+      "licence": "CC BY 3.0",
+      "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
+    },
+    {
+      "id": "skill-cyclone",
+      "use": "Skill: Cyclone (wind t1)",
+      "source": "https://thenounproject.com/icon/typhoon-6776949/",
+      "creator": "Pandu Bramantyo",
+      "licence": "CC BY 3.0",
+      "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
+    },
+    {
+      "id": "skill-tempest",
+      "use": "Skill: Tempest (wind t2)",
+      "source": "https://thenounproject.com/icon/tornado-5434776/",
+      "creator": "J703",
+      "licence": "CC BY 3.0",
+      "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph.",
+      "title": "tornado"
+    },
+    {
+      "id": "skill-thunderhead",
+      "use": "Skill: Thunderhead (wind t3)",
+      "source": "https://thenounproject.com/icon/thunder-8077206/",
+      "creator": "Relona Creative",
+      "licence": "CC BY 3.0",
+      "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
+    },
+    {
+      "id": "skill-hurricane",
+      "use": "Skill: Hurricane (wind t4)",
+      "source": "https://thenounproject.com/icon/hurricane-8268736/",
+      "creator": "Zpoliariumz Zydanez",
+      "licence": "CC BY 3.0",
+      "note": "GAP, opened 2026-08-27. The supplied list had no art for this concept, which is why this card used to borrow another card's picture. Ships an original glyph."
+    },
+    {
+      "id": "skill-meteor",
+      "use": "Skill: Meteor (tier 4)",
+      "source": "https://thenounproject.com/icon/skill-magic-meteor-2360172/",
+      "creator": "Maxicons",
+      "licence": "CC BY 3.0",
+      "note": "FOUND 2026-08-27. The gap note said nothing in the supplied LIST depicts a meteor, which was true; the COLLECTION has one. Its id sits between two icons already sourced here, and its tier-4 siblings use skill-magic-stream-2360191 (Deluge) and skill-magic-earthquake-2360193 (Cataclysm), so this completes a set authored together. Not yet downloaded or seen at card size.",
+      "title": "skill magic meteor"
+    },
+    {
+      "id": "boss-s",
+      "use": "Boss size S (minifig)",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "note": "DELIBERATELY UNSOURCED, see $boss_sizes below."
+    },
+    {
+      "id": "boss-m",
+      "use": "Boss size M",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "note": "DELIBERATELY UNSOURCED, see $boss_sizes below."
+    },
+    {
+      "id": "boss-l",
+      "use": "Boss size L",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "note": "DELIBERATELY UNSOURCED, see $boss_sizes below."
+    },
+    {
+      "id": "boss-xl",
+      "use": "Boss size XL",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "note": "DELIBERATELY UNSOURCED, see $boss_sizes below."
+    },
+    {
+      "id": "boss-um",
+      "use": "Boss size UM (ultra)",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "note": "DELIBERATELY UNSOURCED, see $boss_sizes below."
+    },
+    {
+      "id": "life",
+      "use": "Life card marker",
+      "source": "https://thenounproject.com/icon/life-4724760/",
+      "creator": "verry poernomo",
+      "licence": "CC BY 3.0",
+      "note": "GAP. Candidates 2026-08-27 (Maxicons, same collection): item-crystal-2360128 preferred, a plain mark with no modifier, because the only place this renders is the Village biome card where it already sits beside a printed '+1'. support-heart-point-increase-2360297 is the literal heart but carries an up arrow that duplicates that '+1'."
+    },
+    {
+      "id": "crown",
+      "use": "Boss life marker",
+      "source": "https://thenounproject.com/icon/crown-8440024/",
+      "creator": "Kim Sun Young",
+      "licence": "CC BY 3.0",
+      "note": "GAP. Candidate: equipment-crown-2360075 (Maxicons), the collection's only crown, same equipment-* family as the Knight and Mage class icons. This slot prints GOLD on the black boss life card, so see $tinting below before sourcing it."
+    },
+    {
+      "id": "die-d4",
+      "use": "Die face: d4",
+      "source": "https://thenounproject.com/icon/d4-2453696/",
+      "creator": "Lonnie Tapscott",
+      "licence": "CC BY 3.0",
+      "title": "Artboard 1"
+    },
+    {
+      "id": "die-d6",
+      "use": "Die face: d6",
+      "source": "https://thenounproject.com/icon/d6-2453695/",
+      "creator": "Lonnie Tapscott",
+      "licence": "CC BY 3.0",
+      "title": "Artboard 2"
+    },
+    {
+      "id": "die-d8",
+      "use": "Die face: d8",
+      "source": "https://thenounproject.com/icon/d8-2453699/",
+      "creator": "Lonnie Tapscott",
+      "licence": "CC BY 3.0",
+      "title": "Artboard 3"
+    },
+    {
+      "id": "die-d10",
+      "use": "Die face: d10",
+      "source": "https://thenounproject.com/icon/d10-2453698/",
+      "creator": "Lonnie Tapscott",
+      "licence": "CC BY 3.0",
+      "title": "Artboard 4"
+    },
+    {
+      "id": "die-d12",
+      "use": "Die face: d12",
+      "source": "https://thenounproject.com/icon/d12-2453697/",
+      "creator": "Lonnie Tapscott",
+      "licence": "CC BY 3.0",
+      "title": "Artboard 5"
+    },
+    {
+      "id": "die-d20",
+      "use": "Die face: d20",
+      "source": "https://thenounproject.com/icon/d20-2453700/",
+      "creator": "Lonnie Tapscott",
+      "licence": "CC BY 3.0",
+      "title": "Artboard 6"
+    },
+    {
+      "id": "back-skill",
+      "use": "Card back: skill pool",
+      "source": "https://thenounproject.com/icon/book-7375971/",
+      "creator": "Putri Amaliya",
+      "licence": "CC BY 3.0"
+    },
+    {
+      "id": "back-coin",
+      "use": "Card back: Advantage and Second Wind",
+      "source": "https://thenounproject.com/icon/coin-7280138/",
+      "creator": "Putri Amaliya",
+      "licence": "CC BY 3.0"
+    },
+    {
+      "id": "back-biome",
+      "use": "Card back: biome",
+      "source": "https://thenounproject.com/icon/blocks-7983307/",
+      "creator": "Graphic Nehar",
+      "licence": "CC BY 3.0"
+    },
+    {
+      "id": "back-aid",
+      "use": "Card back: player aid",
+      "source": "https://thenounproject.com/icon/learning-7740728/",
+      "creator": "Nur Achmadi Yusuf",
+      "licence": "CC BY 3.0"
+    },
+    {
+      "id": "invention",
+      "use": "Attack: Invention",
+      "source": "https://thenounproject.com/icon/invention-7895989/",
+      "creator": "nangicon",
+      "licence": "CC BY 3.0",
+      "note": "v1.2 card"
+    },
+    {
+      "id": "taunt",
+      "use": "Skill: Taunt (Knight)",
+      "source": "https://thenounproject.com/icon/dancing-2717983/",
+      "creator": "Vectors Point",
+      "licence": "CC BY 3.0",
+      "note": "v1.2 card; a taunting dance"
+    },
+    {
+      "id": "sidekick",
+      "use": "Mode: Sidekick",
+      "source": "https://thenounproject.com/icon/friend-6929953/",
+      "creator": "Iconographer",
+      "licence": "CC BY 3.0",
+      "note": "v1.2 card"
+    },
+    {
+      "id": "grudge",
+      "use": "Mode: Grudge",
+      "source": "https://thenounproject.com/icon/anger-7788151/",
+      "creator": "siti muayanah",
+      "licence": "CC BY 3.0",
+      "note": "v1.2 card"
+    },
+    {
+      "id": "mark-poison",
+      "use": "poison",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/poison-8465746/",
+        "icon_id": "8465746",
+        "term": "Poison",
+        "creator": "Luis Prado",
+        "licence": "creative-commons-attribution",
+        "attribution": "Poison by Luis Prado from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "mark-burning",
+      "use": "campfire flame",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/campfire-flame-8351474/",
+        "icon_id": "8351474",
+        "term": "Campfire Flame",
+        "creator": "Fyndertype Studio",
+        "licence": "creative-commons-attribution",
+        "attribution": "Campfire Flame by Fyndertype Studio from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "mark-frozen",
+      "use": "snowflake",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/snowflake-5349203/",
+        "icon_id": "5349203",
+        "term": "Snowflake",
+        "creator": "Made",
+        "licence": "creative-commons-attribution",
+        "attribution": "Snowflake by Made from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "mark-marked",
+      "use": "target crosshair",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/aim-7274412/",
+        "icon_id": "7274412",
+        "term": "aim",
+        "creator": "Gregor Cresnar",
+        "licence": "creative-commons-attribution",
+        "attribution": "aim by Gregor Cresnar from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "mark-charged",
+      "use": "lightning bolt",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/lightning-bolt-8433281/",
+        "icon_id": "8433281",
+        "term": "Lightning Bolt",
+        "creator": "Arif Setyadi",
+        "licence": "creative-commons-attribution",
+        "attribution": "Lightning Bolt by Arif Setyadi from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "mark-snared",
+      "use": "net trap",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/net-trap-7795565/",
+        "icon_id": "7795565",
+        "term": "net trap",
+        "creator": "Upnow Graphic",
+        "licence": "creative-commons-attribution",
+        "attribution": "net trap by Upnow Graphic from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "haz-tar-pit",
+      "use": "swamp",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/swamp-7987639/",
+        "icon_id": "7987639",
+        "term": "swamp",
+        "creator": "Taufik Ramadhan",
+        "licence": "creative-commons-attribution",
+        "attribution": "swamp by Taufik Ramadhan from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "haz-frozen-lake",
+      "use": "ice",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/ice-8452048/",
+        "icon_id": "8452048",
+        "term": "Ice",
+        "creator": "Reion",
+        "licence": "creative-commons-attribution",
+        "attribution": "Ice by Reion from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "haz-thorn-nest",
+      "use": "thorn bush",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/thorn-3102534/",
+        "icon_id": "3102534",
+        "term": "thorn",
+        "creator": "Vivek",
+        "licence": "creative-commons-attribution",
+        "attribution": "thorn by Vivek from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "haz-ember-field",
+      "use": "embers",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/embers-938650/",
+        "icon_id": "938650",
+        "term": "embers",
+        "creator": "Juraj Sedlák",
+        "licence": "creative-commons-attribution",
+        "attribution": "embers by Juraj Sedlák from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "haz-sulphur-vent",
+      "use": "volcano vent steam",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/geothermal-vent-7797871/",
+        "icon_id": "7797871",
+        "term": "Geothermal Vent",
+        "creator": "ABDUL LATIF",
+        "licence": "creative-commons-attribution",
+        "attribution": "Geothermal Vent by ABDUL LATIF from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "haz-bramble-wall",
+      "use": "bush",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/bush-8457776/",
+        "icon_id": "8457776",
+        "term": "bush",
+        "creator": "Lars Meiertoberens",
+        "licence": "creative-commons-attribution",
+        "attribution": "bush by Lars Meiertoberens from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "haz-open-ground",
+      "use": "desert sun",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/desert-sun-8337171/",
+        "icon_id": "8337171",
+        "term": "Desert Sun",
+        "creator": "Eklip Studio",
+        "licence": "creative-commons-attribution",
+        "attribution": "Desert Sun by Eklip Studio from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "haz-cold-spring",
+      "use": "water spring",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/water-spring-7622109/",
+        "icon_id": "7622109",
+        "term": "water spring",
+        "creator": "Gulalicon",
+        "licence": "creative-commons-attribution",
+        "attribution": "water spring by Gulalicon from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "wits-scout",
+      "use": "spyglass lookout",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/spyglass-7723679/",
+        "icon_id": "7723679",
+        "term": "spyglass",
+        "creator": "mangunkarsa",
+        "licence": "creative-commons-attribution",
+        "attribution": "spyglass by mangunkarsa from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "wits-analyze",
+      "use": "magnifying glass search",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/magnifying-glass-1686354/",
+        "icon_id": "1686354",
+        "term": "Magnifying Glass",
+        "creator": "Gregor Cresnar",
+        "licence": "creative-commons-attribution",
+        "attribution": "Magnifying Glass by Gregor Cresnar from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "wits-parley",
+      "use": "speech bubbles conversation",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/speech-bubbles-985148/",
+        "icon_id": "985148",
+        "term": "Speech Bubbles",
+        "creator": "Adrien Coquet",
+        "licence": "creative-commons-attribution",
+        "attribution": "Speech Bubbles by Adrien Coquet from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "wits-board",
+      "use": "dice",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/dice-5197539/",
+        "icon_id": "5197539",
+        "term": "Dice",
+        "creator": "Sven Ihrke",
+        "licence": "creative-commons-attribution",
+        "attribution": "Dice by Sven Ihrke from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "prep-prepare",
+      "use": "coiled spring",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/coil-spring-7977227/",
+        "icon_id": "7977227",
+        "term": "coil spring",
+        "creator": "Abu Ibrahim Icon",
+        "licence": "creative-commons-attribution",
+        "attribution": "coil spring by Abu Ibrahim Icon from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "prop-brazier",
+      "use": "brazier fire bowl",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/fire-bowl-8336138/",
+        "icon_id": "8336138",
+        "term": "Fire Bowl",
+        "creator": "pcymku",
+        "licence": "creative-commons-attribution",
+        "attribution": "Fire Bowl by pcymku from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "prop-pitch-barrel",
+      "use": "barrel",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/barrel-8320730/",
+        "icon_id": "8320730",
+        "term": "Barrel",
+        "creator": "Graphic Nehar",
+        "licence": "creative-commons-attribution",
+        "attribution": "Barrel by Graphic Nehar from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "prop-fishing-net",
+      "use": "fishing net",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/fishing-net-8419078/",
+        "icon_id": "8419078",
+        "term": "fishing net",
+        "creator": "Muhammad Nur Auliady Pamungkas",
+        "licence": "creative-commons-attribution",
+        "attribution": "fishing net by Muhammad Nur Auliady Pamungkas from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "prop-cart",
+      "use": "wooden cart",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/wooden-cart-8413181/",
+        "icon_id": "8413181",
+        "term": "wooden cart",
+        "creator": "Icon From Us",
+        "licence": "creative-commons-attribution",
+        "attribution": "wooden cart by Icon From Us from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "prop-signal-bell",
+      "use": "bell",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/bell-8457566/",
+        "icon_id": "8457566",
+        "term": "Bell",
+        "creator": "Muhammad Nur Auliady Pamungkas",
+        "licence": "creative-commons-attribution",
+        "attribution": "Bell by Muhammad Nur Auliady Pamungkas from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "prop-rope-bridge",
+      "use": "rope bridge",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/rope-bridge-7175543/",
+        "icon_id": "7175543",
+        "term": "Rope Bridge",
+        "creator": "Anditii Creative",
+        "licence": "creative-commons-attribution",
+        "attribution": "Rope Bridge by Anditii Creative from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "prop-millstone",
+      "use": "millstone wheel",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/millstone-3685372/",
+        "icon_id": "3685372",
+        "term": "millstone",
+        "creator": "Eucalyp",
+        "licence": "creative-commons-attribution",
+        "attribution": "millstone by Eucalyp from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "prop-chandelier",
+      "use": "chandelier",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/chandelier-8472701/",
+        "icon_id": "8472701",
+        "term": "Chandelier",
+        "creator": "IconsHome",
+        "licence": "creative-commons-attribution",
+        "attribution": "Chandelier by IconsHome from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "seat-brace",
+      "use": "shield guard",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/shield-guard-6933017/",
+        "icon_id": "6933017",
+        "term": "shield guard",
+        "creator": "Dzakiyyah Thoyyibah",
+        "licence": "creative-commons-attribution",
+        "attribution": "shield guard by Dzakiyyah Thoyyibah from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "seat-summon",
+      "use": "split clone",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/connecting-7079591/",
+        "icon_id": "7079591",
+        "term": "connecting",
+        "creator": "Kiki Rizky",
+        "licence": "creative-commons-attribution",
+        "attribution": "connecting by Kiki Rizky from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "seat-roar",
+      "use": "roar shout",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/shout-631597/",
+        "icon_id": "631597",
+        "term": "shout",
+        "creator": "Kirby Wu",
+        "licence": "creative-commons-attribution",
+        "attribution": "shout by Kirby Wu from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "seat-ruin",
+      "use": "impact crack",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/impact-8284933/",
+        "icon_id": "8284933",
+        "term": "impact",
+        "creator": "Eko Purnomo",
+        "licence": "creative-commons-attribution",
+        "attribution": "impact by Eko Purnomo from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    },
+    {
+      "id": "seat-aid",
+      "use": "hand of cards",
+      "source": null,
+      "creator": null,
+      "licence": null,
+      "$pick": {
+        "source": "https://thenounproject.com/icon/hand-of-cards-219515/",
+        "icon_id": "219515",
+        "term": "Hand of Cards",
+        "creator": "Daniel Solis",
+        "licence": "creative-commons-attribution",
+        "attribution": "Hand of Cards by Daniel Solis from Noun Project",
+        "$note": "Chosen through the API; the SVG still has to be downloaded by hand (the key's plan refuses /icon/{id}/download) and imported with tools/import_art.py, which fills creator and licence."
+      }
+    }
+  ]
 }
