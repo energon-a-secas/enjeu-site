@@ -255,7 +255,7 @@ rule: five bosses stop sharing one brain without anyone learning five new tables
 
 | Boss | Roll | Signature | What happens instead |
 |---|---|---|---|
-| Level 1 | 1 | **Skitter** | No damage, and it is left off balance: your next landed attack deals +25. |
+| Level 1 | 1 | **Skitter** | No damage, and it is left off balance: your next landed attack that **bet a life card** deals +25. |
 | Level 2 | 4 | **Coil** | Summon, and the new minion strikes at once. |
 | Level 3 | 1 | **Bedrock** | Brace, and it repairs 25: one point of its wall comes back. |
 | Level 4 | 6 | **Stormbreak** | Ruin. If none of your life cards is standing, it Ruins **again**: the storm finds the unguarded. |
@@ -471,9 +471,14 @@ is what a safety net is for.
 ### Playing with two: the Sidekick
 
 One card turns the solo game into a table for two. The second player is the **Sidekick**:
-they get their own figure, and they OWN two of your five attack cards: Strike and Run.
+they get their own figure, and they OWN two of your attack cards: **Strike and Invention**.
 On your three actions, any action taken with an owned card is theirs to choose, theirs
-to say out loud, and theirs to roll. The life cards stay one shared pool in front of both
+to say out loud, and theirs to roll.
+
+It used to be Strike and Run, and that was a broken promise: both of those cards have
+no check at all, so the sentence above said "theirs to roll" while handing the second
+player nothing to roll. Invention is a Wild check and a bet, so the Sidekick throws real
+dice and says a made-up spell out loud, which is the best thing in this game to be given. The life cards stay one shared pool in front of both
 of you, so the maths of the fight does not change at all: what changes is whose turn it
 is to be brave. Swap which cards the Sidekick owns whenever you both agree.
 

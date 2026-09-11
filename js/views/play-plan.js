@@ -101,10 +101,22 @@ export function setStepBet(f, plan, i, n) {
 export function toggleStepRune(f, plan, i) {
   const st = plan[i];
   const a = st && attackFor(f, st.id);
-  if (!a || !effectiveStep(f, a)) return { ok: false, reason: 'noCheck' };
+  if (!a || !effectiveStep(f, a, targetOf(f, st))) return { ok: false, reason: 'noCheck' };
   if (!st.rune && runeSpare(f, plan) <= 0) return { ok: false, reason: 'noRune' };
   return { ok: true, plan: plan.map((x, k) => (k === i ? { ...x, rune: !x.rune } : x)) };
 }
+
+/**
+ * The figure a queued step is actually aimed at, falling back to the body when
+ * the minion it named has since been felled.
+ *
+ * Exported because four readers need it and they were all defaulting to the
+ * body: the step shown under a card, the rune eligibility test, the roll count
+ * and resolve() itself. Marks live per figure, so reading the boss's marks
+ * while swinging at a minion showed the wrong rung and offered the wrong rune.
+ */
+export const targetOf = (f, st) =>
+  (typeof st?.target === 'number' && f.boss.minions[st.target] ? st.target : 'body');
 
 /** Cycle a step's target: the body, then each minion in play. */
 export function cycleStepTarget(f, plan, i) {
@@ -123,7 +135,7 @@ export function awaitingStep(f, ui) {
   const st = (ui.plan || [])[ui.awaiting];
   const a = st && attackFor(f, st.id);
   if (!a) return null;
-  return { i: ui.awaiting, st, a, step: effectiveStep(f, a) };
+  return { i: ui.awaiting, st, a, step: effectiveStep(f, a, targetOf(f, st)) };
 }
 
 /**
@@ -160,10 +172,10 @@ export function advancePlan(f, ui, roll = null, { oneStep = false } = {}) {
     if (!v.ok) { ui.awaiting = null; ui.error = v.reason; return { error: v.reason, at: ui.at, played }; }
     const st = ui.plan[ui.at];
     const a = attackFor(f, st.id);
-    const step = effectiveStep(f, a);
+    const step = effectiveStep(f, a, targetOf(f, st));
     const useRune = !!st.rune && !!step && f.hero.rune > 0;
     if (step && !useRune && roll === null) { ui.awaiting = ui.at; return { awaiting: ui.at, step, played }; }
-    const target = typeof st.target === 'number' && f.boss.minions[st.target] ? st.target : 'body';
+    const target = targetOf(f, st);
     const r = attack(f, a, { bet: betFor(a, st), target, roll: step && !useRune ? roll : null, useRune });
     // The id travels with the name so the DISPLAY can translate it. This module
     // is deliberately free of the string table (the tests drive it with no

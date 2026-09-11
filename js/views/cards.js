@@ -20,6 +20,7 @@ import { glyphSvg, artCount } from '../cards/glyphs.js';
 // backKind comes from sheet.js: the printer owns which back a card takes, and
 // the grid shows that one rather than deciding for itself.
 import { renderPrintSheet, backKind } from '../cards/sheet.js';
+import { moduleCards, moduleSheets } from '../data/expansions.js';
 import { SCOPES, scopeCards, scopeSheets } from '../cards/scopes.js';
 import { aidFor } from '../game/rules.js';
 import { openModal } from '../events.js';
@@ -227,6 +228,23 @@ function filterMenu({ label, action, dataKey, current, options, count }) {
  * Printing is a decision you make once, so it scrolls away; sorting and
  * filtering is what you reach for while scanning a long grid, so that sticks.
  */
+/**
+ * One print button per expansion module a table has switched on.
+ *
+ * Only the ones in play, and never inside the scope control beside it: a scope
+ * answers "how much of the base box do I print", and the base box is a fixed
+ * 111 cards. Folding a module into that question would make "all" mean
+ * something different depending on a setting three screens away.
+ */
+function modulePrintButtons(s) {
+  const mods = s.expansions?.modules || [];
+  return mods.filter((m) => s.modules?.[m.id]).map((m) => {
+    const n = moduleCards(s.expansions, m.id).length;
+    return `<button class="btn" data-action="cards-print-module" data-mod="${escHtml(m.id)}">
+      ${escHtml(t(`play.mod.${m.id}`))} ${n} (${moduleSheets(s.expansions, m.id)} ${escHtml(t(moduleSheets(s.expansions, m.id) === 1 ? 'play.mod.sheet' : 'play.mod.sheets'))})</button>`;
+  }).join('');
+}
+
 function printRow(s) {
   const scope = s.printScope || 'all';
   const n = scopeCards(s.cards, scope).length;
@@ -237,6 +255,7 @@ function printRow(s) {
         ${SCOPES.map((k) => `<button data-action="cards-print-scope" data-scope="${k}" aria-pressed="${scope === k}" title="${escHtml(t(`cards.scopeHint.${k}`))}">${escHtml(t(`cards.scope.${k}`))}</button>`).join('')}
       </span>
       ${s.deckFilter !== 'all' ? `<button class="btn" data-action="cards-print-deck" data-deck="${escHtml(s.deckFilter)}">${escHtml(t('cards.printDeck'))}</button>` : ''}
+      ${modulePrintButtons(s)}
       <span class="seg" role="group" aria-label="${escHtml(t('cards.paper'))}">
         <button data-action="cards-paper" data-paper="a4" aria-pressed="${s.paper === 'a4'}">${escHtml(t('cards.a4'))}</button>
         <button data-action="cards-paper" data-paper="letter" aria-pressed="${s.paper === 'letter'}">${escHtml(t('cards.letter'))}</button>
@@ -355,6 +374,10 @@ export function renderCards(s) {
  */
 export function printOrder(s, deck = null) {
   const physical = s.cards.physical;
+  // A module prints its OWN cards, never out of `physical`. Expansion cards are
+  // deliberately absent from the frozen 111, so a scope cannot reach them and
+  // must not: "all" means the base box, and it has to keep meaning that.
+  if (deck && deck.startsWith('mod:')) return moduleCards(s.expansions, deck.slice(4));
   return deck ? physical.filter((c) => c.deck === deck) : scopeCards(s.cards, s.printScope || 'all');
 }
 
@@ -488,6 +511,7 @@ export function onCardsAction(s, act, el, e) {
     // t() does not interpolate (js/strings.js), so the count is composed here.
     case 'print': { const n = printCards(s); showToast(`${n} sheet${n === 1 ? '' : 's'}`); return false; }
     case 'print-deck': { const n = printCards(s, el.dataset.deck); showToast(`${n} sheet${n === 1 ? '' : 's'}`); return false; }
+    case 'print-module': { const n = printCards(s, `mod:${el.dataset.mod}`); showToast(`${n} sheet${n === 1 ? '' : 's'}`); return false; }
     default: return false;
   }
 }

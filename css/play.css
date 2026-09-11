@@ -1114,3 +1114,39 @@ html[data-view="play"] body:has(.rm-backdrop) { overflow: hidden; }
     border-block-end: 3px solid var(--gold-deep); padding-block-end: var(--space-2);
   }
 }
+
+/* ── Marks: the bricks under a figure (expansion M1) ──────────
+   The physical brick is the rule (RULES.terrain.md), so these are drawn as
+   small solid studs rather than as text or an icon: a table glancing between
+   the screen and the floor should be looking at the same object. Marked is a
+   near-white brick, so every pip carries a ring rather than relying on its
+   fill to separate it from the paper. */
+.marks { display: inline-flex; gap: 4px; align-items: center; margin-left: 6px; vertical-align: middle; }
+.mark-brick {
+  width: 13px; height: 13px; border-radius: 3px;
+  background: var(--brick, #888);
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.22), 0 0 0 1.5px var(--ink, #2b2118);
+  display: inline-block; flex: none;
+}
+.mark-brick::after {
+  content: ''; display: block; width: 5px; height: 5px; margin: 1.5px auto 0;
+  border-radius: 50%; background: rgb(255 255 255 / 0.4);
+}
+
+/* The terrain module's board row. Same weight as the break offer it sits
+   under: one line, never a panel, because it is an option and not a phase. */
+.terrain-row {
+  gap: var(--space-3); align-items: center; flex-wrap: wrap;
+  padding: var(--space-2) var(--space-3);
+  border: 1px dashed var(--rule, #d8cfbc); border-radius: var(--radius-2, 8px);
+}
+.terrain-row .pile-label { display: inline-flex; align-items: center; gap: 6px; }
+.terrain-row button[disabled] { opacity: .5; cursor: default; }
+
+/* The expansion switches on the setup screen. */
+.mod-switches { margin-top: var(--space-4); }
+.mod-switches .sw-pick + .sw-pick { margin-top: var(--space-2); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .mark-brick { transition: transform 120ms ease; }
+}

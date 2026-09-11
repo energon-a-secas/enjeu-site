@@ -863,5 +863,28 @@ test('a Hunter\u2019s reroll is priced as the attack it repeats, and opens the b
   assert.equal(f.hero.breakWindow, true, 'a rerolled hit is a landed hit');
 });
 
+test('Skitter\'s opening is only there for a swing you paid for', () => {
+  // A measured base-game balance fix, not a flourish. The level 1 turtle deals
+  // exactly 75 a round for exactly 5 rounds, 375 against a 400 wall, so the
+  // fight turns on one Strike of 25 and this was where the boss gave it away.
+  // Skitter was worth +32.8 points to a style that bets nothing and +4.8 to one
+  // that does. Requiring a bet costs turtle 18 points at level 1 and every
+  // other style under one, and moves levels 2 to 5 by nothing.
+  const f = basic();
+  f.boss.offBalance = true;
+  const strike = legalAttacks(f).find((a) => a.id === 'strike');
+  const r = attack(f, strike, { u: 0 });
+  assert.equal(r.dealt, 25, 'Strike bets nothing, so it cannot take the opening');
+  assert.equal(f.boss.offBalance, true, 'and the opening is still there for a real swing');
+
+  const g = basic();
+  g.boss.offBalance = true;
+  const focus = legalAttacks(g).find((a) => a.id === 'focus');
+  const r2 = attack(g, focus, { u: 0 });
+  assert.equal(r2.dealt, 75 + 25, 'Focus bet a card, so it takes the +25');
+  assert.equal(g.boss.offBalance, false, 'and spends the opening doing it');
+});
+
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

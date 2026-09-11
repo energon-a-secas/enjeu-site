@@ -33,7 +33,7 @@ export const lastLevel = (kind) => shapeOf(kind).levels;
 const ELEMENT_BIOMES = ['volcano', 'river', 'mountain', 'desert'];
 
 /** Set up a run. Nothing is fought yet. */
-export function newRun(data, { kind = 'full', element = 'fire', die = 'd20', mode = 'standard', secondWind = false, simple = false, dm = null } = {}) {
+export function newRun(data, { kind = 'full', element = 'fire', die = 'd20', mode = 'standard', secondWind = false, simple = false, dm = null, modules = null, mods = null } = {}) {
   const deck = [];
   for (const a of data.advantage) for (let i = 0; i < (a.copies || 1); i++) deck.push(a.id);
   return {
@@ -41,6 +41,12 @@ export function newRun(data, { kind = 'full', element = 'fire', die = 'd20', mod
     // The table's break settings ride on the run so a reload keeps them, and so
     // the fight never has to reach back into device state to know its own rules.
     dm: dm ? { ...dm } : null,
+    // Which expansion modules this run is being played with, and the cards they
+    // put in the hand, RESOLVED ONCE here. Resolving at deal time instead would
+    // mean a switch flipped mid-campaign silently changed a run in progress,
+    // and a saved run is a promise about which game you were playing.
+    modules: modules ? { ...modules } : {},
+    moduleAttacks: moduleAttacksFor(mods, modules),
     level: 1, klass: null,
     skills: [],                                   // card ids taken at drafts
     skillPool: data.skill.filter((c) => c.tier === 0).map((c) => c.id),  // tier 0 sits in the pool from the start
@@ -52,11 +58,26 @@ export function newRun(data, { kind = 'full', element = 'fire', die = 'd20', mod
   };
 }
 
-/** The hero's attack cards for a fight: the three Attack cards plus drafted skills. */
+/**
+ * Attack cards an enabled module puts in the hand (M3's Scout, Analyze, Parley).
+ * A module card carries `module`, which legalAttacks and attack() both refuse
+ * under legacy, so the published balance table cannot see one.
+ */
+export function moduleAttacksFor(mods, modules) {
+  if (!mods || !modules) return [];
+  return (mods.modules || [])
+    .filter((m) => modules[m.id])
+    .flatMap((m) => (m.attack || []).map((c) => ({ ...c, deck: 'attack', module: m.id })));
+}
+
+/** The hero's attack cards for a fight: the Attack cards, drafted skills, module cards. */
 export function attacksFor(run, data) {
   const attacks = data.attack.map((c) => c.id);
   const first = run.kind === 'first' ? attacks : [...attacks, ...run.skills];
-  return first.map((id) => data.byId[id]);
+  // The First Game deliberately keeps its six cards: it is the try-out, and a
+  // household meets a module on purpose rather than by finding it in the deal.
+  const extra = run.kind === 'first' ? [] : (run.moduleAttacks || []);
+  return [...first.map((id) => data.byId[id]), ...extra];
 }
 
 /** The hero's life pool at the start of a level: 4 element cards + earned extras (+ Necromancer keeps nothing). */

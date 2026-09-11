@@ -37,6 +37,69 @@ export const GLYPHS = {
   focus:   { label: 'Focus', d: 'M12 4a8 8 0 1 1 0 16 8 8 0 0 1 0-16zM12 8.8a3.2 3.2 0 1 1 0 6.4 3.2 3.2 0 0 1 0-6.4zM12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3' },
   'all-in':{ label: 'All In', d: 'M5 17.5a7 2.6 0 1 0 14 0 7 2.6 0 1 0-14 0M5 17.5v-3.2M19 17.5v-3.2M5 14.3a7 2.6 0 0 0 14 0M5 14.3v-3.2M19 14.3v-3.2M5 11.1a7 2.6 0 0 0 14 0M12 1.5v6M9.2 5l2.8 2.8L14.8 5' },
 
+  // ── Expansion M1: Terrain (docs/EXPANSIONS.md, RULES.terrain.md) ──
+  // Six Marks and eight Hazards. In-house on purpose: a Mark's picture has to
+  // read as the BRICK COLOUR it stands for, so the drawing and the physical
+  // component are one idea, and an attributed icon chosen for its own reasons
+  // would not carry that. The deck's rule is that the picture IS the name, so
+  // each of these had to be distinguishable from every glyph above at 30 mm:
+  // burning is a flame ON A GROUND LINE because `fire` is already a bare flame,
+  // and marked is a bracket reticle because `focus` is already a ringed target.
+  'mark-poison':  { label: 'Poison', d: 'M9.2 2.8h5.6M10.4 2.8v4.9L6.3 17.1a2.7 2.7 0 0 0 2.5 3.7h6.4a2.7 2.7 0 0 0 2.5-3.7L13.6 7.7V2.8M8.2 14.6h7.6M11 17.4a1 1 0 1 0 0-.1M14 12.6a1 1 0 1 0 0-.1' },
+  'mark-burning': { label: 'Burning', d: 'M12 3.4c1.1 2.7 2.7 3.7 3.8 5.4a4.9 4.9 0 1 1-8.2 1.4c.5-1 1.2-1.8 2-2.5.1 1.5.6 2.4 1.4 3 .4-2.5.6-4.6 1-7.3zM3.5 20.6h17' },
+  'mark-frozen':  { label: 'Frozen', d: 'M12 2.6v18.8M3.9 7.3l16.2 9.4M20.1 7.3 3.9 16.7M12 6.6 9.4 4.8M12 6.6l2.6-1.8M12 17.4l-2.6 1.8M12 17.4l2.6 1.8M7.4 9.6 4.6 9.4M16.6 14.4l2.8.2M16.6 9.6l2.8-.2M7.4 14.4l-2.8.2' },
+  'mark-marked':  { label: 'Marked', d: 'M4.5 8.2V4.6h3.6M19.5 8.2V4.6h-3.6M4.5 15.8v3.6h3.6M19.5 15.8v3.6h-3.6M12 9.4a2.6 2.6 0 1 1 0 5.2 2.6 2.6 0 0 1 0-5.2' },
+  'mark-charged': { label: 'Charged', d: 'M13.8 2.4 6.2 13.6h4.6L9.8 21.6 17.8 9.9h-4.9z' },
+  'mark-snared':  { label: 'Snared', d: 'M12 2.8 21.2 12 12 21.2 2.8 12zM7.4 7.4l9.2 9.2M16.6 7.4l-9.2 9.2M12 2.8v18.4M2.8 12h18.4' },
+
+  'haz-tar-pit':      { label: 'Tar Pit', d: 'M3.6 8.6h16.8M3.6 8.6c0 6.4 3.8 10.4 8.4 10.4s8.4-4 8.4-10.4M9.2 12.4a1.6 1.6 0 1 0 0-.1M14.6 14.4a1.2 1.2 0 1 0 0-.1M11.8 16.4a1 1 0 1 0 0-.1' },
+  'haz-frozen-lake':  { label: 'Frozen Lake', d: 'M2.8 8.6h18.4v9.8H2.8zM10.2 8.6 8.4 12.4l2.8 1.6-1.4 4.4M15.4 8.6l1.4 3.4 4.4.8M8.4 12.4l-5.6 1.2' },
+  'haz-thorn-nest':   { label: 'Thorn Nest', d: 'M3.6 12.4c0-3.6 3.8-6 8.4-6s8.4 2.4 8.4 6a8.4 5.6 0 0 1-16.8 0zM6.6 14.6h10.8M5.4 9.4 2.8 6.8M12 7.2V3.4M18.6 9.4l2.6-2.6M9 7.6 7.6 4.6M15 7.6l1.4-3' },
+  'haz-sulphur-vent': { label: 'Sulphur Vent', d: 'M4.4 20.6h15.2l-4.4-6.4H8.8zM10 10.6c0-1.6 2-1.9 2-3.5M14.4 10.2c0-1.8-2.2-2.1-2.2-3.9M12 6.2V2.8' },
+  'haz-ember-field':  { label: 'Ember Field', d: 'M3.2 20.4h17.6M7 16.6a1.3 1.3 0 1 0 0-.1M12.4 14.2a1.5 1.5 0 1 0 0-.1M17 16.2a1.2 1.2 0 1 0 0-.1M9.6 9.8a1.1 1.1 0 1 0 0-.1M14.6 7.4a1 1 0 1 0 0-.1M11.8 4a.9.9 0 1 0 0-.1' },
+  'haz-bramble-wall': { label: 'Bramble Wall', d: 'M5.4 20.6V6.4M12 20.6V3.6M18.6 20.6V6.4M5.4 10.4 2.6 8.6M5.4 10.4l2.8-1.4M12 8 8.8 6.2M12 8l3.2-1.8M18.6 10.4l2.8-1.8M18.6 10.4l-2.8-1.4M12 14.2l-3.2 1.6M12 14.2l3.2 1.6' },
+  'haz-open-ground':  { label: 'Open Ground', d: 'M2.6 17.4h18.8M12 4.2a3.4 3.4 0 1 1 0 6.8 3.4 3.4 0 0 1 0-6.8M12 1.6v1.4M12 12.2v1.4M6.6 7.6H5.2M18.8 7.6h-1.4M8.2 3.8 7.2 2.8M15.8 3.8l1-1' },
+  'haz-cold-spring':  { label: 'Cold Spring', d: 'M12 3.4c3 3.8 4.9 6.4 4.9 8.7a4.9 4.9 0 1 1-9.8 0c0-2.3 1.9-4.9 4.9-8.7M12 9.2v7.4M9.2 11.2l5.6 3.4M14.8 11.2l-5.6 3.4' },
+
+  // ── Expansion M3: Wits ──
+  // The three verbs that are not hitting, and the board the die stands on.
+  // Scout is an eye with a ray, not a plain eye: the base deck already reads an
+  // eye as "hidden" on the Run control. Analyze is a lens over a grid because a
+  // plain lens is the commonest icon in the world and says nothing. Parley is
+  // two speech shapes facing each other, which a child reads as talking before
+  // they read any word on the card.
+  'wits-scout':   { label: 'Scout', d: 'M2.4 12s3.8-6.2 9.6-6.2 9.6 6.2 9.6 6.2-3.8 6.2-9.6 6.2S2.4 12 2.4 12M12 9.2a2.8 2.8 0 1 1 0 5.6 2.8 2.8 0 0 1 0-5.6M18.4 5.6l2.6-2.6M20.2 8.4h2.6' },
+  'wits-analyze': { label: 'Analyze', d: 'M10.6 3.6a6.6 6.6 0 1 1 0 13.2 6.6 6.6 0 0 1 0-13.2M15.4 15l5.4 5.6M7.4 10.2h6.4M10.6 7v6.4' },
+  'wits-parley':  { label: 'Parley', d: 'M2.8 5.4h11.2v7.2H7.2L3.6 15.6l.6-3H2.8zM10 16.4h11.2v6.2h-1.4l.6 2.4-3.6-2.4H10z' },
+  'wits-board':   { label: 'Scout Board', d: 'M3.6 2.8h16.8v18.4H3.6zM3.6 8.8h16.8M3.6 14.8h16.8M9.6 2.8v18.4M6.6 5.8a.9.9 0 1 0 0-.1M13.2 11.8a.9.9 0 1 0 0-.1M6.6 17.8a.9.9 0 1 0 0-.1' },
+
+  // ── Expansion M2: Preparation ──
+  // Prepare is a coiled spring, because a wind-up is stored energy and a child
+  // reads a spring as "about to go". The eight props are things in a room, and
+  // each is drawn as the OBJECT rather than as its effect: the card says what
+  // to build out of bricks, and the rulebook says what knocking it over does.
+  'prep-prepare':      { label: 'Prepare', d: 'M12 2.6v3.2M8.4 6.6h7.2M9 6.6c0 2 6 2 6 4s-6 2-6 4 6 2 6 4H9M8.4 18.6h7.2M12 18.6v2.8' },
+  'prop-brazier':      { label: 'Brazier', d: 'M6.4 12.4h11.2l-1.8 6.4H8.2zM4.8 21.4h14.4M12 12.4c-.6-2 1.6-2.6 1.6-4.6 0-1.4-1-2.2-1-3.4M9.2 12.4c-.4-1.4 1-1.9 1-3.2' },
+  'prop-pitch-barrel': { label: 'Pitch Barrel', d: 'M6.2 6.4c0-1.4 2.6-2.4 5.8-2.4s5.8 1 5.8 2.4v11.2c0 1.4-2.6 2.4-5.8 2.4s-5.8-1-5.8-2.4zM6.2 9.4h11.6M6.2 14.6h11.6M12 4v16' },
+  'prop-fishing-net':  { label: 'Fishing Net', d: 'M3.4 6.6h17.2M6.4 6.6c0 7.4 2.4 13 5.6 13s5.6-5.6 5.6-13M7.6 12.2h8.8M9 16.4h6M10 6.6c0 5 .4 9.6 1 13M14 6.6c0 5-.4 9.6-1 13' },
+  'prop-cart':         { label: 'Cart', d: 'M3.2 6.4h3l2.4 8.8h9.6l2.6-6.4H7.4M9.4 19.4a1.7 1.7 0 1 0 0-.1M16.6 19.4a1.7 1.7 0 1 0 0-.1' },
+  'prop-signal-bell':  { label: 'Signal Bell', d: 'M12 3.4a1.4 1.4 0 1 1 0 2.8 1.4 1.4 0 0 1 0-2.8M6.4 17.4c0-5.4 1.6-11.2 5.6-11.2s5.6 5.8 5.6 11.2zM4.6 17.4h14.8M12 19.6a1.6 1.6 0 1 0 0 .1' },
+  'prop-rope-bridge':  { label: 'Rope Bridge', d: 'M2.8 6.4h18.4M2.8 6.4c3 7.2 15.4 7.2 18.4 0M6.6 7.6v5.4M10.2 8.8v5M13.8 8.8v5M17.4 7.6v5.4M3.6 18.6h4M16.4 18.6h4' },
+  'prop-millstone':    { label: 'Millstone', d: 'M12 3.2a8.8 8.8 0 1 1 0 17.6 8.8 8.8 0 0 1 0-17.6M12 9.4a2.6 2.6 0 1 1 0 5.2 2.6 2.6 0 0 1 0-5.2M12 3.2v6.2M12 14.6v6.2M3.2 12h6.2M14.6 12h6.2' },
+  'prop-chandelier':   { label: 'Chandelier', d: 'M12 2.4v4.4M5.6 10.6h12.8M5.6 10.6c0-2.2 2.8-3.8 6.4-3.8s6.4 1.6 6.4 3.8M7 10.6v3.4a1.5 1.5 0 1 0 3 0v-3.4M14 10.6v3.4a1.5 1.5 0 1 0 3 0v-3.4M10.5 10.6v5a1.5 1.5 0 1 0 3 0v-5' },
+
+  // ── Expansion M6: The Boss Seat ──
+  // The six faces of the boss's die, as pictures. Strike is not redrawn: the
+  // deck already has one and these cards ARE the die's own table, so borrowing
+  // its vocabulary is the point rather than a shortcut. Brace is a raised
+  // shield, Summon a figure splitting in two, Roar an open mouth with the sound
+  // coming out, Ruin a cracked impact. The seat's aid is a hand of cards.
+  'seat-brace':  { label: 'Brace', d: 'M12 2.6 20.6 5.6v6.6c0 4.6-3.4 8-8.6 9.2-5.2-1.2-8.6-4.6-8.6-9.2V5.6zM8.2 12.2l2.6 2.8 4.8-5.4' },
+  'seat-summon': { label: 'Summon', d: 'M8 4.2a1.9 1.9 0 1 1 0 3.8 1.9 1.9 0 0 1 0-3.8M8 8.4v5.2M5.4 10.4h5.2M8 13.6l-1.8 6M8 13.6l1.8 6M17.6 9a1.4 1.4 0 1 1 0 2.8 1.4 1.4 0 0 1 0-2.8M17.6 12.2v3.8M15.6 13.6h4M17.6 16l-1.4 4M17.6 16l1.4 4' },
+  'seat-roar':   { label: 'Roar', d: 'M4.6 12a7.4 6 0 1 0 14.8 0 7.4 6 0 1 0-14.8 0M8.6 10.2c1 1.4 5.8 1.4 6.8 0M8.6 14.4c1-1.4 5.8-1.4 6.8 0M2.2 6.6 4 8.2M2.2 17.4 4 15.8M21.8 6.6 20 8.2M21.8 17.4 20 15.8' },
+  'seat-ruin':   { label: 'Ruin', d: 'M13.4 2.4 6.6 11.2h4.2l-2.4 4.6 4.6-2.2v3.2l5-8.4h-4.4zM3.4 19.8l3.2-2.4M20.6 19.8l-3.2-2.4M12 21.6v-2.8' },
+  'seat-aid':    { label: 'The Seat', d: 'M3.4 9.6l4.4-1.6 6 16.4M7.4 7.2h6.8v13.4H7.4zM14.2 7.6l4.4 1.2-3 12.2M9.6 11.2h2.4M9.6 14.6h2.4' },
+
   // Dice. Fallbacks only: the attributed set in art/ takes over once the manifest
   // carries creator and licence, and it does. These exist because the swap
   // contract (tests/cards.test.mjs, C2) says every art slot has a glyph of the

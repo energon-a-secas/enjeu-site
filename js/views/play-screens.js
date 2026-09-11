@@ -124,6 +124,7 @@ export function renderSetup(s) {
           <small class="muted">${escHtml(t('play.simpleModeHint'))}</small>
         </label>
       </div>
+      ${moduleSwitches(s)}
       ${dmDial(s)}
     </div>`,
 
@@ -176,6 +177,39 @@ export function renderSetup(s) {
  * A cap of 0 turns the rule off, which is a legitimate way to play and is why
  * the row goes down to zero rather than stopping at one.
  */
+/**
+ * The expansion switches (docs/EXPANSIONS.md). One row per module, each off
+ * until a table asks for it.
+ *
+ * Deliberately the same shape as the break dial below, and for the same reason:
+ * these are table settings that outlive a run, not choices made per fight. The
+ * whole list is folded behind its own heading so the setup screen still opens
+ * as a game rather than as a preferences pane, which is the failure a family
+ * meets first.
+ *
+ * A module's row carries its sheet count, because the honest question a
+ * household is asking is "what does this cost me at the printer".
+ */
+function moduleSwitches(s) {
+  const mods = s.expansions?.modules || [];
+  if (!mods.length) return '';
+  const on = s.modules || {};
+  const rows = mods.map((m) => `
+    <div class="sw-pick opt ${on[m.id] ? 'is-on' : ''}">
+      <label class="sw-pick__text">
+        <span class="row"><input type="checkbox" data-change="play-mod-on" data-mod="${escHtml(m.id)}" ${on[m.id] ? 'checked' : ''}>
+          <b>${escHtml(t(`play.mod.${m.id}`))}</b>
+          <span class="muted small">${m.sheets} ${escHtml(t(m.sheets === 1 ? 'play.mod.sheet' : 'play.mod.sheets'))}</span></span>
+        <small class="muted">${escHtml(t(`play.mod.${m.id}Hint`))}</small>
+      </label>
+    </div>`).join('');
+  return `<div class="mod-switches stack stack--tight">
+    <div class="row row--between"><b>${escHtml(t('play.mod.title'))}</b></div>
+    <p class="muted small">${escHtml(t('play.mod.lead'))}</p>
+    ${rows}
+  </div>`;
+}
+
 function dmDial(s) {
   const dm = s.dm || {};
   const on = !!dm.on;

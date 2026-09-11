@@ -36,6 +36,32 @@
 //     minion, which the minion-overkill rule now makes load-bearing
 
 import { UNIT, stepOdds, shiftStep, MODE_SHIFT, targetFor, beats, reactionFor } from './rules.js';
+import { addMark, clearMark, hasMark, endMarks, tickMarks, blocked, markStep, markBonus, losesAction, listMarks } from './marks.js';
+
+/**
+ * The figure a target names: the boss's body, or a minion by index. Marks live
+ * on figures, and "the boss" and "minion 2" are both figures, which is the
+ * whole reason this exists rather than each call site testing typeof.
+ */
+export const figureAt = (f, target) => (typeof target === 'number' ? f.boss.minions[target] : f.boss);
+
+/**
+ * Put a mark on a figure and say so. Marks are an expansion (docs/EXPANSIONS.md
+ * M1); a base-game fight never calls this, and `legacy` refuses outright so the
+ * published balance table can never be moved by one.
+ */
+export function applyMark(f, target, id) {
+  if (f.legacy) return false;
+  const fig = target === 'hero' ? f.hero : figureAt(f, target);
+  if (!fig) return false;
+  const fresh = addMark(fig, id);
+  const who = target === 'hero' ? 'You are' : `${f.boss.name} is`;
+  say(f, `${who} ${MARK_NAME[id]}.`, target === 'hero' ? 'bad' : 'good');
+  return fresh;
+}
+const MARK_NAME = { poison: 'Poisoned', burning: 'Burning', frozen: 'Frozen', marked: 'Marked', charged: 'Charged', snared: 'Snared' };
+
+export { MARKS, listMarks, hasMark, clearMark } from './marks.js';
 
 export const ATTACK_IDS = ['strike', 'focus', 'all-in'];
 
@@ -202,7 +228,9 @@ export function newFight(data, init) {
       offBalance: false,
       element: b.element || null, body: b.hp ?? b.life_cards * perCard, maxHp: b.hp ?? b.life_cards * perCard,
       minions: [], braced: false, actsTwice: init.biome?.id === 'castle',
+      forced: null,   // a reaction a failed Parley substituted for this round
       breaks: 0,
+      marks: {},
     },
     hero: {
       element: init.hero.element, klass: init.hero.klass || null,
@@ -215,6 +243,12 @@ export function newFight(data, init) {
       knightUsed: false, hunterUsed: false, lastMiss: null,
       secondWind: !!init.secondWind, revives: 0,
       breakWindow: false,
+      marks: {},
+      // The biome's own object (a lava vent, a rockfall), once per level.
+      objectUsed: false,
+      // Cards that may be played once a level (M3's Parley). A fresh fight is a
+      // fresh ledger, exactly as objectUsed already is.
+      usedOnce: {},
     },
     // The table's own settings, never the sim's: legacy ignores them wholesale.
     dm: { ...DM_DEFAULTS, ...(init.dm || {}) },
@@ -270,6 +304,10 @@ export function startRound(f) {
   f.hero.shield = 0;   // an unused Bubble pops; it guards the round it was cast in
   f.hero.knightUsed = false; f.hero.hunterUsed = false; f.hero.lastMiss = null;
   f.hero.breakWindow = false;
+  // Frozen is spent HERE, on the round after it was applied, which is what
+  // "you lose your next action" means when the actions are dealt at the top of
+  // a round. It expires in the same breath: one turn, then it is gone.
+  if (losesAction(f.hero)) { f.actionsLeft -= 1; endMarks(f.hero, 'turn'); }
   // legacy: the sim clears Brace at the top of every round after the first,
   // so the halving never applies. Rulebook: it lasts through this turn.
   if (f.legacy && f.round > 1) f.boss.braced = false;
@@ -277,24 +315,93 @@ export function startRound(f) {
   say(f, `Round ${f.round}. ${ready(f)} Ready.`, raging(f) ? 'rage' : '');
   if (raging(f)) say(f, 'Rage: double damage, no guard.', 'rage');
   else if (f.round === f.boss.rage - 1) say(f, 'Rage next round.', 'rage');
+  // The boss pays for its marks at the end of ITS turn, which is the moment the
+  // next round opens. Minions burn from the back of the list so a fatal tick
+  // cannot shift the index of one not yet ticked.
+  if (!f.legacy) {
+    for (let i = f.boss.minions.length - 1; i >= 0; i--) {
+      const t = tickMarks(f.boss.minions[i]);
+      if (t.damage) { say(f, `A minion suffers ${t.damage}.`, 'good'); dealToBoss(f, i, t.damage, 'The ground'); }
+    }
+    const t = tickMarks(f.boss);
+    if (t.damage) { say(f, `${f.boss.name} suffers ${t.damage}.`, 'good'); dealToBoss(f, 'body', t.damage, 'The ground'); }
+    // Then the enemy shakes off what a hero would spend an action on. Poison and
+    // Snared end by "spend an action", and a boss has no actions to spend, so
+    // without this they were PERMANENT: one shove into a tar pit bled 25 a round
+    // for the rest of the fight, free, and a Snared boss could never brace again
+    // because bracing is the very thing Snared forbids. Its turn is what it
+    // spends. It bites once, then it is gone.
+    for (const fig of [f.boss, ...f.boss.minions]) endMarks(fig, 'action');
+  }
+  if (f.phase !== 'act') return; // a mark felled it: no Ally strike into a won fight
+  // And the hero pays, AFTER Recover has stood the Spent cards back up. That
+  // ordering is the whole weight of a Mark: the card this spends is a card that
+  // cannot be bet this round. Guardable on purpose, so it taxes a healthy hero
+  // and only starts breaking cards once there is nothing left to Spend.
+  if (!f.legacy) {
+    const h = tickMarks(f.hero);
+    if (h.damage) { say(f, `Your marks cost you ${h.damage}.`, 'bad'); take(f, h.damage, false); }
+    if (f.phase !== 'act') { f.fell = { at: 'marks', left: f.boss.minions.length }; return; }
+  }
   if (f.hero.ally && !f.legacy) { dealToBoss(f, 'body', UNIT, 'Ally'); }
 }
 
-/** Attack options with affordability, for the runner's hand and the strategies. */
+/**
+ * Attack options with affordability, for the runner's hand and the strategies.
+ *
+ * This is the ONE predicate that decides what a player is offered and what a
+ * strategy may pick, so every refusal attack() can throw has to be visible
+ * here. Snared was not, and a fuzz run over 4,000 fights turned up 143 crashes
+ * from exactly that gap: the strategy saw an affordable Run, played it, and the
+ * engine threw. On the site that is a button that looks enabled and takes the
+ * fight down with it. A rule enforced only at the point of use is half a rule.
+ */
 export function legalAttacks(f) {
   const r = ready(f);
   return f.hero.attacks.map((a) => {
     const bet = a.bet === 'any' ? 1 : (a.bet || 0);
-    return { ...a, canAfford: f.phase === 'act' && a.actions <= f.actionsLeft && bet <= r && (a.bet !== 'any' || r >= 1) };
+    const stopped = !!a.hides && blocked(f.hero, 'hide');
+    // A module card cannot be played in a legacy fight (the published table must
+    // stay reproducible) and a once-a-level card is gone once it is spent.
+    // A wind-up has to be the LAST thing you do, or it is just a better Strike:
+    // a Charge worth 50 that can be cashed on the turn it was taken measured
+    // turtle level 1 at 100.0%. Made last, it is a bet on surviving a round.
+    const tooEarly = !!a.last_action && f.actionsLeft > a.actions;
+    const barred = (!!a.module && f.legacy) || (!!a.once_level && !!f.hero.usedOnce[a.id]) || tooEarly;
+    return {
+      ...a,
+      canAfford: f.phase === 'act' && a.actions <= f.actionsLeft && bet <= r && (a.bet !== 'any' || r >= 1) && !stopped && !barred,
+      stopped, barred,   // so the hand can say WHY it is greyed out rather than just greying it
+    };
   });
 }
 
-/** The step an attack will be checked at, after the mode dial and a Roar. */
-export function effectiveStep(f, a) {
+/**
+ * The step an attack will be checked at, after the mode dial, a Roar, and any
+ * Mark on what you are swinging at.
+ *
+ * `target` defaults to the body because every caller that only wants to show a
+ * number (the hand, the plan, the inspector) is showing it for the wall.
+ *
+ * Marked shifts a whole RUNG, not a pip, which is the distinction that keeps it
+ * readable: the ladder is spaced 75/50/25/15 precisely so a step is a thing you
+ * can see on the aid card. Roar has moved a rung since the first rulebook, so
+ * this is the game's existing vocabulary rather than a new kind of modifier.
+ */
+export function effectiveStep(f, a, target = 'body') {
   let step = a.check || null;
   if (f.legacy) return f.hero.penaltyArmed ? 'even' : step;
   if (step && f.hero.penaltyArmed) step = shiftStep(step, 1);
   if (step) step = shiftStep(step, MODE_SHIFT[f.mode] || 0);
+  if (step) {
+    // A Mark eases at most one rung, and NEVER to automatic. shiftStep('sure',
+    // -1) returns null, and attack() reads a null step as "this always lands",
+    // so a Marked boss made every Sure attack unmissable: unbounded, not one
+    // rung, and a straight breach of the Mark's own rule 5. The mode dial keeps
+    // its old behaviour on purpose; it is base game and Story mode is allowed
+    // to be that generous. A Mark is not.
+    step = shiftStep(step, markStep(figureAt(f, target))) || step;
+  }
   return step;
 }
 
@@ -309,6 +416,7 @@ export function attackBonus(f, a) {
   if (f.biome?.element && f.biome.element === el) bonus += UNIT;
   if (f.hero.relic) bonus += UNIT;
   if (f.hero.klass === 'mage' && a.id === 'focus') bonus += UNIT;
+  if (!f.legacy) bonus += markBonus(f.hero); // Charged: +50 on the next one that lands
   return bonus;
 }
 
@@ -351,6 +459,9 @@ export function attackDamage(f, a, bet) {
  */
 export function attack(f, a, o = {}) {
   if (f.phase !== 'act' || a.actions > f.actionsLeft) throw new Error('not legal now');
+  if (a.module && f.legacy) throw new Error('module cards are an expansion');
+  if (a.once_level && f.hero.usedOnce[a.id]) throw new Error('once a level, and it is spent');
+  if (a.last_action && f.actionsLeft > a.actions) throw new Error('a wind-up is the last thing you do in a turn');
   // Bubble costs an ACTION, never a card. Betting a card to absorb 25 would be
   // strictly worse than guarding with it, since a Ready card guards for free and
   // comes back. Spending an action makes it the mirror of Strike: deal 25, or
@@ -379,6 +490,7 @@ export function attack(f, a, o = {}) {
     return { hit: true, auto: true, foretells: true, dealt: 0, bet: 0, step: null, need: null, roll: face };
   }
   if (a.hides) {
+    if (blocked(f.hero, 'hide')) throw new Error('Snared: you cannot run');
     f.actionsLeft -= a.actions;
     f.hero.hidden = true;
     say(f, 'Run: you are Hidden. The boss has to find you.', 'hero');
@@ -393,7 +505,11 @@ export function attack(f, a, o = {}) {
   f.stats.attacks += 1;
   if (a.id === 'all-in') f.stats.allIns += 1;
 
-  const step = effectiveStep(f, a);
+  // The target matters: applyHit clears Marked on o.target, so computing the
+  // check against the body while spending the mark on a minion meant swinging
+  // at a minion read the BOSS's marks and vice versa. The default is 'body'
+  // for every caller that only wants a number to show.
+  const step = effectiveStep(f, a, o.target ?? 'body');
   // A Roar is spent on the next CHECK, not on the next action. Clearing it here
   // unconditionally meant a card that rolls nothing (Bubble, Run, Taunt reach
   // this line via their own branches above, but a checkless attack does not)
@@ -406,6 +522,20 @@ export function attack(f, a, o = {}) {
   else if (!step) { hit = true; auto = true; }
   else if (o.u !== undefined) hit = o.u < odds;
   else { need = targetFor(f.die, step); hit = (o.roll ?? 0) >= need; }
+
+  // A module card spends its check on something other than damage. It reaches
+  // here through the ordinary path on purpose (docs/EXPANSIONS.md M3): the
+  // hand, the plan lane, the target chips, the inspector, the roll dialog, the
+  // Rune and the Hunter's reroll all work on it with no new view code, because
+  // to all of them it is just an attack that happens to deal nothing.
+  if (a.effect) {
+    if (a.once_level) f.hero.usedOnce[a.id] = true;
+    const out = applyEffect(f, a, o, hit);
+    f.hero.breakWindow = false;   // no damage, so no part came loose
+    f.hero.lastMiss = (!hit && f.hero.klass === 'hunter' && !f.hero.hunterUsed)
+      ? { a, bet, target: o.target, hidden: f.hero.hidden } : null;
+    return { hit, auto, step, need, dealt: 0, bet, roll: rollShown, ...out };
+  }
 
   const dealt = hit ? applyHit(f, a, bet, o.target) : 0;
   if (hit) f.stats.hits += 1;
@@ -430,7 +560,7 @@ export function reroll(f, o = {}) {
   // open. Price it as the original attack was priced.
   const wasHidden = f.hero.hidden;
   f.hero.hidden = !!m.hidden;
-  const step = effectiveStepNoPenalty(f, m.a);
+  const step = effectiveStepNoPenalty(f, m.a, m.target ?? 'body');
   const odds = stepOdds(step);
   let hit, need = null;
   if (o.u !== undefined) hit = o.u < odds;
@@ -446,17 +576,91 @@ export function reroll(f, o = {}) {
   say(f, `Reroll: ${hit ? `hit, ${dealt} damage` : 'miss'}.`, hit ? 'hero' : 'bad');
   return { hit, need, dealt };
 }
-function effectiveStepNoPenalty(f, a) {
+function effectiveStepNoPenalty(f, a, target = 'body') {
   let step = a.check || null;
   if (step && !f.legacy) step = shiftStep(step, MODE_SHIFT[f.mode] || 0);
+  // Same Mark easing, same clamp. reroll() promises "same odds, same damage",
+  // and without this a Hunter rerolling into a Marked boss silently threw away
+  // the rung the Mark was bought for. The miss it replaces cannot have cleared
+  // the Mark: applyHit only clears one on a hit that dealt damage.
+  if (step && !f.legacy) step = shiftStep(step, markStep(figureAt(f, target))) || step;
   return step;
+}
+
+/**
+ * What a Wits card does with a check it won, and what it costs when it loses.
+ * (docs/EXPANSIONS.md M3, RULES.wits.md.)
+ *
+ * Every one of the three deals nothing, so none of them can help a player who
+ * never bets a life card: Marked cannot ease a card with no check, and Strike
+ * has none. That is what keeps the module from quietly becoming the fix for the
+ * turtle defect and therefore mandatory.
+ */
+function applyEffect(f, a, o, hit) {
+  const name = a.name || a.id;
+  if (!hit) {
+    // Parley is the only one whose failure does something, and that clause is
+    // the module's engine rather than a flourish: it turns Scout from a nicety
+    // into the card that tells you whether Parley is worth trying. Trading a
+    // Ruin for a Roar is a good round; trading a Brace for one is the worst
+    // move in the module, and only a look tells you which you are buying.
+    if (a.effect === 'parley') {
+      f.boss.forced = 'roar';
+      say(f, `${name}: it will not listen, and Roars instead.`, 'bad');
+      return { forced: 'roar' };
+    }
+    say(f, `${name}: miss.`, 'bad');
+    return {};
+  }
+  switch (a.effect) {
+    case 'foretell': {
+      // The same door the Knight's Taunt uses: the boss's die is thrown NOW,
+      // face up, and bossRoll is bound to it. Without a face from the table the
+      // fight waits in awaitForetell for someone to say what the die showed.
+      const face = o.face ?? o.foretold ?? null;
+      const n = face ? Math.max(1, Math.min(6, Math.round(face))) : null;
+      if (n) { f.foretold = n; say(f, `${name}: the boss will roll ${n}.`, 'hero'); }
+      else { f.awaitForetell = true; }
+      return { foretells: true, roll: n };
+    }
+    case 'mark':
+      // `self` points it inward: Prepare charges YOU, Analyze studies the boss.
+      applyMark(f, a.self ? 'hero' : (o.target ?? 'body'), a.mark);
+      return { marked: a.mark };
+    case 'parley':
+      applyMark(f, 'body', a.mark);
+      return { marked: a.mark };
+    default:
+      throw new Error(`unknown card effect ${a.effect}`);
+  }
 }
 
 function applyHit(f, a, bet, target) {
   let dealt = attackDamage(f, a, bet);
-  // Skitter left it off balance: the next landed hit takes the opening, once.
-  if (f.boss.offBalance && dealt > 0) { dealt += UNIT; f.boss.offBalance = false; say(f, 'It was off balance: +25.', 'good'); }
+  // Skitter left it off balance, and only a swing you PAID for can take the
+  // opening. That clause is a base-game balance fix, measured, not a flourish.
+  //
+  // The level 1 turtle deals exactly 75 a round for exactly 5 rounds: 375
+  // against a 400 wall. The whole fight turns on one Strike of 25, and this
+  // was where the boss handed it over for free. Measured over 20,000 fights,
+  // a level 1 turtle that saw neither a Skitter nor a Summon won 0.0% of the
+  // time; Skitter alone was worth +32.8 points to it and only +4.8 to
+  // adaptive. A tutorial boss being generous is the intent (docs/BALANCE.md
+  // publishes turtle at 53.2% here and approves of it), but it was six times
+  // more generous to the one style that bets nothing than to the three that do.
+  //
+  // Requiring a bet costs turtle 19.1 points at level 1 and every other style
+  // under one, and moves levels 2 to 5 by nothing at all, because Skitter is
+  // the level 1 boss's row alone. legacy is untouched: it has no signatures.
+  if (f.boss.offBalance && dealt > 0 && bet > 0) { dealt += UNIT; f.boss.offBalance = false; say(f, 'It was off balance: +25.', 'good'); }
   if (f.boss.braced) dealt = halve(dealt);
+  // Marked ends when an attack lands on it, and Charged is spent by the attack
+  // it paid for. Both settle BEFORE the damage, so a felling blow still clears
+  // them rather than leaving a mark on a figure that is no longer there.
+  if (dealt > 0 && !f.legacy) {
+    endMarks(figureAt(f, target), 'hit');
+    if (clearMark(f.hero, 'charged')) say(f, 'You spend your Charge.', 'hero');
+  }
   dealToBoss(f, target, dealt, a.name || a.id);
   return dealt;
 }
@@ -541,10 +745,80 @@ function resumeFall(f) {
  * the one made of cover. Same Hidden state either way: one rule, two sources.
  */
 export function hide(f) {
+  // Snared first: it is the more fundamental refusal, and reporting the Forest
+  // rule to a player who is stuck in tar tells them to buy a card that would
+  // not have worked either.
+  if (blocked(f.hero, 'hide')) throw new Error('Snared: you cannot get to cover');
   if (!f.hero.hideAvailable) throw new Error('hiding costs a Run outside the Forest');
   f.hero.hidden = true; f.hero.hideAvailable = false;
   say(f, 'You slip into the trees. The boss has to find you.', 'hero');
+  for (const d of endMarks(f.hero, 'hide')) say(f, `${d.name} goes out.`, 'good');
 }
+
+/**
+ * Spend an action to shake off what a Mark left on you: Poison and Snared, the
+ * two that do not end on their own.
+ *
+ * An action is the right price because it is the currency this costs you in
+ * every other reading: staying poisoned costs you a card a round, so clearing
+ * it should cost you a swing, and a table can weigh those against each other
+ * without arithmetic.
+ */
+export function shake(f) {
+  if (f.phase !== 'act') throw new Error('not your turn');
+  if (f.actionsLeft < 1) throw new Error('no actions left');
+  const gone = endMarks(f.hero, 'action');
+  if (!gone.length) throw new Error('nothing to shake off');
+  f.actionsLeft -= 1;
+  say(f, `You shake off ${gone.map((d) => d.name).join(' and ')}.`, 'good');
+  return gone;
+}
+
+/**
+ * True when the hero could take cover right now. Exported because the runner's
+ * button and the simulator's bots must agree with hide()'s own refusals: they
+ * did not, and a fuzz run found the bots calling hide() into a Snare 13 times
+ * per 4,000 fights. One predicate, three readers.
+ */
+export const canHide = (f) => f.phase === 'act' && !!f.hero.hideAvailable
+  && !f.hero.hidden && !blocked(f.hero, 'hide');
+
+/** True when the hero has a mark that spending an action would remove. */
+export const canShake = (f) => f.phase === 'act' && f.actionsLeft >= 1
+  && listMarks(f.hero).some((d) => d.ends === 'action');
+
+/**
+ * The biome's own object: a lava vent, the current, a rockfall, a sinkhole.
+ * One action, once a level (data/expansions.json, module "terrain").
+ *
+ * `obj` is passed in rather than looked up, because the engine has never read
+ * anything but cards.json and an expansion is not allowed to change that. The
+ * caller owns which module is in play; this only owns what happens.
+ *
+ * Some of them cost you something too. Rockfall Snares you, and that is the
+ * point: an object is a bet like everything else in this game, not a free 75.
+ */
+export function useObject(f, obj, target = 'body') {
+  if (f.phase !== 'act') throw new Error('not your turn');
+  if (f.legacy) throw new Error('objects are an expansion');
+  if (f.hero.objectUsed) throw new Error('the object is spent for this level');
+  const cost = obj.actions ?? 1;
+  if (cost > f.actionsLeft) throw new Error('no actions left');
+  if (!figureAt(f, target)) throw new Error('nothing there to use it on');
+  f.hero.objectUsed = true;
+  f.actionsLeft -= cost;
+  say(f, `${obj.name}: you use the ground against it.`, 'hero');
+  if (obj.target_mark) applyMark(f, target, obj.target_mark);
+  if (obj.self_mark) applyMark(f, 'hero', obj.self_mark);
+  // Damage last: it can fell the boss, and a mark placed after that would be a
+  // brick under a figure that has already been swept off the table.
+  if (obj.damage > 0) dealToBoss(f, target, obj.damage, obj.name);
+  return { damage: obj.damage || 0, mark: obj.target_mark || null, self: obj.self_mark || null };
+}
+
+/** True when this level's object is still on the table and affordable. */
+export const canUseObject = (f, obj) => !!obj && !f.legacy && f.phase === 'act'
+  && !f.hero.objectUsed && (obj.actions ?? 1) <= f.actionsLeft;
 
 /** Play an Advantage card from the hand. Barrier is played through resolveBoss. */
 export function playAdvantage(f, id) {
@@ -633,6 +907,14 @@ export function bossRoll(f, d6) {
   // is bound by what everyone saw: a foretold die that could be re-rolled here
   // would make the Knight's card a lie.
   if (f.foretold) { d6 = f.foretold; f.foretold = null; }
+  // Frozen costs the boss its whole action, and is spent doing it. This is
+  // Barrier-strength ("cancel one boss action entirely"), which is exactly why
+  // nothing in the terrain module hands it out more than once a level.
+  if (!f.legacy && losesAction(f.boss)) {
+    endMarks(f.boss, 'turn');
+    f.pending = { roll: d6, kind: 'frozen', dmg: 0, rage: raging(f), at: 'hero', name: 'Frozen' };
+    return f.pending;
+  }
   // Each boss overrides ONE row of the shared table with its signature move
   // (RULES.md, "Signature moves"). Legacy mode skips them: tools/sim.py has
   // never heard of a signature and the parity test holds it to that.
@@ -661,7 +943,17 @@ export function bossRoll(f, d6) {
   const rx = reactionFor(f.data, d6);
   const rage = raging(f);
   const base = f.boss.damage * (rage ? 2 : 1);
-  let dmg = 0, kind = rx.name.toLowerCase();
+  let dmg = 0, kind = rx.name.toLowerCase(), name = rx.name;
+  // A failed Parley substitutes this round's reaction for a Roar, whatever it
+  // was going to be (M3). Spent as it is read, so it lasts exactly one round.
+  if (f.boss.forced && !f.legacy) {
+    const forced = reactionFor(f.data, 5) || rx;   // 5 is Roar on the shared table
+    kind = 'roar'; name = forced.name; dmg = base;
+    f.boss.forced = null;
+  }
+  // Snared: it cannot dig in. A Brace it cannot make becomes a Strike, the same
+  // downgrade a Summon it cannot afford already takes.
+  if (kind === 'brace' && !f.legacy && blocked(f.boss, 'brace')) { kind = 'strike'; name = 'Strike'; dmg = base; say(f, 'Snared: it cannot brace.', 'good'); }
   if (kind === 'strike' || kind === 'roar') dmg = base;
   else if (kind === 'ruin') dmg = base * 2;
   else if (kind === 'summon') {
@@ -678,7 +970,7 @@ export function bossRoll(f, d6) {
     f.pending = { roll: d6, kind, dmg, chunk, rage, at: aimedAtAlly(f, kind) ? 'ally' : 'hero', name: can ? 'Summon' : 'Strike' };
     return f.pending;
   }
-  f.pending = { roll: d6, kind, dmg, rage, at: aimedAtAlly(f, kind) ? 'ally' : 'hero', name: rx.name };
+  f.pending = { roll: d6, kind, dmg, rage, at: aimedAtAlly(f, kind) ? 'ally' : 'hero', name };
   return f.pending;
 }
 
@@ -713,9 +1005,10 @@ export function resolveBoss(f, { barrier = false, cover = false } = {}) {
     say(f, `Barrier cancels the boss's ${p.name}.`, 'good');
   } else {
     switch (p.kind) {
+      case 'frozen': say(f, `${f.boss.name} is Frozen and loses its action.`, 'good'); break;
       case 'brace': f.boss.braced = true; say(f, 'The boss Braces: no damage, and it halves what it takes until the end of your next turn.', 'boss'); break;
       case 'summon': {
-        f.boss.body = Math.max(0, f.boss.body - p.chunk); f.boss.minions.push({ hp: p.chunk, max: p.chunk });
+        f.boss.body = Math.max(0, f.boss.body - p.chunk); f.boss.minions.push({ hp: p.chunk, max: p.chunk, marks: {} });
         say(f, `The boss Summons: ${p.chunk} of its life moves under a minion.`, 'boss'); break;
       }
       case 'signature': {
@@ -725,7 +1018,7 @@ export function resolveBoss(f, { barrier = false, cover = false } = {}) {
             say(f, 'Skitter: it darts aside, no damage, and it is off balance. Your next landed hit deals +25.', 'boss');
             break;
           case 'coil': {
-            f.boss.body = Math.max(0, f.boss.body - p.chunk); f.boss.minions.push({ hp: p.chunk, max: p.chunk });
+            f.boss.body = Math.max(0, f.boss.body - p.chunk); f.boss.minions.push({ hp: p.chunk, max: p.chunk, marks: {} });
             say(f, `Coil: ${p.chunk} of its life moves under a minion, and the minion strikes at once.`, 'boss');
             take(f, UNIT, raging(f));
             break;
@@ -852,16 +1145,25 @@ export function take(f, damage, unguardable, kind = null) {
   if (f.hero.klass === 'knight' && !f.hero.knightUsed && !unguardable && damage > 0) { damage -= UNIT; f.hero.knightUsed = true; say(f, 'Knight guards 25 for free.', 'hero'); }
   let owed = Math.floor(damage / UNIT);
   if (owed <= 0) return true;
+  let paid = 0;   // cards this damage turned over, in any direction
   if (!unguardable) {
     let used = 0;
     for (const c of f.hero.pool) if (owed > 0 && c.st === 'ready') { c.st = 'spent'; owed--; used++; }
     // Say it now: Recover stands these cards back up at the start of the next
     // round, and a guard nobody saw looks like damage that vanished.
     if (used) say(f, `Guarded ${used * UNIT} with ${used} Ready card${used > 1 ? 's' : ''}; they return next round.`, 'hero');
+    paid += used;
   }
   for (const st of ['ready', 'spent']) {
-    for (const c of f.hero.pool) if (owed > 0 && c.st === st) { c.st = 'broken'; owed--; }
+    for (const c of f.hero.pool) if (owed > 0 && c.st === st) { c.st = 'broken'; owed--; paid++; }
   }
+  // The Charge goes the moment damage costs you a card, and that is the whole
+  // rule. Clearing it on `used` alone was wrong twice over: a hero with nothing
+  // Ready pays by BREAKING a card, which is unmistakably paying, and under Rage
+  // cards break with no guard at all. Both left a player who had just been hit
+  // still holding the Charge they were told they would lose. One condition, no
+  // exception for who made them pay: "lost as soon as a card of yours turns over".
+  if (paid && clearMark(f.hero, 'charged')) say(f, 'Your Charge is lost.', 'bad');
   if (owed > 0) {
     // With Second Wind in play, Down is not the end yet: the runner (or a
     // strategy) gets to attempt the comeback before the level is lost.

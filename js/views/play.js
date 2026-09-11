@@ -27,8 +27,8 @@ import { t, cardName } from '../strings.js';
 import { showToast } from '../utils.js';
 import {
   reroll, hide, endTurn, bossRoll, resolveBoss, playAdvantage,
-  attemptRevive, reviveStep, raging, canBreak, breakPart, breakStepFor,
-} from '../game/engine.js';
+  attemptRevive, reviveStep, raging, canBreak, breakPart, breakStepFor, shake, canShake, useObject, canUseObject } from '../game/engine.js';
+import { objectFor } from '../data/expansions.js';
 import { rollDie, dieMax } from '../game/rules.js';
 import { newRun, startLevel, levelWon, levelLost, chooseClass, revealDraft, takeSkill, drawAdvantage, nextLevel } from '../game/run.js';
 import { queueStep, unqueueStep, setStepBet, toggleStepRune, cycleStepTarget, advancePlan, awaitingStep, attackFor, moveStep } from './play-plan.js';
@@ -141,6 +141,14 @@ export function onPlayAction(s, act, el, e) {
       // The break dial. A table setting, so it lives on device state next to
       // the die and the mode, not on the run: the grown-up who set it is the
       // same grown-up next Saturday.
+      case 'mod-on': {
+        // Copied, never mutated in place: state.js merges NESTED settings onto
+        // their defaults on load, and an object shared with DEFAULTS would make
+        // a switch flipped this session the default for the next one.
+        const id = d.mod;
+        s.modules = { ...s.modules, [id]: el.checked !== undefined ? !!el.checked : !s.modules?.[id] };
+        return true;
+      }
       case 'dm-on': s.dm = { ...s.dm, on: el.checked !== undefined ? !!el.checked : !s.dm.on }; return true;
       case 'dm-style': s.dm = { ...s.dm, style: d.style }; return true;
       case 'dm-cap': s.dm = { ...s.dm, cap: Math.max(0, Math.min(4, Number(d.cap))) }; return true;
@@ -156,7 +164,7 @@ export function onPlayAction(s, act, el, e) {
         // Remember the table so a returning family gets a one-tap fast lane.
         s.playLast = { kind: s.runKind || 'first', element: s.element, die: s.die, mode: s.mode, secondWind: s.secondWind, simple: s.simple, dm: { ...s.dm } };
         s.setupStep = 0;
-        s.run = newRun(s.cards, s.playLast);
+        s.run = newRun(s.cards, { ...s.playLast, modules: s.modules, mods: s.expansions });
         startLevel(s.run, s.cards);
         applyGrudges(s, s.run);
         return true;
@@ -165,7 +173,7 @@ export function onPlayAction(s, act, el, e) {
       case 'setup-again': {
         const L = s.playLast;
         if (L) { s.runKind = L.kind; s.element = L.element; s.die = L.die; s.mode = L.mode; s.secondWind = L.secondWind; s.simple = !!L.simple; if (L.dm) s.dm = { ...s.dm, ...L.dm }; }
-        s.run = newRun(s.cards, { kind: s.runKind || 'first', element: s.element, die: s.die, mode: s.mode, secondWind: s.secondWind, simple: s.simple, dm: { ...s.dm } });
+        s.run = newRun(s.cards, { kind: s.runKind || 'first', element: s.element, die: s.die, mode: s.mode, secondWind: s.secondWind, simple: s.simple, dm: { ...s.dm }, modules: s.modules, mods: s.expansions });
         startLevel(s.run, s.cards);
         applyGrudges(s, s.run);
         return true;
@@ -332,6 +340,15 @@ export function onPlayAction(s, act, el, e) {
       // A board preference, not a run one: game/run.js resets run.ui every level.
       case 'log': { (s.play ||= {}).logShown = !s.play.logShown; return true; }
       case 'hide': hide(f); return true;
+      // Terrain (docs/EXPANSIONS.md M1). Both go through the engine's own
+      // predicates first, so a stale render cannot play an action the rules
+      // refuse: the click is checked again at the moment it lands.
+      case 'shake': if (canShake(f)) shake(f); return true;
+      case 'object': {
+        const obj = objectFor(s.expansions, f.biome?.id);
+        if (canUseObject(f, obj)) useObject(f, obj, ui.target ?? 'body');
+        return true;
+      }
       case 'adv': {
         // Barrier is a reaction: it parks in the lane's reserved slot instead.
         if (d.id === 'barrier') { ui.reaction = ui.reaction === 'barrier' ? null : 'barrier'; return true; }

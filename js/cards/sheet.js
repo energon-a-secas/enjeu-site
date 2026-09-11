@@ -22,7 +22,15 @@ const FACE_KIND = { red: 'fire', blue: 'water', green: 'earth', grey: 'wind', wh
  * shared one, and printed that way the skill pool, the Advantage deck, the
  * biomes and the two aids were indistinguishable face down.
  */
-const DECK_BACK = { advantage: 'advantage', mode: 'advantage', biome: 'biome', aid: 'aid' };
+// The expansion decks take the BRICKS back, and both for the reason RULES.md
+// section 10 already gives for the biomes: a pile face down should say which
+// pile it is. A Hazard is a place, like a biome. A Mark is literally a brick.
+// Without these rows both fell through to the book, so a face-down stack of
+// hazards claimed to be skills you were learning.
+const DECK_BACK = {
+  advantage: 'advantage', mode: 'advantage', biome: 'biome', aid: 'aid',
+  hazard: 'biome', mark: 'biome', prop: 'biome',
+};
 export const backKind = (c) => (c.deck === 'life'
   ? (c.element || FACE_KIND[c.face] || 'extra')
   : DECK_BACK[c.deck] || 'skill');

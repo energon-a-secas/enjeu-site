@@ -4,6 +4,7 @@ import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { useCards, DECKS } from '../js/data/cards.js';
+import { useExpansions, moduleCards } from '../js/data/expansions.js';
 import { GLYPHS, hasGlyph, setArtManifest, artSrc, loadArt, artBody, clearArtBodies } from '../js/cards/glyphs.js';
 import { cardFace, cardBack, lifeMini } from '../js/cards/face.js';
 import { aidFor } from '../js/game/rules.js';
@@ -12,6 +13,7 @@ import { BOSSES, MINION } from '../js/data/placeholders.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const data = useCards(JSON.parse(readFileSync(join(root, 'data/cards.json'), 'utf8')));
+const modules = useExpansions(JSON.parse(readFileSync(join(root, 'data/expansions.json'), 'utf8')));
 const manifest = JSON.parse(readFileSync(join(root, 'data/art-manifest.json'), 'utf8'));
 
 // The browser fetches the art over HTTP; here we hand loadArt a disk reader so
@@ -136,6 +138,87 @@ test('C1: every card renders, and the only text on a face is a numeral, a pip co
     for (const txt of texts) if (!allowed.test(txt)) offenders.push(`${c.id}: "${txt}"`);
   }
   assert.deepEqual(offenders, []);
+});
+
+/**
+ * The same guard, over every expansion card. C1 above loops `data.physical`,
+ * which is the frozen 111 BY DESIGN, so every module card was unchecked: a
+ * module could have shipped a face full of prose and no test would have said so.
+ * The rule is the deck's rule, not the base game's, so it applies to all of them.
+ */
+test('C1 again, for every expansion module: no prose on any module card face', () => {
+  const offenders = [];
+  for (const m of modules.modules) {
+    for (const c of moduleCards(modules, m.id)) {
+      const svg = cardFace(c, { size: 'sheet' });
+      assert.ok(svg.startsWith('<svg'), `${m.id}/${c.id} did not render`);
+      assert.ok(svg.includes('viewBox="0 0 630 880"'), `${m.id}/${c.id} wrong grid`);
+      // Any drawing element, not just <path>: a slot with attributed art inlines
+      // that file's own markup, and several of the downloads are polygons.
+      assert.match(svg, /<(path|polygon|polyline|circle|ellipse|rect)\b/,
+        `${m.id}/${c.id} renders no picture`);
+      if (c.deck === 'aid') continue;   // a reference card carries labels, as the base aids do
+      const texts = [...svg.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map((x) => x[1]);
+      for (const txt of texts) if (!/^[0-9×+]+$/.test(txt)) offenders.push(`${m.id}/${c.id}: "${txt}"`);
+    }
+  }
+  assert.deepEqual(offenders, [], 'a card face carries numerals, pips and glyphs, and nothing else');
+});
+
+/**
+ * The deck's rule is that the picture IS the name, so two cards carrying the
+ * same drawing are two cards a player cannot tell apart. The existing guard
+ * compares icon IDS, which cannot see a glyph drawn twice under two names.
+ * This compares the paths.
+ *
+ * WHAT IT CATCHES: a copy-pasted path, which is the realistic regression. Two
+ * entries that trace the same commands through the same points are the same
+ * drawing whatever their ids say.
+ *
+ * WHAT IT DOES NOT CATCH, stated plainly because a guard nobody understands the
+ * limits of gets over-trusted: the same SHAPE written in different notation. A
+ * diamond drawn with absolute linetos and one drawn with relative linetos are
+ * the same picture and different strings. That happened here for real, and no
+ * cheap metric found it: bag-of-numbers similarity at half-unit precision
+ * missed it, and at whole-unit precision it flagged Barrier against Bubble,
+ * which are two circles that merely share round numbers. It was caught by
+ * rendering the sheet and looking at it, which remains the only reliable check
+ * for "these two read the same at 30 mm".
+ */
+test('no two cards in the whole box carry the same drawing', () => {
+  const onCards = new Set(data.physical.map((c) => c.icon).filter(Boolean));
+  for (const m of modules.modules) for (const c of moduleCards(modules, m.id)) if (c.icon) onCards.add(c.icon);
+
+  // Round every coordinate and compare token multisets: two paths drawn from
+  // the same shape agree on nearly every number, whatever their ids say.
+  // Structural equality with a tolerance, NOT bag-of-numbers similarity. Two
+  // drawings are the same drawing when they trace the same commands through
+  // nearly the same points. Comparing multisets of rounded numbers was tried
+  // first and is wrong in both directions: at half-unit precision it missed the
+  // two identical diamonds this test exists for (2.8 vs 3.0 counted as
+  // different), and at whole-unit precision it flagged Barrier against Bubble,
+  // which are two circles that merely share round numbers.
+  const shape = (d) => ({
+    cmds: (d.match(/[MmLlHhVvCcSsQqTtAaZz]/g) || []).join(''),
+    nums: (d.match(/-?(?:\d+\.?\d*|\.\d+)/g) || []).map(Number),
+  });
+  const sameDrawing = (a, b) => {
+    const A = shape(a), B = shape(b);
+    if (A.cmds !== B.cmds || A.nums.length !== B.nums.length) return false;
+    return A.nums.every((n, i) => Math.abs(n - B.nums[i]) <= 1);
+  };
+
+  const ids = [...onCards].filter((id) => hasGlyph(id)).sort();
+  const clashes = [];
+  for (let i = 0; i < ids.length; i++) {
+    for (let j = i + 1; j < ids.length; j++) {
+      if (sameDrawing(GLYPHS[ids[i]].d, GLYPHS[ids[j]].d)) {
+        clashes.push(`${ids[i]} and ${ids[j]} trace the same shape`);
+      }
+    }
+  }
+  assert.deepEqual(clashes, [], 'a player must be able to tell two printed cards apart');
+  assert.ok(ids.length > 80, `only ${ids.length} card glyphs compared`);
 });
 
 test('the Boss Reactions aid draws the rows cards.json states, not a copy of them', () => {

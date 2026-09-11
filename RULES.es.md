@@ -258,7 +258,7 @@ jefes dejan de compartir un solo cerebro sin que nadie aprenda cinco tablas nuev
 
 | Jefe | Tirada | Característico | Qué pasa en su lugar |
 |---|---|---|---|
-| Nivel 1 | 1 | **Correteo** | No hace daño, y queda desequilibrado: tu próximo ataque que acierte hace +25. |
+| Nivel 1 | 1 | **Correteo** | No hace daño, y queda desequilibrado: tu próximo ataque que acierte **y que haya apostado una carta** hace +25. |
 | Nivel 2 | 4 | **Enroscada** | Invocación, y el esbirro nuevo golpea de inmediato. |
 | Nivel 3 | 1 | **Cimiento** | Aguante, y se repara 25: un punto de su muro vuelve. |
 | Nivel 4 | 6 | **Rompetormentas** | Ruina. Si ninguna de tus cartas de vida sigue En Pie, hace Ruina **otra vez**: la tormenta encuentra a quien no se cubre. |
@@ -471,9 +471,14 @@ a la imprudencia, que es para lo que está una red de seguridad.
 ### Jugando de a dos: el Compinche
 
 Una carta convierte el juego solitario en una mesa para dos. El segundo jugador es el
-**Compinche**: tiene su propia figura, y ES DUEÑO de dos de tus cinco cartas de ataque:
-Golpe y Escape. De tus tres acciones, cualquier acción con una carta suya la elige él,
-la dice él en voz alta, y la tira él. Las cartas de vida siguen siendo un solo montón
+**Compinche**: tiene su propia figura, y ES DUEÑO de dos de tus cartas de ataque:
+**Golpe e Invención**. De tus tres acciones, cualquier acción con una carta suya la elige
+él, la dice él en voz alta, y la tira él.
+
+Antes eran Golpe y Escape, y esa era una promesa rota: ninguna de esas dos cartas tiene
+tirada, así que la frase de arriba decía "la tira él" mientras no le daba nada que tirar.
+Invención es una tirada Loca y una apuesta, así que el Compinche tira dados de verdad y
+dice un hechizo inventado en voz alta, que es lo mejor que este juego te puede dar. Las cartas de vida siguen siendo un solo montón
 compartido frente a los dos, así que la matemática de la pelea no cambia nada: lo que
 cambia es a quién le toca ser valiente. Cambien qué cartas son del Compinche cuando los
 dos quieran.

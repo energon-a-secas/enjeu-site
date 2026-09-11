@@ -17,12 +17,22 @@ import { getLang, STRINGS } from '../strings.js';
  * table, injected here so this module needs no data dependency of its own.
  */
 let NAMES = {};
-export function setLogNames(data) {
+export function setLogNames(data, expansions = null) {
   const es = STRINGS.es;
   NAMES = {};
-  for (const c of Object.values(data.byId || {})) {
-    const localized = es.cards?.name?.[c.id];
-    if (c.name && localized && localized !== c.name) NAMES[c.name] = localized;
+  const learn = (c) => {
+    const localized = es.cards?.name?.[c?.id];
+    if (c?.name && localized && localized !== c.name) NAMES[c.name] = localized;
+  };
+  for (const c of Object.values(data.byId || {})) learn(c);
+  // Expansion cards say their names in log lines too ("Lava Vent: you use the
+  // ground against it"), and they are deliberately NOT in data.byId, which is
+  // the frozen 111. Without this the object's name is the one English word left
+  // in an otherwise Spanish sentence.
+  for (const m of expansions?.modules || []) {
+    for (const deck of Object.values(m)) {
+      if (Array.isArray(deck)) for (const c of deck) learn(c);
+    }
   }
   for (const table of ['reactionName', 'signatureName']) {
     const en = STRINGS.en.play?.[table] || {};
@@ -33,6 +43,17 @@ export function setLogNames(data) {
 }
 const name = (n) => NAMES[n] || n;
 
+/** The state a figure is in, as the engine's applyMark() says it. */
+const MARK_ES = {
+  Poisoned: 'Envenenado', Burning: 'Ardiendo', Frozen: 'Congelado',
+  Marked: 'Señalado', Charged: 'Cargado', Snared: 'Atrapado',
+};
+/** The Mark itself, by the name printed on its reference card. */
+const MARK_NOUN = {
+  Poison: 'Veneno', Burning: 'Ardiendo', Frozen: 'Congelado',
+  Marked: 'Señalado', Charged: 'Cargado', Snared: 'Atrapado',
+};
+
 /** Ordered: specific shapes before generic ones. $1-style groups carry through. */
 const ES = [
   [/^Round (\d+)\. (\d+) Ready\.$/, (m) => `Ronda ${m[1]}. ${m[2]} En Pie.`],
@@ -41,6 +62,23 @@ const ES = [
   [/^Bubble: the next (\d+) damage is absorbed\.$/, (m) => `Burbuja: los próximos ${m[1]} de daño se absorben.`],
   [/^Taunt: the boss will roll (\d+)\.$/, (m) => `Provocación: el jefe sacará ${m[1]}.`],
   [/^Run: you are Hidden\. The boss has to find you\.$/, () => 'Escape: estás Escondido. El jefe tiene que encontrarte.'],
+
+  // ── Expansion M1: Terrain (docs/EXPANSIONS.md) ──
+  // MARK_ES carries the state a figure is IN ("Poisoned"), MARK_NOUN the name
+  // of the thing itself ("Poison"). The engine says both, in different lines,
+  // and Spanish wants different words for them.
+  [/^You are (Poisoned|Burning|Frozen|Marked|Charged|Snared)\.$/, (m) => `Estás ${MARK_ES[m[1]]}.`],
+  [/^(.+?) is (Poisoned|Burning|Frozen|Marked|Charged|Snared)\.$/, (m) => `${name(m[1])} está ${MARK_ES[m[2]]}.`],
+  [/^(.+?) is Frozen and loses its action\.$/, (m) => `${name(m[1])} está Congelado y pierde su acción.`],
+  [/^Your marks cost you (\d+)\.$/, (m) => `Tus marcas te cuestan ${m[1]}.`],
+  [/^A minion suffers (\d+)\.$/, (m) => `Un esbirro sufre ${m[1]}.`],
+  [/^(.+?) suffers (\d+)\.$/, (m) => `${name(m[1])} sufre ${m[2]}.`],
+  [/^You shake off (.+)\.$/, (m) => `Te sacudes ${m[1].split(' and ').map((n) => MARK_NOUN[n] || n).join(' y ')}.`],
+  [/^(.+?): you use the ground against it\.$/, (m) => `${name(m[1])}: usas el terreno contra él.`],
+  [/^Snared: it cannot brace\.$/, () => 'Atrapado: no puede hacer Aguante.'],
+  [/^You spend your Charge\.$/, () => 'Gastas tu Carga.'],
+  [/^Your Charge is lost\.$/, () => 'Pierdes tu Carga.'],
+  [/^(Poison|Burning|Frozen|Marked|Charged|Snared) goes out\.$/, (m) => `${MARK_NOUN[m[1]]} se apaga.`],
   [/^(.+?)( \(bet (\d+)\))?: (lands|hit|miss)(, (\d+) damage)?\.$/, (m) => {
     const verb = m[4] === 'lands' ? 'acierta solo' : m[4] === 'hit' ? 'acierta' : 'falla';
     return `${name(m[1])}${m[3] ? ` (apuesta ${m[3]})` : ''}: ${verb}${m[6] ? `, ${m[6]} de daño` : ''}.`;

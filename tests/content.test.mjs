@@ -32,7 +32,9 @@ test('no em dashes in site code, strings, docs or README (house rule; dated plan
   // css/ is in the list because the stylesheets carry as much prose as the JS:
   // three of them were written this run, entirely in comments explaining layout
   // decisions, and none of that was scanned before.
-  const files = [...walk(join(root, 'js')), ...walk(join(root, 'css')), ...walk(join(root, 'tests')), join(root, 'index.html'), join(root, 'README.md'), join(root, 'RULES.md'), join(root, 'RULES.es.md'), ...walk(join(root, 'docs')).filter((f) => f.endsWith('.md'))];
+  const files = [...walk(join(root, 'js')), ...walk(join(root, 'css')), ...walk(join(root, 'tests')), join(root, 'index.html'), join(root, 'README.md'), ...readdirSync(root).filter((f) => /^RULES.*\.md$/.test(f)).map((f) => join(root, f)), ...walk(join(root, 'docs')).filter((f) => f.endsWith('.md')),
+    // data/ carries authored prose too: hazard flavour, module rules, $notes.
+    ...walk(join(root, 'data')).filter((f) => f.endsWith('.json'))];
   const bad = files.filter((f) => readFileSync(f, 'utf8').includes('\u2014')).map((f) => f.replace(root + '/', ''));
   assert.deepEqual(bad, []);
 });
@@ -247,6 +249,104 @@ test('the Setup step names every Attack card the deck actually has', () => {
     }
   }
 });
+
+/**
+ * Expansion modules (docs/EXPANSIONS.md). Each one is a small deck plus one
+ * page of rules, and the page is the part a table actually plays from. A module
+ * whose rulebook exists in one language is a module half the household cannot
+ * use, which is exactly the failure the key-parity test catches for UI strings
+ * and had no equivalent for prose.
+ */
+test('every expansion module has a rulebook in both languages, and neither is a stub', () => {
+  const mods = JSON.parse(readFileSync(join(root, 'data/expansions.json'), 'utf8'));
+  assert.ok(mods.modules.length >= 1, 'at least one module ships');
+  for (const m of mods.modules) {
+    for (const [file, lang] of [[`RULES.${m.id}.md`, 'en'], [`RULES.${m.id}.es.md`, 'es']]) {
+      let md;
+      try { md = readFileSync(join(root, file), 'utf8'); }
+      catch { assert.fail(`module "${m.id}" has no ${lang} rulebook at ${file}`); }
+      assert.ok(md.length > 1500, `${file} is a stub (${md.length} chars)`);
+      // The five rules of a Mark are the module's whole safety argument. A
+      // rulebook that drops one is a rulebook that permits stacking.
+      if (m.id === 'terrain') {
+        for (const n of ['1.', '2.', '3.', '4.', '5.']) {
+          assert.ok(md.includes(`\n${n} `), `${file}: rule ${n} of the Mark is missing`);
+        }
+      }
+    }
+  }
+});
+
+test('every hazard and biome object in the data is named in both rulebooks', () => {
+  // Data and prose drift apart silently: the card exists, the page never
+  // mentions it, and nobody notices until a player asks what the brick is for.
+  const t = JSON.parse(readFileSync(join(root, 'data/expansions.json'), 'utf8')).modules.find((m) => m.id === 'terrain');
+  const en = readFileSync(join(root, 'RULES.terrain.md'), 'utf8');
+  const es = readFileSync(join(root, 'RULES.terrain.es.md'), 'utf8');
+  for (const h of t.hazard) {
+    assert.ok(en.includes(h.name), `RULES.terrain.md never names the hazard ${h.name}`);
+  }
+  for (const o of t.biome_object) {
+    assert.ok(en.includes(o.name), `RULES.terrain.md never names the object ${o.name}`);
+  }
+  // Both pages must carry the same number of table rows for the two decks, so a
+  // hazard added to one language cannot go missing from the other.
+  const rows = (md) => md.split('\n').filter((l) => /^\|/.test(l)).length;
+  assert.equal(rows(en), rows(es), 'the two rulebooks disagree on how many table rows they have');
+});
+
+
+test('every module has its switch label and hint, in both languages', () => {
+  // js/views/play-screens.js renders one row per module in state.expansions,
+  // labelled with t(`play.mod.${id}`) and t(`play.mod.${id}Hint`). A module that
+  // lands without those keys prints a literal [play.mod.seat] on the setup
+  // screen, in BOTH languages, and key-parity cannot see it because the key is
+  // missing from both tables at once. This is the test that can.
+  const mods = JSON.parse(readFileSync(join(root, 'data/expansions.json'), 'utf8'));
+  for (const lang of ['en', 'es']) {
+    for (const m of mods.modules) {
+      for (const key of [m.id, `${m.id}Hint`]) {
+        const v = STRINGS[lang].play?.mod?.[key];
+        assert.ok(v && typeof v === 'string' && v.length > 1,
+          `${lang}: play.mod.${key} is missing, so the setup screen would print a raw key`);
+      }
+    }
+  }
+});
+
+test('every module card a rulebook names has a Spanish name to shout', () => {
+  // Card names are said out loud, so a Spanish table needs Spanish ones. The
+  // overlay is es.cards.name (en falls through to the data, deliberately).
+  const mods = JSON.parse(readFileSync(join(root, 'data/expansions.json'), 'utf8'));
+  const missing = [];
+  for (const m of mods.modules) {
+    for (const [deck, list] of Object.entries(m)) {
+      if (!Array.isArray(list) || deck === 'needs') continue;
+      for (const c of list) {
+        if (!c || !c.id || !c.name) continue;
+        if (!STRINGS.es.cards.name[c.id]) missing.push(`${m.id}/${c.id} (${c.name})`);
+      }
+    }
+  }
+  assert.deepEqual(missing, [], 'these module cards have no Spanish name');
+});
+
+
+test('state declares a switch for every module that ships', () => {
+  // A module absent from state.modules still reads as off (NESTED merges onto
+  // the defaults, and undefined is falsy), so this is not about correctness. It
+  // is about the settings screen: a declared key is the list a reader of
+  // js/state.js can see, and a module that only exists in JSON is invisible
+  // there.
+  const mods = JSON.parse(readFileSync(join(root, 'data/expansions.json'), 'utf8'));
+  const declared = readFileSync(join(root, 'js/state.js'), 'utf8');
+  const line = /modules:\s*\{([^}]*)\}/.exec(declared);
+  assert.ok(line, 'js/state.js still declares a modules map');
+  for (const m of mods.modules) {
+    assert.ok(line[1].includes(`${m.id}:`), `state.modules has no entry for "${m.id}"`);
+  }
+});
+
 
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

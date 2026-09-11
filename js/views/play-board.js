@@ -33,9 +33,10 @@ import { glyphSvg, artGlyphSvg } from '../cards/glyphs.js';
 import { figureSvg } from '../game/figures.js';
 import { heroFor, MINION } from '../data/placeholders.js';
 import { lastLevel } from '../game/run.js';
-import { legalAttacks, ready, spent, broken, alive, bossHp, raging, effectiveStep, attackDamage, reviveStep, ALLY_DEF, canBreak, breakStepFor, breakCost, BREAK_REWARDS } from '../game/engine.js';
+import { legalAttacks, ready, spent, broken, alive, bossHp, raging, effectiveStep, attackDamage, reviveStep, ALLY_DEF, canBreak, breakStepFor, breakCost, BREAK_REWARDS, canShake, canUseObject, canHide, listMarks } from '../game/engine.js';
+import { objectFor } from '../data/expansions.js';
 import { targetFor, dieMax, stepOdds, reactionFor } from '../game/rules.js';
-import { validatePlan, planActions, attackFor, betFor, readyAt, runeSpare, pickable, awaitingStep, betRoom } from './play-plan.js';
+import { validatePlan, planActions, attackFor, betFor, readyAt, runeSpare, pickable, awaitingStep, betRoom, targetOf } from './play-plan.js';
 
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
 /** A check step's name, in the reader's language (cards.step.<id>). */
@@ -77,6 +78,45 @@ export const reasonText = (r) => (r === 'tooManyActions' || r === 'notEnoughRead
   ? t(`play.${r}`) : t('play.planEmpty'));
 
 // ── Piles ────────────────────────────────────────────────────
+/**
+ * The Marks on one figure, as the bricks they are on the table.
+ *
+ * The brick IS the rule (RULES.terrain.md): if there is nothing under a figure,
+ * nothing is happening to it. So the board draws a row of coloured pips rather
+ * than a status line, and a table glancing between screen and floor sees the
+ * same object in both places. Empty for a figure with no marks, which is the
+ * common case and must cost no space at all.
+ */
+function markBricks(fig, who = 'on') {
+  const marks = listMarks(fig);
+  if (!marks.length) return '';
+  const pips = marks.map((m) => `<i class="mark-brick" style="--brick:${m.hex}"
+      title="${escHtml(t(`play.marks.${m.id}`))}: ${escHtml(m.text)}"
+      aria-label="${escHtml(t(`play.marks.${m.id}`))}"></i>`).join('');
+  const names = marks.map((m) => t(`play.marks.${m.id}`)).join(', ');
+  return `<span class="marks" role="img" aria-label="${escHtml(`${names} ${t(`play.marks.${who}`)}`)}">${pips}</span>`;
+}
+
+/**
+ * The terrain module's two board actions, and nothing when it is switched off.
+ * Both are engine predicates rather than local tests, so the button and the
+ * rule cannot disagree: that gap is exactly what put an enabled Run button in
+ * front of a Snared player (tests/fuzz.test.mjs).
+ */
+function terrainRow(s, f, ui) {
+  if (!s.modules?.terrain) return '';
+  const obj = objectFor(s.expansions, f.biome?.id);
+  const shake = canShake(f);
+  const use = canUseObject(f, obj);
+  if (!shake && !obj) return '';
+  return `<div class="row terrain-row">
+    ${obj ? `<span class="pile-label">${glyphSvg(obj.icon, '', 16)} ${escHtml(cardName(obj))}</span>` : ''}
+    <span class="grow"></span>
+    ${shake ? `<button class="btn btn--sm" data-action="play-shake" title="${escHtml(t('play.terrain.shakeHint'))}">${escHtml(t('play.terrain.shake'))}</button>` : ''}
+    ${obj ? `<button class="btn btn--sm" data-action="play-object" ${use ? '' : 'disabled'}>${escHtml(use ? t('play.terrain.use') : t('play.terrain.used'))}</button>` : ''}
+  </div>`;
+}
+
 function heroPile(f) {
   const order = { ready: 0, spent: 1, broken: 2 };
   return [...f.hero.pool].sort((a, b) => order[a.st] - order[b.st])
@@ -379,11 +419,11 @@ export function renderFight(s, run) {
               ${fx === 'hurt' && ui.took ? `<span class="fx-num fx-num--bad">-${ui.took}</span>` : ''}
             </div>
             <div class="pile-label">${escHtml(t('play.ready'))} ${ready(f)} · ${escHtml(t('play.spent'))} ${spent(f)} · ${escHtml(t('play.broken'))} ${broken(f)}</div>
-            <div class="pile" data-tour="life">${heroPile(f)}</div>
+            <div class="pile" data-tour="life">${heroPile(f)}</div>${markBricks(f.hero, 'on')}
             ${shelf(f, ui)}
           </div>
           <div class="duel__wall" data-tour="wall">
-            <div class="wall-count"><b>${bossHp(f)}</b><span class="muted small">/ ${f.boss.maxHp}</span>${f.boss.braced ? `<span class="chip">${escHtml(t('play.reactionName.brace'))}</span>` : ''}</div>
+            <div class="wall-count"><b>${bossHp(f)}</b><span class="muted small">/ ${f.boss.maxHp}</span>${f.boss.braced ? `<span class="chip">${escHtml(t('play.reactionName.brace'))}</span>` : ''}${markBricks(f.boss, 'bossOn')}</div>
             ${bossWall(f, ui)}
           </div>
           <div class="duel__boss ${bossRing}">
@@ -578,7 +618,10 @@ function renderTurn(s, run, f, ui) {
   const used = 3 - f.actionsLeft;
   const dots = [0, 1, 2].map((i) => `<i class="${i < used ? 'used' : i < used + planned ? 'planned' : ''}"></i>`).join('');
   const slots = `<div class="slots">${dots}<span>${f.actionsLeft - planned} ${escHtml(t('play.actionsLeft'))}</span></div>`;
-  const hideBtn = f.hero.hideAvailable && !f.hero.hidden
+  // canHide, not the raw flags: hide() refuses a Snared hero and this button
+  // did not know that, which is the same defect the fuzzer found in the bots
+  // (tests/fuzz.test.mjs). An enabled button that throws takes the run down.
+  const hideBtn = canHide(f)
     ? `<button class="btn btn--sm" data-action="play-hide" title="${escHtml(t('play.hideHint'))}">${glyphSvg('eye', '', 16)} ${escHtml(t('play.hide'))}</button>` : '';
   const rerollBtn = f.hero.lastMiss && !f.hero.hunterUsed ? `<button class="btn btn--sm" data-action="play-reroll">${escHtml(t('play.reroll'))}</button>` : '';
 
@@ -632,6 +675,7 @@ function renderTurn(s, run, f, ui) {
     </div>
     <div class="band band--plan">${planLane(s, f, ui, plan, wait)}</div>
     ${!ui.resolveOpen && !ui.breakOpen && canBreak(f) ? `<div class="band band--break">${breakOffer(f)}</div>` : ''}
+    ${!ui.resolveOpen && !ui.breakOpen ? terrainRow(s, f, ui) : ''}
     <div class="band band--go" data-tour="go">${ui.resolveOpen || plan.length ? '' : planBar(f, ui, plan)}</div>
     ${ui.resolveOpen || ui.breakOpen ? resolveModal(f, ui, plan, wait) : ''}`;
 }
@@ -822,7 +866,7 @@ function resolveModal(f, ui, plan, wait) {
          <button class="btn btn--ghost btn--sm" data-action="play-resolve-all" title="${escHtml(t('play.resolveAllHint'))}">${escHtml(t('play.resolveAll'))}</button>`
     : `<button class="btn btn--primary" data-action="play-resolve-close">${escHtml(t('play.rm.close'))}</button>`}</div>`;
   } else {
-    const n = plan.filter((st) => effectiveStep(f, attackFor(f, st.id))).length;
+    const n = plan.filter((st) => effectiveStep(f, attackFor(f, st.id), targetOf(f, st))).length;
     // The lead is written to be followed by a count ("This turn holds 2 rolls
     // to make."), so with nothing to count it has to be REPLACED, not extended:
     // appending gave "This turn holds Everything lands on its own."

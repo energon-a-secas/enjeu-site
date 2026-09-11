@@ -770,8 +770,8 @@
       "name": "Sidekick",
       "icon": "sidekick",
       "copies": 1,
-      "effect": "Two players, one table. The Sidekick owns Strike and Run: those actions are theirs to choose, say and roll. The life pool stays shared, so the maths never changes: only whose turn it is to be brave.",
-      "$note": "Pure table rules: the engine referees the shared pool exactly as in solo."
+      "effect": "Two players, one table. The Sidekick owns Strike and Invention: those actions are theirs to choose, say and roll. The life pool stays shared, so the maths never changes: only whose turn it is to be brave.",
+      "$note": "Pure table rules: the engine referees the shared pool exactly as in solo. It was Strike and Run until 2026-09-05, which promised the second player a roll and gave them two cards with check: null. Invention has a Wild check and a bet. No printed face changes: a mode card carries a glyph and no text."
     },
     {
       "id": "grudge",

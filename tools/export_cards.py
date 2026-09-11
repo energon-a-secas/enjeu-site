@@ -43,19 +43,23 @@ DEFAULT_URL = "http://localhost:8871/"
 # back the SAME singletons the page is rendering from.
 PREPARE = """
 async (lang) => {
-  const [cardsMod, face, png, rules, strings, sheet] = await Promise.all([
+  const [cardsMod, face, png, rules, strings, sheet, exp] = await Promise.all([
     import('/js/data/cards.js'),
     import('/js/cards/face.js'),
     import('/js/cards/png.js'),
     import('/js/game/rules.js'),
     import('/js/strings.js'),
     import('/js/cards/sheet.js'),
+    import('/js/data/expansions.js'),
   ]);
   const data = cardsMod.cards();
   if (!data) throw new Error('the card data has not loaded yet');
   strings.setLang(lang);
   const aid = rules.aidFor(data, strings.reactionNames(), strings.breakNames(), strings.dmNames());
-  window.__ex = { data, face, png, sheet, aid };
+  // Expansion modules are a SEPARATE fetch and a separate box: they are not in
+  // data.physical and must not be, so --module prints from their own list.
+  const mods = await exp.loadExpansions('data/expansions.json').catch(() => null);
+  window.__ex = { data, face, png, sheet, aid, exp, mods };
   const glyphs = await import('/js/cards/glyphs.js');
   // How many of the deck's own icons resolved to the attributed art rather than
   // falling back to the in-house glyph. Zero means loadArt did not finish or
@@ -66,16 +70,19 @@ async (lang) => {
     unique: new Set(data.physical.map((c) => c.id)).size,
     art: icons.filter((id) => glyphs.artBody(id)).length,
     icons: icons.length,
+    modules: (mods?.modules || []).map((m) => ({ id: m.id, cards: exp.moduleCards(mods, m.id).length })),
   };
 }
 """
 
 RENDER = """
-async ([index, unique, size, lang]) => {
-  const { data, face, png, sheet, aid } = window.__ex;
-  const list = unique
-    ? data.physical.filter((c, i, a) => a.findIndex((x) => x.id === c.id) === i)
-    : data.physical;
+async ([index, unique, size, lang, moduleId]) => {
+  const { data, face, png, sheet, aid, exp, mods } = window.__ex;
+  const list = moduleId
+    ? exp.moduleCards(mods, moduleId)
+    : unique
+      ? data.physical.filter((c, i, a) => a.findIndex((x) => x.id === c.id) === i)
+      : data.physical;
   const card = list[index];
   const faceSvg = face.cardFace(card, { size: 'sheet', aid });
   const backSvg = face.cardBack(sheet.backKind(card), { size: 'sheet' });
@@ -102,6 +109,7 @@ def main() -> int:
     ap.add_argument("--lang", default="es", choices=["es", "en"], help="which language the reference cards print in")
     ap.add_argument("--size", default="standard", choices=["standard", "bleed", "high"])
     ap.add_argument("--unique", action="store_true", help="one file per distinct card (69) rather than per printed card (111)")
+    ap.add_argument("--module", default=None, help="print an expansion module's own deck instead of the base 111 (e.g. terrain)")
     ap.add_argument("--url", default=DEFAULT_URL)
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
@@ -112,7 +120,8 @@ def main() -> int:
         print("playwright is not installed: pip install playwright && playwright install chromium", file=sys.stderr)
         return 2
 
-    out = Path(args.out) if args.out else ROOT / "print" / f"cards-{args.lang}-{args.size}"
+    stem = f"module-{args.module}" if args.module else "cards"
+    out = Path(args.out) if args.out else ROOT / "print" / f"{stem}-{args.lang}-{args.size}"
     faces, backs = out / "faces", out / "backs"
     faces.mkdir(parents=True, exist_ok=True)
     backs.mkdir(parents=True, exist_ok=True)
@@ -141,11 +150,19 @@ def main() -> int:
         if not counts.get("art"):
             print("warning: the attributed art has not loaded; cards would export "
                   "with the in-house glyphs instead", file=sys.stderr)
-        n = counts["unique"] if args.unique else counts["physical"]
-        print(f"{n} cards, {args.lang}, {args.size}")
+        if args.module:
+            found = {m["id"]: m["cards"] for m in counts.get("modules", [])}
+            if args.module not in found:
+                print(f"no such module: {args.module}. Known: {', '.join(found) or 'none'}", file=sys.stderr)
+                browser.close()
+                return 2
+            n = found[args.module]
+        else:
+            n = counts["unique"] if args.unique else counts["physical"]
+        print(f"{n} cards, {args.lang}, {args.size}" + (f", module {args.module}" if args.module else ""))
 
         for i in range(n):
-            r = page.evaluate(RENDER, [i, args.unique, args.size, args.lang])
+            r = page.evaluate(RENDER, [i, args.unique, args.size, args.lang, args.module])
             (faces / r["faceName"]).write_bytes(base64.b64decode(r["face"]))
             (backs / r["backName"]).write_bytes(base64.b64decode(r["backImg"]))
             total_bytes += sum(r["bytes"])
@@ -168,7 +185,7 @@ def main() -> int:
         f"size            {size_px['width']} x {size_px['height']} px "
         f"(bleed {size_px['bleedMm']}mm, about {size_px['dpi']} DPI on a 63 x 88 mm card)",
         f"cards           {len(written)} "
-        f"({'one per distinct card' if args.unique else 'one per printed card, copies included'})",
+        f"({'expansion module ' + args.module if args.module else 'one per distinct card' if args.unique else 'one per printed card, copies included'})",
         f"total           {total_bytes / 1048576:.1f} MB",
         "",
         "faces/ and backs/ hold the same filenames in the same order: face N pairs",

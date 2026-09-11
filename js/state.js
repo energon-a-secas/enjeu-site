@@ -41,6 +41,13 @@ export const state = {
   // to invent something, so a family meets the game without it and turns it on
   // when they want it. cap stays the dial; on is the switch.
   dm: { on: false, style: 'assisted', cap: 2, step: 'hard', wound: 50, cripple: 25 },
+  // Which expansion modules are in play (docs/EXPANSIONS.md). Same shape and
+  // same reasoning as the break dial: a table setting that outlives a run,
+  // because the household that added Terrain last Saturday is the same
+  // household this Saturday. Every module starts OFF. The base game is the
+  // complete game, and a settings screen that opens with seven switches is how
+  // a simple game stops looking simple.
+  modules: { terrain: false, wits: false, prep: false, seat: false },
   run: null,            // see game/engine.js newRun()
   // Board preferences. NOT in run.ui: game/run.js resets that object every
   // level, and a preference that resets every level is not a preference.
@@ -58,10 +65,13 @@ export const secondWindDefault = (kind) => kind === 'first';
 /** The First Game IS the try-out, so it starts on the plain table. */
 export const simpleDefault = (kind) => kind === 'first';
 
-const PERSIST = ['lang', 'learnStep', 'deckFilter', 'browse', 'paper', 'printScope', 'withBacks', 'die', 'mode', 'element', 'runKind', 'secondWind', 'simple', 'dm', 'run', 'play', 'balance'];
+const PERSIST = ['lang', 'learnStep', 'deckFilter', 'browse', 'paper', 'printScope', 'withBacks', 'die', 'mode', 'element', 'runKind', 'secondWind', 'simple', 'dm', 'modules', 'run', 'play', 'balance'];
 
 // The nested settings, defaults captured before anything can overwrite them.
-const NESTED = ['balance', 'browse', 'play', 'dm'];
+// NESTED is also the migration story for modules: a save written before a
+// module existed is missing its key, and merging onto DEFAULTS means it arrives
+// switched off rather than as an undefined the switch renders blank.
+const NESTED = ['balance', 'browse', 'play', 'dm', 'modules'];
 const DEFAULTS = Object.fromEntries(NESTED.map((k) => [k, { ...state[k] }]));
 
 /**

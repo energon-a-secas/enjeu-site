@@ -158,7 +158,7 @@ export const STRINGS = {
         'life-extra': 'A white life card, earned after each level you win. No element; it bets and guards 25 like any other.',
         'life-boss': 'One card of the boss wall, worth 100. Deal 100 and turn one over: the shrinking pile is its health bar.',
         'second-wind': 'Optional. When you would go Down, come back instead. Free once a level, then the roll climbs and the rescue thins: 4 cards back, then 3, then 2, then 1.',
-        sidekick: 'A second player owns Strike and Run: those actions are theirs to choose, say and roll. The life pool stays shared.',
+        sidekick: 'A second player owns Strike and Invention: those actions are theirs to choose, say and roll. Invention has a real check, so they throw dice. The life pool stays shared.',
         grudge: 'When a boss defeats you, slide this under its card: next fight, one check you choose succeeds automatically.',
         'aid-checks': 'A reference: the four check steps and the target number for every die, so the die you own can play.',
         'aid-turn': 'A reference: the round in order. Recover, take your 3 actions, minions strike, the boss acts.',
@@ -332,6 +332,38 @@ export const STRINGS = {
         held: 'The part holds.',
         broke: 'It comes off!',
         cancel: 'Not this time',
+      },
+      // Expansion modules (docs/EXPANSIONS.md). Each one is a small deck plus
+      // one page of rules; leave it in the box and nothing else changes.
+      // Expansion M1: Terrain. Mark names are said out loud at the table, so
+      // they are strings, not data: the brick is the component, the word is
+      // what a child shouts when it fires.
+      marks: {
+        poison: 'Poisoned', burning: 'Burning', frozen: 'Frozen',
+        marked: 'Marked', charged: 'Charged', snared: 'Snared',
+        on: 'on you', bossOn: 'on it',
+      },
+      terrain: {
+        shake: 'Shake it off',
+        shakeHint: 'One action clears Poison and Snared together.',
+        use: 'Use the ground',
+        used: 'Used this level',
+        hazard: 'Hazard',
+      },
+      mod: {
+        title: 'Expansions',
+        lead: 'Small decks that add one idea each. The game is complete without any of them.',
+        sheet: 'sheet',
+        sheets: 'sheets',
+        rules: 'Read the rules',
+        seat: 'The Boss Seat',
+        seatHint: 'The empty chair. Somebody has been rolling that die: this hands the job to a person, who holds a hand of the six faces and commits one face down before you act.',
+        prep: 'Preparation',
+        prepHint: 'A way to spend this turn on the next one. Wind up for a bigger swing, and knock over one big thing in the room.',
+        wits: 'Wits',
+        witsHint: 'Three cards for the turns you would rather find something out than hit something. Look at the boss\'s die, study a weak point, or talk it out of a turn.',
+        terrain: 'Terrain',
+        terrainHint: 'The ground fights too. Poison, ice and fire are bricks you put under a figure, and every place has something you can use on the boss.',
       },
       dm: {
         enable: 'Break points',
@@ -692,7 +724,7 @@ export const STRINGS = {
         'life-extra': 'Una carta de vida blanca, ganada al pasar cada nivel. Sin elemento; apuesta y defiende 25 como cualquiera.',
         'life-boss': 'Una carta del muro del jefe, vale 100. Haz 100 de daño y da vuelta una: la pila que se achica es su barra de vida.',
         'second-wind': 'Opcional. Cuando quedarías Caído, vuelve. Gratis una vez por nivel; después la tirada sube y el rescate se achica: 4 cartas, luego 3, luego 2, luego 1.',
-        sidekick: 'Un segundo jugador es dueño de Golpe y Escape: esas acciones las elige, las dice y las tira él. La vida sigue compartida.',
+        sidekick: 'Un segundo jugador es dueño de Golpe e Invención: esas acciones las elige, las dice y las tira él. Invención tiene tirada de verdad, así que tira dados. La vida sigue compartida.',
         grudge: 'Cuando un jefe te derrota, ponla bajo su carta: la próxima pelea, una tirada que tú elijas acierta sola.',
         'aid-checks': 'Una referencia: los cuatro pasos de tirada y el número a igualar con cada dado, para que sirva el que tengas.',
         'aid-turn': 'Una referencia: la ronda en orden. Recupera, toma tus 3 acciones, golpean los esbirros, actúa el jefe.',
@@ -743,6 +775,21 @@ export const STRINGS = {
       // esta tabla es para gritarla. Va solo en `es`; en inglés manda
       // data/cards.json y cardName() cae ahí sola.
       name: {
+        'seat-1-brace': 'Aguante', 'seat-2-strike': 'Golpe', 'seat-3-strike': 'Golpe',
+        'seat-4-summon': 'Invocación', 'seat-5-roar': 'Rugido', 'seat-6-ruin': 'Ruina',
+        'aid-seat': 'La Silla',
+        prepare: 'Preparar', brazier: 'Brasero', 'pitch-barrel': 'Barril de Brea',
+        'fishing-net': 'Red de Pesca', cart: 'Carreta', 'signal-bell': 'Campana',
+        'rope-bridge': 'Puente de Cuerda', millstone: 'Piedra de Molino', chandelier: 'Candelabro',
+        scout: 'Explorar', analyze: 'Analizar', parley: 'Parlamentar',
+        'aid-scout-board': 'Tablero de Exploración',
+        // Expansion M1: Terrain. Same one-way overlay as every other card
+        // name: English lives in data/expansions.json and only Spanish needs a
+        // table, because the name is a thing you say out loud at the table.
+        'lava-vent': 'Grieta de Lava', current: 'La Corriente', rockfall: 'Derrumbe', sinkhole: 'Socavón',
+        'tar-pit': 'Pozo de Brea', 'frozen-lake': 'Lago Congelado', 'thorn-nest': 'Nido de Espinas',
+        'ember-field': 'Campo de Brasas', 'sulphur-vent': 'Fumarola de Azufre', 'bramble-wall': 'Muro de Zarzas',
+        'open-ground': 'Campo Abierto', 'cold-spring': 'Manantial Helado',
         strike: 'Golpe', focus: 'Puntería', 'all-in': 'Todo o Nada', bubble: 'Burbuja', run: 'Escape',
 
         slash: 'Tajo', ember: 'Brasa', torrent: 'Torrente', tremor: 'Temblor', gale: 'Vendaval',
@@ -879,6 +926,33 @@ export const STRINGS = {
         held: 'La parte aguanta.',
         broke: '¡Se desprende!',
         cancel: 'Ahora no',
+      },
+      marks: {
+        poison: 'Envenenado', burning: 'Ardiendo', frozen: 'Congelado',
+        marked: 'Señalado', charged: 'Cargado', snared: 'Atrapado',
+        on: 'sobre ti', bossOn: 'sobre él',
+      },
+      terrain: {
+        shake: 'Sacúdetelo',
+        shakeHint: 'Una acción limpia Veneno y Atrapado juntos.',
+        use: 'Usa el terreno',
+        used: 'Usado este nivel',
+        hazard: 'Peligro',
+      },
+      mod: {
+        title: 'Expansiones',
+        lead: 'Mazos pequeños que agregan una idea cada uno. El juego está completo sin ninguno.',
+        sheet: 'hoja',
+        sheets: 'hojas',
+        rules: 'Leer las reglas',
+        seat: 'La Silla del Jefe',
+        seatHint: 'La silla vacía. Alguien viene tirando ese dado: esto le da el trabajo a una persona, que tiene en mano las seis caras y compromete una boca abajo antes de que actúes.',
+        prep: 'Preparación',
+        prepHint: 'Una forma de gastar este turno en el siguiente. Toma envión para un golpe más grande, y tumba una cosa grande de la sala.',
+        wits: 'Astucia',
+        witsHint: 'Tres cartas para los turnos en que prefieres averiguar algo antes que golpear algo. Mira el dado del jefe, estudia un punto débil, o convéncelo de perder un turno.',
+        terrain: 'Terreno',
+        terrainHint: 'El suelo también pelea. Veneno, hielo y fuego son bloques que pones debajo de una figura, y cada lugar tiene algo que puedes usar contra el jefe.',
       },
       dm: {
         enable: 'Roturas',

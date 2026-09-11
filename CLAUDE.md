@@ -10,6 +10,7 @@ Enjeu: a print-and-play boss-rush card game for one player, one die, and the con
 make serve      # http://localhost:8871 (ES modules, must be served over HTTP)
 make test       # node tests: cards, content, dice bridge, engine + BALANCE.md parity
 make check      # the Python checkers and their selftests (card linter, credits, dice bridge)
+make parity     # prove an expansion module did not move the base balance table
 make sim        # tools/sim.py, the published balance table
 make cards      # every card as a print-ready PNG, face and back (needs make serve)
 ```
@@ -29,6 +30,8 @@ make cards      # every card as a print-ready PNG, face and back (needs make ser
 | `js/cards/face.js` | `cardFace(card, opts)`: the four-corner SVG on a 630x880 grid (10 units per mm) |
 | `js/cards/sheet.js` | fills `#printSheet`; `css/print.css` pages it 3x3 per A4 |
 | `js/game/rules.js` | ladder, mode dial, dice bridge port (`bestTarget`), element cycle, reaction rows, `aidFor` (what a printed reference card draws from) |
+| `js/game/marks.js` | the Mark primitive (expansion M1): six marks, and the five rules that stop them stacking or exceeding 25 / one rung |
+| `js/data/expansions.js` | `data/expansions.json`, indexed. Separate from cards.js on purpose: `physical` must keep meaning the frozen 111 |
 | `js/game/engine.js` | one fight, every rule; `legacy` flag reproduces tools/sim.py's simplifications; break points and the DM dial (`DM_DEFAULTS`, `canBreak`, `breakPart`) |
 | `js/game/strategies.js` | turtle / safe / adaptive / gamble (sim.py `choose` ported) + Advantage heuristics |
 | `js/game/sim.js` · `sim-worker.js` | the 20-cell table, off the main thread |
@@ -43,7 +46,8 @@ Vendored from `packages/neorgon-ui/`, never edit in place: `js/neorgon-header.js
 
 ## Data
 
-- `data/cards.json`: all 111 cards (the Python linter and the JS tests both count them)
+- `data/cards.json`: all 111 cards (the Python linter and the JS tests both count them). **Frozen**: decks have been sent to a printing service, so no card face may change
+- `data/expansions.json`: expansion modules (M1 Terrain: 8 hazards, 4 biome objects). Never counted into `physical`. Mark RULES are not here, they live in `js/game/marks.js`; duplicating them would give one fact two homes
 - `data/art-manifest.json`: 75 art slots (70 credited, 5 in-house on purpose); a slot renders `art/<id>.svg` only once it has creator AND licence
 - `localStorage['enjeu-state']`: filters, die, mode, and the run in progress (no card data: the fight's `data` pointer is non-enumerable)
 
@@ -60,7 +64,27 @@ Vendored from `packages/neorgon-ui/`, never edit in place: `js/neorgon-header.js
 - **CSS beats SVG presentation attributes.** The first pass declared `fill`/`stroke` on `.face`/`.pip` in `cards.css` and every coloured life card printed white. `cards.css` sizes faces only; all colour lives inline in the SVG, which is also what the printer needs.
 - **Browsers cache plain `http.server` assets, and it looks like broken buttons.** A page can run a mix of old and new ES modules after an edit (it bit the build twice, and the user once after the rename). `make serve` now runs `tools/serve.py`, the same server plus `Cache-Control: no-cache`, so a plain reload is always current; in Playwright still clear with CDP `Network.clearBrowserCache` + `setCacheDisabled` when the server was started the old way.
 - **`legacy` is parity, not a rules mode to ship.** It reproduces three tools/sim.py simplifications (Brace never halves, Summon moves a flat 100, Roar flattens the next check to Even) so `tests/engine.test.mjs` can check BALANCE.md within 4 points. It also skips break points and the Run penalty, which arrived after sim.py was last a source of truth. The rulebook mode is still the harsher of the two; the gap is a design decision recorded in `.forge/brief-2026-08-15-baseline.md`, not a bug to "fix" in the engine.
-- **The rulebook-mode win rates in this file were stale for two weeks, so measure rather than quote.** The line that used to sit here said "turtle 0 everywhere" and turtle was in fact winning 42.8% of level 1. Re-measure with the engine, not from memory: at 4,000 fights per cell, seed 11, after the 2026-08-30 rule changes, adaptive is 88.5/80.2/61.8/59.2/53.5 and turtle 67.7/16.1/0.8/0/0. The turtle row is a known open defect (a strategy that never bets a card should not win two thirds of level 1); it comes from the boss now falling on its body alone, which makes a Summon a discount the player never repays.
+- **Measure the win rates, never quote them.** They have been stale in this file
+  twice. `make parity` diffs the 20-cell table against a git ref in three modes,
+  and `node tools/parity.mjs <ref> <trials>` prints the cells that moved. At
+  4,000 fights per cell, seed 11, rulebook mode, after the Skitter fix below:
+  turtle 49.6/8.3/0.8/0/0, safe 88.2/69.2/48.0/35.5/37.4,
+  adaptive 89.4/81.2/61.0/59.6/54.6, gamble 68.4/44.8/47.3/51.6/39.3.
+- **The turtle defect is fixed, and the diagnosis this file used to carry was
+  wrong.** It said the cause was the boss falling on its body alone, making a
+  Summon a discount. That is real but it is the smaller half. Measured over
+  20,000 fights: a level 1 turtle deals exactly 75 a round for exactly 5 rounds,
+  375 against a 400 wall, so the fight turns on ONE Strike of 25. Skitter's
+  off-balance +25 supplied 36.9 points of the win rate and the Summon discount
+  31.0, and with neither face a level 1 turtle won **0.0%**. The structural cause
+  nobody had written down: `halve(25)` floors to 0, so a braced boss takes
+  nothing from a Strike, which makes **Brace the game's anti-turtle mechanism**,
+  and boss-m is the only boss in the campaign with no Brace row because Skitter
+  overrides it. Fix (2026-09-05): Skitter's opening is only taken by an attack
+  that bet a life card. Turtle level 1 fell 67.7 to 49.6, every other style moved
+  under a point, levels 2 to 5 moved by nothing, and legacy is untouched so
+  docs/BALANCE.md still reproduces. The target was never zero: BALANCE.md
+  publishes 53.2% there and approves of it.
 - **Break points are off the balance table on purpose.** `canBreak` returns false under `legacy`, and no strategy in `js/game/strategies.js` calls `breakPart`, because a break requires a human to say what part they went for. The dial is a table setting (`state.dm`), so a run carries it and the simulator never sees it.
 - **Rulings the rulebook did not make** live in the header comment of `js/game/engine.js`, which now says which of them were promoted into RULES.md on 2026-08-28 and which four are still only in the code. Change the rulebook first, the engine second.
 - **`element_cycle` in cards.json carries a `$note` key.** Anything iterating it must skip `$`-prefixed keys (the Learn cycle drawing did not, once).
@@ -70,6 +94,9 @@ Vendored from `packages/neorgon-ui/`, never edit in place: `js/neorgon-header.js
 - **Print sizes are millimetres on the SVG**, not `zoom` tricks: `.print-cell .sk-card { width: 63mm; height: 88mm }`. Do not add `overflow: hidden` to a cell; an overflow must print visibly wrong.
 
 - **Two guards were added on 2026-08-30 because they had already failed silently.** `tests/content.test.mjs` now scans `RULES.es.md` for em dashes (it never had, and that is half the prose), and its enumerated-label test now checks `play.outcome`, `play.brk`, `play.dm`, `cards.step`, `cards.effect` and the reaction/signature tables against the lists that index them. Key parity alone cannot catch a duplicate key: `play.hist` was declared twice in BOTH languages, the object literal collapsed, parity passed in both directions, and the run summary rendered a raw `[play.hist.win]`.
+
+- **Expansions are additive or they are not expansions.** `docs/EXPANSIONS.md` is the seven-module ladder and the reasoning behind it. Two rules from it are enforced in code: a Mark never stacks and is never worth more than 25 or one rung (`tests/marks.test.mjs`), and `applyMark` refuses under `legacy` so the published balance table cannot move. When M1 landed, the 20-cell table at 4,000 fights per cell was byte-identical to HEAD in all three modes; if a future module cannot say that, it is changing the base game and needs to say so out loud.
+- **A module that repairs a base-game defect stops being optional.** The known turtle defect (67.7% at level 1) is a base-game fix. Terrain must not become the answer to it.
 
 ## Do not touch
 

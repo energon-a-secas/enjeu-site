@@ -9,10 +9,16 @@ import { dirname, join } from 'node:path';
 import { useCards } from '../js/data/cards.js';
 import { setLang } from '../js/strings.js';
 import { logLine, setLogNames } from '../js/views/logline.js';
+import * as E from '../js/game/engine.js';
+import { MARK_IDS } from '../js/game/marks.js';
+import { playTurn } from '../js/game/strategies.js';
+import { useExpansions, objectFor } from '../js/data/expansions.js';
+import { rng } from '../js/utils.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const data = useCards(JSON.parse(readFileSync(join(root, 'data/cards.json'), 'utf8')));
-setLogNames(data);
+const mods = useExpansions(JSON.parse(readFileSync(join(root, 'data/expansions.json'), 'utf8')));
+setLogNames(data, mods);
 
 let passed = 0, failed = 0;
 function test(name, fn) {
@@ -30,6 +36,23 @@ const SAMPLES = [
   ['Bubble: the next 25 damage is absorbed.'],
   ['Taunt: the boss will roll 4.', 'Provocación: el jefe sacará 4.'],
   ['Run: you are Hidden. The boss has to find you.'],
+
+  // Expansion M1: Terrain. Every say() the Mark code can emit, because the
+  // engine stays monolingual on purpose and this list is the coverage contract.
+  ['You are Poisoned.', 'Estás Envenenado.'],
+  ['You are Snared.', 'Estás Atrapado.'],
+  ['Ember Beetle is Burning.'],
+  ['Ember Beetle is Frozen and loses its action.'],
+  ['Your marks cost you 25.', 'Tus marcas te cuestan 25.'],
+  ['A minion suffers 25.', 'Un esbirro sufre 25.'],
+  ['Ember Beetle suffers 50.'],
+  ['You shake off Poison and Snared.', 'Te sacudes Veneno y Atrapado.'],
+  ['You shake off Poison.', 'Te sacudes Veneno.'],
+  ['Lava Vent: you use the ground against it.', 'Grieta de Lava: usas el terreno contra él.'],
+  ['Snared: it cannot brace.', 'Atrapado: no puede hacer Aguante.'],
+  ['You spend your Charge.', 'Gastas tu Carga.'],
+  ['Your Charge is lost.', 'Pierdes tu Carga.'],
+  ['Burning goes out.', 'Ardiendo se apaga.'],
   ['Strike: lands, 25 damage.', 'Golpe: acierta solo, 25 de daño.'],
   ['Focus (bet 1): hit, 75 damage.', 'Puntería (apuesta 1): acierta, 75 de daño.'],
   ['All In (bet 3): miss.', 'Todo o Nada (apuesta 3): falla.'],
@@ -122,6 +145,57 @@ test('the name map localizes card, reaction and signature names inside lines', (
   assert.ok(logLine("Barrier cancels the boss's Coil.").includes('Enroscada'));
   setLang('en');
 });
+
+/**
+ * The sample list above is hand-kept, and a hand-kept coverage contract drifts
+ * the moment someone adds a say() and forgets it. This plays real fights with
+ * every module switched on and asserts that EVERY line they actually produce
+ * translates, which is the same contract enforced by the engine rather than by
+ * memory. It names the offending line, so a miss is a one-line fix.
+ */
+test('every line real fights produce has a pattern, modules included', () => {
+  setLang('es');
+  const seen = new Set();
+  const next = rng(99);
+  const BIOMES = ['volcano', 'river', 'mountain', 'desert', 'forest', 'village', 'castle'];
+  for (let i = 0; i < 400; i++) {
+    const boss = data.boss[Math.min(5, Math.floor(next() * 6))];
+    const biome = BIOMES[Math.floor(next() * BIOMES.length)];
+    const f = E.newFight(data, {
+      level: 1 + Math.floor(next() * 5), boss, biome: { id: biome, element: null },
+      hero: { element: 'fire', klass: null, attacks: data.attack,
+        pool: Array.from({ length: 4 + Math.floor(next() * 6) }, () => 'fire') },
+      die: 'd20', mode: 'standard', secondWind: next() < 0.5,
+      dm: { on: true, style: 'friendly', cap: 3, step: 'hard', wound: 50, cripple: 25 },
+    });
+    let guard = 0;
+    while (f.phase === 'act' && guard++ < 40) {
+      if (next() < 0.4) E.applyMark(f, next() < 0.5 ? 'hero' : 'body', MARK_IDS[Math.floor(next() * MARK_IDS.length)]);
+      const obj = objectFor(mods, biome);
+      if (obj && E.canUseObject(f, obj) && next() < 0.3) E.useObject(f, obj);
+      if (E.canShake(f) && next() < 0.4) E.shake(f);
+      if (f.phase !== 'act') break;
+      playTurn(f, ['turtle', 'safe', 'adaptive', 'gamble'][Math.floor(next() * 4)], next, () => null);
+      if (next() < 0.4 && E.canBreak(f)) E.breakPart(f, { roll: 20, part: 'a horn' });
+      while (f.phase === 'down') E.attemptRevive(f, { u: next() });
+      if (f.phase !== 'act') break;
+      E.endTurn(f);
+      while (f.phase === 'down') E.attemptRevive(f, { u: next() });
+      while (f.phase === 'boss') {
+        E.bossRoll(f, 1 + Math.floor(next() * 6));
+        E.resolveBoss(f, {});
+        while (f.phase === 'down') E.attemptRevive(f, { u: next() });
+        if (f.phase === 'down') break;
+      }
+    }
+    for (const l of f.log) seen.add(l.text);
+  }
+  const untranslated = [...seen].filter((line) => logLine(line) === line);
+  assert.equal(untranslated.length, 0,
+    `${untranslated.length} of ${seen.size} line shapes have no Spanish:\n       ${untranslated.slice(0, 10).join('\n       ')}`);
+  setLang('en');
+});
+
 
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

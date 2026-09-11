@@ -576,6 +576,73 @@ function modeCard(c) {
   return out;
 }
 
+/**
+ * A Mark reference card (expansion M1). No text, like every other face in the
+ * deck: the card is the brick's portrait, so a table can lay it beside the pile
+ * of bricks and see which colour means which rule. The rule itself lives in
+ * RULES.terrain.md, where a rule belongs, and the child says the name out loud.
+ *
+ * The field is the brick colour, so the card is legible face-up across a table
+ * at the same glance that reads the brick under a figure.
+ */
+function markCard(c) {
+  const tint = c.hex || '#888';
+  const dark = c.id === 'marked' || c.id === 'frozen' || c.id === 'charged';
+  const ink = dark ? '#2b2118' : '#fffdf7';
+  let out = frame(tint, dark ? '#2b2118' : tint, false);
+  out += oval(ink, false, 'none');
+  out += glyphAt(c.icon, 315 - 150, 440 - 150, 300, { stroke: ink, width: 2.6 });
+  // A stud strip along the foot: the card says "this is a brick" without a word.
+  for (let i = 0; i < 5; i++) {
+    out += `<circle cx="${175 + i * 70}" cy="770" r="20" fill="none" stroke="${ink}" stroke-width="6" opacity="0.75"/>`;
+  }
+  return out;
+}
+
+/**
+ * A Hazard card (expansion M1): the place on top, the Mark it gives underneath.
+ * Two glyphs and no words, which is the whole readable sentence a hazard needs.
+ * The element tints the frame, exactly as it does on a biome card, so a hazard
+ * sits in the same visual family as the place it belongs to.
+ */
+function hazardCard(c) {
+  const el = c.element;
+  const edge = el ? FACE[el] : BIOME_NEUTRAL.edge;
+  const ink = el ? INK[el] : BIOME_NEUTRAL.ink;
+  const wash = el ? WASH[el] : BIOME_NEUTRAL.wash;
+  let out = frame(PAPER, edge, false);
+  if (el) out += sigilBadge(el, 315, 96, 42);
+  out += oval(edge, false, wash);
+  out += glyphAt(c.icon, 315 - 130, 380 - 130, 260, { stroke: ink, width: 2.5 });
+  // The Mark it inflicts, in its own brick colour, on a stud below the picture.
+  if (c.markIcon) {
+    out += `<circle cx="315" cy="700" r="78" fill="${c.markHex || '#888'}" stroke="${ink}" stroke-width="7"/>`;
+    out += glyphAt(c.markIcon, 315 - 52, 700 - 52, 104, { stroke: c.markInk || '#fffdf7', width: 2.8 });
+  }
+  return out;
+}
+
+/**
+ * A Boss Seat reaction card (expansion M6): the die's face, as a card.
+ *
+ * It carries a NUMERAL, which is the one kind of text this deck allows, and it
+ * is the load-bearing part: the whole promise of the module is that these six
+ * cards ARE the six sides of the die, so the number has to be on the card for a
+ * table to check that for itself. Dark field, because these are the boss's
+ * cards and they should not be mistaken for anything in the hero's hand.
+ */
+function reactionCard(c) {
+  const INK = '#fffdf7', FIELD = '#2b2118';
+  let out = frame(FIELD, '#111111', false);
+  out += oval(INK, false, 'none');
+  out += glyphAt(c.icon, 315 - 140, 400 - 140, 280, { stroke: INK, width: 2.6 });
+  // The face, big, bottom centre. A player reading the Row counts these.
+  // numeral() is the deck's own text helper, so this face uses the same
+  // typeface and weight as every printed number in the box.
+  out += numeral(String(c.face), 315, 790, 150, 'middle', INK, 900);
+  return out;
+}
+
 export function cardFace(card, opts = {}) {
   const size = opts.size || 'browse';
   let body;
@@ -588,6 +655,11 @@ export function cardFace(card, opts = {}) {
     case 'life': body = lifeCard(card); break;
     case 'mode': body = modeCard(card); break;
     case 'aid': body = aidCard(card, opts); break;
+    case 'mark': body = markCard(card); break;
+    // A prop is a hazard pointed the other way: a thing in the room that says
+    // what Mark it gives, in two glyphs and no words. Same face, same reading.
+    case 'hazard': case 'prop': body = hazardCard(card); break;
+    case 'reaction': body = reactionCard(card); break;
     default: body = frame('#fff', '#111', false);
   }
   const label = opts.title ? `<title>${esc(opts.title)}</title>` : '';

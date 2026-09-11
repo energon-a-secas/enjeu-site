@@ -3,6 +3,7 @@
 
 import { state, loadSaved } from './state.js';
 import { loadCards } from './data/cards.js';
+import { loadExpansions } from './data/expansions.js';
 import { setArtManifest, loadArt } from './cards/glyphs.js';
 import { syncFromHash } from './navigate.js';
 import { render, renderError } from './render.js';
@@ -20,12 +21,17 @@ async function init() {
   initInspector();
   initLaneDrag(fireAction);
   try {
-    const [cards, manifest] = await Promise.all([
+    const [cards, manifest, expansions] = await Promise.all([
       loadCards('data/cards.json'),
       fetch('data/art-manifest.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+      // Expansions are optional by construction: a site whose expansions.json
+      // is missing shows no module switches and plays the base game, which is
+      // the same thing that happens when every switch is off.
+      loadExpansions('data/expansions.json').catch(() => null),
     ]);
     state.cards = cards;
-    setLogNames(cards);
+    state.expansions = expansions;
+    setLogNames(cards, expansions);
     setArtManifest(manifest);
     // Inlined, not linked: an <image> cannot be recoloured on paper. See the
     // note above loadArt in cards/glyphs.js. Failure is survivable, the cards

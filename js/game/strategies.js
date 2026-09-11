@@ -6,7 +6,7 @@
 // rule the runner does not.
 
 import { UNIT, stepOdds } from './rules.js';
-import { legalAttacks, attack, reroll, hide, ready, alive, broken, raging, playAdvantage, effectiveStep, attackBonus, attackDamage, bossFaceDamage } from './engine.js';
+import { legalAttacks, attack, reroll, hide, canHide, ready, alive, broken, raging, playAdvantage, effectiveStep, attackBonus, attackDamage, bossFaceDamage } from './engine.js';
 
 export const STYLES = ['turtle', 'safe', 'adaptive', 'gamble'];
 
@@ -173,7 +173,9 @@ export function bubblesNeeded(f, style) {
 export function wantsRun(f, style) {
   if (style !== 'safe' && style !== 'adaptive') return false;
   const run = legalAttacks(f).find((a) => a.hides);
-  if (!run || f.hero.hidden || f.actionsLeft < run.actions) return false;
+  // canAfford carries every refusal attack() can throw, Snared included. Reading
+  // only `.hides` here found the card and then played it into an exception.
+  if (!run || !run.canAfford || f.hero.hidden || f.actionsLeft < run.actions) return false;
   if (!raging(f)) return false;
   const incoming = f.boss.damage * 2 + f.boss.minions.length * UNIT;
   const shortfall = Math.ceil(incoming / UNIT) - alive(f);
@@ -186,8 +188,9 @@ export function wantsRun(f, style) {
 
 export function playTurn(f, style, next, drawFn) {
   playOpeners(f, drawFn);
-  // The Forest's free hide costs nothing, so a bot always takes it.
-  if (f.hero.hideAvailable && !f.hero.hidden) hide(f);
+  // The Forest's free hide costs nothing, so a bot always takes it, but a Snare
+  // stops it and canHide is the one place that knows every reason it might not.
+  if (canHide(f)) hide(f);
   // Taunt first: information is only worth an action BEFORE the plan is made.
   // The face comes from the stream, never from inside the engine. And it is
   // only worth the action against the final boss: played every turn it costs
