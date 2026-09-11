@@ -1,7 +1,7 @@
 # Enjeu - print-and-play boss-rush card game
 PORT := 8871
 
-.PHONY: help serve kill check sim dice lint credits test cards
+.PHONY: help serve kill check sim dice lint credits test cards parity
 
 help:
 	@echo "make check    - run every checker and its selftest"
@@ -12,6 +12,7 @@ help:
 	@echo "make serve    - static server on http://localhost:$(PORT)"
 	@echo "make test     - node tests: cards, dice bridge, engine (no dependencies)"
 	@echo "make cards    - every card as a print-ready PNG, face and back (needs make serve)"
+	@echo "make parity   - prove an expansion module did not move the base balance table"
 
 serve:
 	@# no-cache dev server: a plain http.server lets the browser keep stale modules
@@ -38,6 +39,13 @@ cards:
 
 test:
 	@for f in tests/*.test.mjs; do echo "== $$f =="; node $$f || exit 1; done
+
+# Proves an expansion module did not move the base game: the 20-cell table run
+# in this tree and in a worktree at REF, diffed cell by cell. Every module in
+# docs/EXPANSIONS.md is supposed to be droppable, and this is what makes that
+# claim checkable instead of asserted. REF and TRIALS are overridable.
+parity:
+	@node tools/parity.mjs $(REF) $(TRIALS)
 
 # Every checker, plus the selftest that proves it can still fail.
 # credits.py is expected to refuse until the art manifest is filled in.
