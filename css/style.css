@@ -364,7 +364,7 @@ strong { font-weight: 700; }
 .is-flash { animation: flash 1.2s var(--ease-out); }
 @keyframes flash { 0% { box-shadow: 0 0 0 4px var(--gold); } 100% { box-shadow: 0 0 0 0 transparent; } }
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition: none !important; }
 }
 @media (max-width: 600px) {
   .container { padding: var(--space-6) var(--space-4) var(--space-8); }
